@@ -1,0 +1,35 @@
+<form method="post" action="/databases">
+  <p>
+    <label for="name">Name</label><br/>
+    <input id="name" name="database[name]" type="text" />
+  </p>
+  <p>
+    <label for="adapter">Adapter</label><br/>
+    <select id="adapter" name="database[adapter]">
+      <option value="mysql">MySQL</option>
+    </select>
+  </p>
+  <p>
+    <label for="host">Host</label><br/>
+    <input id="host" name="database[host]" type="text" />
+  </p>
+  <p>
+    <label for="port">Port</label><br/>
+    <input id="port" name="database[port]" type="text" />
+  </p>
+  <p>
+    <label for="username">Username</label><br/>
+    <input id="username" name="database[username]" type="text" />
+  </p>
+  <p>
+    <label for="password">Password</label><br/>
+    <input id="password" name="database[password]" type="password" />
+  </p>
+  <p>
+    <label for="database">Database</label><br/>
+    <input id="database" name="database[dbname]" type="text" />
+  </p>
+  <p>
+    <input type="submit" value="Submit" /> or <a href="/databases">Cancel</a>
+  </p>
+</form>

@@ -1,0 +1,6 @@
+module Coupler
+  module Extensions
+  end
+end
+
+require File.dirname(__FILE__) + "/extensions/databases"

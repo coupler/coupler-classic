@@ -1,8 +1,11 @@
 require 'sinatra/base'
 require 'erb'
+require 'sequel'
 
-class Coupler < Sinatra::Base
-  get "/resources/new" do
-    erb :new_resource
-  end
+module Coupler
 end
+
+require File.dirname(__FILE__) + "/coupler/config"
+require File.dirname(__FILE__) + "/coupler/database"
+require File.dirname(__FILE__) + "/coupler/extensions"
+require File.dirname(__FILE__) + "/coupler/base"

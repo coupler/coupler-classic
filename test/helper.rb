@@ -5,13 +5,14 @@ require 'nokogiri'
 
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
+ENV['COUPLER_ENV'] = 'test'
 require 'coupler'
 
 class Test::Unit::TestCase
   include Rack::Test::Methods
 
   def app
-    Coupler.set :environment, :test
-    Coupler
+    Coupler::Base.set :environment, :test
+    Coupler::Base
   end
 end

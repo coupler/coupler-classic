@@ -1,0 +1,9 @@
+require 'rubygems'
+require 'lib/coupler'
+
+app = Rack::Builder.new do
+ use Rack::CommonLogger
+ use Rack::ShowExceptions
+ run Coupler::Base
+end
+Rack::Handler::WEBrick.run app, :Port => 9292

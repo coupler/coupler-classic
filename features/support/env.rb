@@ -14,8 +14,8 @@ module CouplerWorld
   include Webrat::Matchers
 
   def app
-    Coupler.set :environment, :test
-    Coupler
+    Coupler::Base.set :environment, :test
+    Coupler::Base
   end
 end
 
