@@ -5,3 +5,4 @@ rdoc
 pkg
 webrat.log
 config/*.sqlite3
+Session.vim

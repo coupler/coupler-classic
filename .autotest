@@ -1,7 +1,9 @@
 # vim:ft=ruby
-Autotest.add_hook :initialize do |autotest|
+blawk = lambda do |autotest|
   Dir["test/**/test_*.rb"].each do |filename|
     classname = File.basename(filename, '.rb').split("_").collect { |x| x.capitalize }.join
     autotest.extra_class_map[classname] = filename
   end
 end
+Autotest.add_hook :initialize, &blawk
+Autotest.add_hook :reset, &blawk

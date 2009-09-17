@@ -1,5 +1,8 @@
 module Coupler::Extensions::Resources
   def self.registered(app)
+    app.get "/resources" do
+      erb 'resources/index'.to_sym
+    end
     #app.get "/databases" do
       #@databases = Coupler::Database.order(:id)
       #erb 'databases/index'.to_sym
