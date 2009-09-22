@@ -7,6 +7,6 @@ class TestConfig < Test::Unit::TestCase
     filename = File.expand_path(File.dirname(__FILE__) + "/../../config/test.sqlite3")
     FileUtils.rm(filename, :force => true)
     assert_equal "jdbc:sqlite:#{filename}", Coupler::Config.uri
-    assert_equal [:databases], Coupler::Config.tables
+    assert_equal [:databases, :resources], Coupler::Config.tables
   end
 end

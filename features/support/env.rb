@@ -19,4 +19,5 @@ module CouplerWorld
   end
 end
 
+ENV["COUPLER_ENV"] = "test"
 World(CouplerWorld)

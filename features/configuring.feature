@@ -12,5 +12,5 @@ Feature: Configuring
     Given that I have created a database called "foo"
     And that I am viewing "/resources"
     When I click "New resource"
-    And I create a new resource called "bar"
+    And I create a new resource on database "foo" and table "bar"
     Then that resource should exist

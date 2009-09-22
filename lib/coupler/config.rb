@@ -16,5 +16,11 @@ module Coupler
       String :password
       String :dbname
     end
+
+    Config.create_table :resources do
+      primary_key :id
+      String :table_name
+      Integer :database_id
+    end
   end
 end

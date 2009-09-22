@@ -16,3 +16,8 @@ class Test::Unit::TestCase
     Coupler::Base
   end
 end
+
+Sequel::Model::InstanceMethods.send(:alias_method, :save!, :save)
+
+require 'factory_girl'
+Factory.definition_file_paths = [ File.dirname(__FILE__) + "/factories" ]

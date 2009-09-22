@@ -1,0 +1,17 @@
+<form method="post" action="/resources">
+  <p>
+    <label for="database">Database</label><br/>
+    <select id="database" name="resource[database_id]">
+      <% @databases.each do |database| %>
+        <option value="<%= database[:id] %>"><%= database[:name] %></option>
+      <% end %>
+    </select>
+  </p>
+  <p>
+    <label for="table_name">Table</label><br/>
+    <input id="table_name" name="resource[table_name]" type="text" />
+  </p>
+  <p>
+    <input type="submit" value="Submit" /> or <a href="/resources">Cancel</a>
+  </p>
+</form>
