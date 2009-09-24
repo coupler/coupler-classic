@@ -5,8 +5,9 @@ class TestBase < Test::Unit::TestCase
     assert_equal Sinatra::Base, Coupler::Base.superclass
   end
 
-  def test_index
+  def test_index_when_no_projects
     get "/"
     assert last_response.ok?
+    assert_match /Getting Started/, last_response.body
   end
 end

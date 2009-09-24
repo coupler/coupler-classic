@@ -1,6 +1,6 @@
 Feature: Configuring
-  In order to link some databases
-  I want to configure coupler first
+  In order to use coupler
+  I need to configure it first
 
   Scenario: databases
     Given that I am viewing "/databases"

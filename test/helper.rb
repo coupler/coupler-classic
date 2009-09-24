@@ -1,7 +1,10 @@
 require 'rubygems'
 require 'test/unit'
 require 'rack/test'
+require 'rack/flash'
+require 'rack/flash/test'
 require 'nokogiri'
+require 'pp'
 
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))

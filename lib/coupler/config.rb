@@ -6,6 +6,12 @@ module Coupler
     File.expand_path(File.dirname(__FILE__) + "/../../config/#{COUPLER_ENV}.sqlite3"))
 
   if Config.tables.empty?
+    Config.create_table :projects do
+      primary_key :id
+      String :name
+      String :description
+    end
+
     Config.create_table :databases do
       primary_key :id
       String :name

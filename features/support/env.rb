@@ -1,6 +1,4 @@
-$LOAD_PATH.unshift(File.dirname(__FILE__) + '/../../lib')
-require 'coupler'
-
+require File.dirname(__FILE__) + "/../../test/helper"
 require 'test/unit/assertions'
 require 'webrat'
 
@@ -19,5 +17,4 @@ module CouplerWorld
   end
 end
 
-ENV["COUPLER_ENV"] = "test"
 World(CouplerWorld)
