@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + '/../helper'
 
-class TestProject < Test::Unit::TestCase
+class Coupler::TestProject < Test::Unit::TestCase
   def setup
     Coupler::Project.delete
   end

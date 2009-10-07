@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + "/../helper"
 
-class TestConfig < Test::Unit::TestCase
+class Coupler::TestConfig < Test::Unit::TestCase
   def test_creates_config_database
     assert_kind_of Sequel::JDBC::Database, Coupler::Config
 

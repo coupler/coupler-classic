@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + '/../../helper'
 
-class TestProjects < Test::Unit::TestCase
+class Coupler::Extensions::TestProjects < Test::Unit::TestCase
   def test_projects
     get "/projects"
     assert last_response.ok?

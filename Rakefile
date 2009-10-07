@@ -41,6 +41,7 @@ task :test => :check_dependencies
 
 begin
   require 'cucumber/rake/task'
+  require 'git'
 
   Cucumber::Rake::Task.new(:features)
   task :features => :check_dependencies
@@ -50,6 +51,14 @@ begin
     t.cucumber_opts = "--format Coupler::JekyllFormatter --out #{outfile} features"
   end
   task :features_html => :check_dependencies
+
+  desc "Update github pages for coupler"
+  task :update_pages => :features_html do
+    repos = Git.open("pages")
+    repos.add('.')
+    repos.commit("Added post (from Rake task)")
+    repos.push
+  end
 
 rescue LoadError
   task :features do
