@@ -1,16 +1,17 @@
 <table>
   <tr>
+    <th>Name</th>
     <th>Database</th>
     <th>Table</th>
   </tr>
 <% @resources.each do |resource| %>
   <tr>
-    <td><%= resource.database.name %></td>
+    <td><%= resource[:name] %></td>
+    <td><%= resource[:database_name] %></td>
     <td><%= resource[:table_name] %></td>
   </tr>
 <% end %>
 </table>
 <p>
-  <a href="/resources/new">New resource</a> |
-  <a href="/">Home</a>
+  <a href="new">New resource</a>
 </p>

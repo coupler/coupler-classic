@@ -28,7 +28,14 @@ class TestProjects < Test::Unit::TestCase
     assert_equal 1, Coupler::Project.count
     assert last_response.redirect?, "Wasn't redirected"
     follow_redirect!
-    assert_match %r{^http://example.org/projects/\d+$}, last_request.url
+    assert_equal "http://example.org/projects/omgponies", last_request.url
     assert_match /Project successfully created/, last_response.body
+  end
+
+  def test_show_project
+    project = Factory(:project, :name => "Blah blah")
+    get "/projects/#{project.slug}"
+    assert last_response.ok?
+    assert_match /Blah blah/, last_response.body
   end
 end

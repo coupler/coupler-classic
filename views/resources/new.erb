@@ -1,11 +1,33 @@
-<form method="post" action="/resources">
+<form method="post" action="/projects/<%= @project.slug %>/resources">
   <p>
-    <label for="database">Database</label><br/>
-    <select id="database" name="resource[database_id]">
-      <% @databases.each do |database| %>
-        <option value="<%= database[:id] %>"><%= database[:name] %></option>
-      <% end %>
+    <label for="name">Name</label><br/>
+    <input id="name" name="resource[name]" type="text" />
+  </p>
+  <p>
+    <label for="adapter">Adapter</label><br/>
+    <select id="adapter" name="resource[adapter]">
+      <option value="mysql">MySQL</option>
     </select>
+  </p>
+  <p>
+    <label for="host">Host</label><br/>
+    <input id="host" name="resource[host]" type="text" />
+  </p>
+  <p>
+    <label for="port">Port</label><br/>
+    <input id="port" name="resource[port]" type="text" />
+  </p>
+  <p>
+    <label for="username">Username</label><br/>
+    <input id="username" name="resource[username]" type="text" />
+  </p>
+  <p>
+    <label for="password">Password</label><br/>
+    <input id="password" name="resource[password]" type="password" />
+  </p>
+  <p>
+    <label for="database_name">Database</label><br/>
+    <input id="database_name" name="resource[database_name]" type="text" />
   </p>
   <p>
     <label for="table_name">Table</label><br/>

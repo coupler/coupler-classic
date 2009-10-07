@@ -5,7 +5,6 @@ module Coupler
     #use Rack::ShowExceptions
     use Rack::Flash
     register Extensions::Projects
-    register Extensions::Databases
     register Extensions::Resources
 
     get "/" do

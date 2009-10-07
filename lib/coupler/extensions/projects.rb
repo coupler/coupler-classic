@@ -12,11 +12,11 @@ module Coupler::Extensions::Projects
     app.post "/projects" do
       project = Coupler::Project.create(params['project'])
       flash[:newly_created] = true
-      redirect "/projects/#{project.id}"
+      redirect "/projects/#{project.slug}"
     end
 
-    app.get "/projects/:project_id" do
-      @project = Coupler::Project[:id => params[:project_id]]
+    app.get "/projects/:slug" do
+      @project = Coupler::Project[:slug => params[:slug]]
       erb 'projects/show'.to_sym
     end
   end

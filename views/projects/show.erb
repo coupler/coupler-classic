@@ -1,5 +1,9 @@
+<h1><%= @project.name %></h1>
+
 <% if flash[:newly_created] %>
   Project successfully created!
 
-  You'll need to add a resource next.
+  You'll need to <a href="/projects/<%= @project.slug %>/resources/new">add a resource</a> next.
+<% else %>
+  <a href="/projects/<%= @project.slug %>/resources/new">Add resource</a>
 <% end %>

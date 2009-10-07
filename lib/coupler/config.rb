@@ -10,9 +10,10 @@ module Coupler
       primary_key :id
       String :name
       String :description
+      String :slug
     end
 
-    Config.create_table :databases do
+    Config.create_table :resources do
       primary_key :id
       String :name
       String :adapter
@@ -20,13 +21,9 @@ module Coupler
       Integer :port
       String :username
       String :password
-      String :dbname
-    end
-
-    Config.create_table :resources do
-      primary_key :id
+      String :database_name
       String :table_name
-      Integer :database_id
+      Integer :project_id
     end
   end
 end

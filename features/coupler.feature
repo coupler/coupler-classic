@@ -18,7 +18,7 @@ Feature: Coupler
     And I fill in the form
     And I click the "Submit" button
     Then it should show me a confirmation page
-    And ask me if I want to transform the resource
+    And ask me to add transformations
 
   Scenario: transforming a resource
     Given that I have created a project called "My Project"

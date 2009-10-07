@@ -1,0 +1,7 @@
+<h1><%= @resource.name %></h1>
+
+<% if flash[:newly_created] %>
+  Resource successfully created!
+
+  Next, if you want to add or change this resource's fields, you'll need to add transformations.
+<% end %>
