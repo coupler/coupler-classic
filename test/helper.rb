@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'test/unit'
+require 'mocha'
 require 'rack/test'
 require 'rack/flash'
 require 'rack/flash/test'

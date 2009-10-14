@@ -15,12 +15,14 @@ module Coupler::Extensions::Resources
     app.post "/projects/:slug/resources" do
       @project = Coupler::Project[:slug => params[:slug]]
 
-      @resource = Coupler::Resource.new(params['resource'])
+      @resource = Coupler::Resource.new(params[:resource])
       @resource.project = @project
 
       if @resource.save
         flash[:newly_created] = true
         redirect "/projects/#{@project.slug}/resources/#{@resource.id}"
+      else
+        erb 'resources/new'.to_sym
       end
     end
 

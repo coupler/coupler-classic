@@ -1,7 +1,28 @@
 <h1><%= @resource.name %></h1>
 
 <% if flash[:newly_created] %>
-  Resource successfully created!
+  <p class="flash">
+    Resource successfully created!
 
-  Next, if you want to add or change this resource's fields, you'll need to add transformations.
+    Next, if you want to add or change this resource's fields, you'll need to add transformations.
+  </p>
 <% end %>
+
+<table class="list">
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Type</th>
+      <th>Transformations</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @resource.schema.each do |(column_name, info)| %>
+      <tr>
+        <td><%= column_name %></td>
+        <td><%= info[:db_type] %></td>
+        <td></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

@@ -4,7 +4,13 @@ class Coupler::Extensions::TestResources < Test::Unit::TestCase
   def setup
     Coupler::Project.delete
     Coupler::Resource.delete
+
     @project = Factory(:project, :slug => "roflcopter")
+    @database = mock("sequel database")
+    @database.stubs(:test_connection).returns(true)
+    @database.stubs(:tables).returns([:people])
+    Coupler::Resource.any_instance.stubs(:connection).returns(@database)
+    Coupler::Resource.any_instance.stubs(:schema).returns([[:id, {:allow_null=>false, :default=>nil, :primary_key=>true, :db_type=>"int(11)", :type=>:integer, :ruby_default=>nil}], [:first_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(50)", :type=>:string, :ruby_default=>nil}], [:last_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(50)", :type=>:string, :ruby_default=>nil}]])
   end
 
   def test_resources
@@ -29,16 +35,10 @@ class Coupler::Extensions::TestResources < Test::Unit::TestCase
     end
   end
 
-  def test_create_resource
-    post "/projects/roflcopter/resources", {
-      'resource' => {
-        'name' => 'roflsauce', 'adapter' => 'mysql',
-        'host' => 'localhost', 'port' => '3306',
-        'username' => 'root', 'password' => 'omgponies',
-        'database_name' => 'hogwarts', 'table_name' => 'foo'
-      }
-    }
-    resource = Coupler::Resource[:name => 'roflsauce', :project_id => @project.id]
+  def test_successfully_creating_resource
+    attribs = Factory.attributes_for(:resource)
+    post "/projects/roflcopter/resources", { 'resource' => attribs }
+    resource = Coupler::Resource[:name => attribs[:name], :project_id => @project.id]
     assert resource
 
     assert last_response.redirect?, "Wasn't redirected"
@@ -46,11 +46,27 @@ class Coupler::Extensions::TestResources < Test::Unit::TestCase
     assert_equal "http://example.org/projects/roflcopter/resources/#{resource.id}", last_request.url
   end
 
+  def test_failing_to_create_resource
+    post "/projects/roflcopter/resources", {
+      'resource' => Factory.attributes_for(:resource, :name => nil)
+    }
+    assert last_response.ok?
+    assert_match /Name is required/, last_response.body
+  end
+
   def test_show_resource
     resource = Factory(:resource, :name => "roflsauce", :project => @project)
-
     get "/projects/roflcopter/resources/#{resource.id}"
     assert last_response.ok?
-    assert_match /roflsauce/, last_response.body
+
+    doc = Nokogiri::HTML(last_response.body)
+    assert_equal "roflsauce", doc.at('h1').inner_html
+
+    rows = doc.css('table tbody tr')
+    assert_equal 3, rows.length
+    rows.each_with_index do |row, i|
+      cells = row.css('td')
+      assert_equal %w{id first_name last_name}[i], cells[0].inner_html
+    end
   end
 end

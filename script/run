@@ -1,4 +1,0 @@
-require 'rubygems'
-require 'lib/coupler'
-
-Rack::Handler::WEBrick.run Coupler::Base, :Port => 9292

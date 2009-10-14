@@ -1,37 +1,50 @@
+<% if !@resource.errors.empty? %>
+  <div class="errors">
+    <ul>
+      <% @resource.errors.each do |(attr, messages)| %>
+        <% messages.each do |message| %>
+          <li><%= attr.to_s.tr("_", " ").capitalize if attr != :base %> <%= message %></li>
+        <% end %>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
 <form method="post" action="/projects/<%= @project.slug %>/resources">
   <p>
     <label for="name">Name</label><br/>
-    <input id="name" name="resource[name]" type="text" />
+    <input id="name" name="resource[name]" type="text" value="<%= @resource.name %>" />
   </p>
   <p>
     <label for="adapter">Adapter</label><br/>
     <select id="adapter" name="resource[adapter]">
-      <option value="mysql">MySQL</option>
+      <% [%w{mysql MySQL}].each do |(value, label)| %>
+        <option value="<%= value %>"<%= ' selected="selected"' if @resource.adapter == value %>><%= label %></option>
+      <% end %>
     </select>
   </p>
   <p>
     <label for="host">Host</label><br/>
-    <input id="host" name="resource[host]" type="text" />
+    <input id="host" name="resource[host]" type="text" value="<%= @resource.host %>" />
   </p>
   <p>
     <label for="port">Port</label><br/>
-    <input id="port" name="resource[port]" type="text" />
+    <input id="port" name="resource[port]" type="text" value="<%= @resource.port %>" />
   </p>
   <p>
     <label for="username">Username</label><br/>
-    <input id="username" name="resource[username]" type="text" />
+    <input id="username" name="resource[username]" type="text" value="<%= @resource.username %>" />
   </p>
   <p>
     <label for="password">Password</label><br/>
-    <input id="password" name="resource[password]" type="password" />
+    <input id="password" name="resource[password]" type="password" value="<%= @resource.password %>" />
   </p>
   <p>
     <label for="database_name">Database</label><br/>
-    <input id="database_name" name="resource[database_name]" type="text" />
+    <input id="database_name" name="resource[database_name]" type="text" value="<%= @resource.database_name %>" />
   </p>
   <p>
     <label for="table_name">Table</label><br/>
-    <input id="table_name" name="resource[table_name]" type="text" />
+    <input id="table_name" name="resource[table_name]" type="text" value="<%= @resource.table_name %>" />
   </p>
   <p>
     <input type="submit" value="Submit" /> or <a href="/resources">Cancel</a>

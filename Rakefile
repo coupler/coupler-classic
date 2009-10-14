@@ -81,3 +81,42 @@ Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_files.include('README*')
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
+
+begin
+  require 'forgery'
+  require 'sequel'
+  desc "Prepare test database"
+  task :prepare do
+    f = Tempfile.new("coupler_test")
+    f.print DATA
+    f.close
+
+    `mysql -u root -p < #{f.path}`
+
+    db = Sequel.connect("jdbc:mysql://localhost/coupler_test?user=coupler&password=cupla")
+    people = db[:people]
+    500.times do |i|
+      people.insert({
+        :first_name => Forgery(:name).first_name,
+        :last_name  => Forgery(:name).last_name
+      })
+    end
+  end
+rescue LoadError
+  task :prepare do
+    abort "Forgery is not available. In order to run prepare, you must: sudo gem install forgery"
+  end
+end
+
+__END__
+DROP DATABASE IF EXISTS coupler_test;
+CREATE DATABASE coupler_test;
+GRANT ALL PRIVILEGES ON coupler_test.* to coupler@localhost identified by 'cupla';
+
+USE coupler_test;
+CREATE TABLE people (
+  id INT NOT NULL AUTO_INCREMENT,
+  first_name VARCHAR(50),
+  last_name VARCHAR(50),
+  PRIMARY KEY(id)
+)
