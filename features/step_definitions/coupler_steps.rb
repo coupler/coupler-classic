@@ -25,10 +25,6 @@ When /^I click the "(.+?)" link$/ do |link_name|
   @response = click_link(link_name)
 end
 
-When /^I click the "(.+?)" link next to the "(.+?)" field$/ do |link_name, field_name|
-  click_link("#{field_name}_#{link_name}".downcase)
-end
-
 When /^I fill in the form$/ do
   case current_url
   when "/projects/new"

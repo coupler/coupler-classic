@@ -24,6 +24,8 @@ Feature: Coupler
     Given that I have created a project called "My Project"
     And that I have added a resource called "Patients"
     When I go to the resource page
-    And I click the "Transform" link next to the "first_name" field
-    And I select the "downcase" option
+    And I click the "Add transformation" link
+    And I select "first_name" for "Field"
+    And I select "downcase" for "Method"
     And I click the "Submit" button
+    Then it should take me back to the resource page

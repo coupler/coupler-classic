@@ -25,5 +25,13 @@ module Coupler
       String :table_name
       Integer :project_id
     end
+
+    Config.create_table :transformations do
+      primary_key :id
+      String :name
+      String :field_name
+      String :method_name
+      Integer :resource_id
+    end
   end
 end
