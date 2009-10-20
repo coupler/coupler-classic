@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'rake'
+require 'sequel'
 
 begin
   require 'jeweler'
@@ -82,9 +83,35 @@ Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
 
+desc "Bootstrap coupler"
+task :bootstrap do
+  require 'jdbc/mysql'
+  require File.dirname(__FILE__) + "/vendor/mysql-connector-mxj-gpl-5-0-9/mysql-connector-mxj-gpl-5-0-9.jar"
+  require File.dirname(__FILE__) + "/vendor/mysql-connector-mxj-gpl-5-0-9/mysql-connector-mxj-gpl-5-0-9-db-files.jar"
+  require File.dirname(__FILE__) + "/vendor/mysql-connector-mxj-gpl-5-0-9/lib/aspectjrt.jar"
+
+  dir = java.io.File.new(File.join(File.dirname(__FILE__), "db"))
+  options = java.util.HashMap.new({
+    'port' => '12345',
+    'initialize-user' => 'true',
+    'initialize-user.user' => 'coupler',
+    'initialize-user.password' => 'cupla'
+  })
+  server = com.mysql.management.MysqldResource.new(dir)
+  server.start("coupler-bootstrap", options)
+
+  begin
+    db = Sequel.connect("jdbc:mysql://localhost:12345/coupler?user=coupler&password=cupla&createDatabaseIfNotExist=true")
+    db['SELECT VERSION()'].each do |row|
+      p row
+    end
+  ensure
+    server.shutdown
+  end
+end
+
 begin
   require 'forgery'
-  require 'sequel'
   desc "Prepare test database"
   task :prepare do
     f = Tempfile.new("coupler_test")
