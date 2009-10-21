@@ -1,10 +1,14 @@
 module Coupler
   CONFIG_PATH = File.dirname(__FILE__) + "/../../config/"
-  COUPLER_ENV = ENV['COUPLER_ENV'] || 'development'
 
-  Config = Sequel.connect('jdbc:sqlite:' +
-    File.expand_path(File.dirname(__FILE__) + "/../../config/#{COUPLER_ENV}.sqlite3"))
+  Config = Sequel.connect(
+    Coupler::Server.instance.connection_string(
+      COUPLER_ENV ? "coupler_#{COUPLER_ENV}" : "coupler",
+      :create_database => true
+    )
+  )
 
+  # FIXME: this should happen lazily!
   if Config.tables.empty?
     Config.create_table :projects do
       primary_key :id

@@ -2,6 +2,11 @@ require 'rubygems'
 require 'rake'
 require 'sequel'
 
+desc "Load coupler environment"
+task :environment do
+  require File.join(File.dirname(__FILE__), 'lib', 'coupler')
+end
+
 begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
@@ -83,67 +88,43 @@ Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
 
-desc "Bootstrap coupler"
-task :bootstrap do
-  require 'jdbc/mysql'
-  require File.dirname(__FILE__) + "/vendor/mysql-connector-mxj-gpl-5-0-9/mysql-connector-mxj-gpl-5-0-9.jar"
-  require File.dirname(__FILE__) + "/vendor/mysql-connector-mxj-gpl-5-0-9/mysql-connector-mxj-gpl-5-0-9-db-files.jar"
-  require File.dirname(__FILE__) + "/vendor/mysql-connector-mxj-gpl-5-0-9/lib/aspectjrt.jar"
+namespace :db do
+  desc "Start server daemon"
+  task :start => :environment do
+    server = Coupler::Server.instance
+    server.start
+  end
 
-  dir = java.io.File.new(File.join(File.dirname(__FILE__), "db"))
-  options = java.util.HashMap.new({
-    'port' => '12345',
-    'initialize-user' => 'true',
-    'initialize-user.user' => 'coupler',
-    'initialize-user.password' => 'cupla'
-  })
-  server = com.mysql.management.MysqldResource.new(dir)
-  server.start("coupler-bootstrap", options)
-
-  begin
-    db = Sequel.connect("jdbc:mysql://localhost:12345/coupler?user=coupler&password=cupla&createDatabaseIfNotExist=true")
-    db['SELECT VERSION()'].each do |row|
-      p row
-    end
-  ensure
+  desc "Stop server daemon"
+  task :stop => :environment do
+    server = Coupler::Server.instance
     server.shutdown
   end
-end
 
-begin
-  require 'forgery'
-  desc "Prepare test database"
-  task :prepare do
-    f = Tempfile.new("coupler_test")
-    f.print DATA
-    f.close
+  begin
+    require 'forgery'
+    desc "Create database with fake data"
+    task :fake => [:environment, :start] do
+      server = Coupler::Server.instance
+      db = Sequel.connect(server.connection_string("fake_data", :create_database => true))
+      db.tables.each { |t| db.drop_table(t) }
+      db.create_table :people do
+        primary_key :id
+        String :first_name
+        String :last_name
+      end
+      people = db[:people]
 
-    `mysql -u root -p < #{f.path}`
-
-    db = Sequel.connect("jdbc:mysql://localhost/coupler_test?user=coupler&password=cupla")
-    people = db[:people]
-    500.times do |i|
-      people.insert({
-        :first_name => Forgery(:name).first_name,
-        :last_name  => Forgery(:name).last_name
-      })
+      500.times do |i|
+        people.insert({
+          :first_name => Forgery(:name).first_name,
+          :last_name  => Forgery(:name).last_name
+        })
+      end
+    end
+  rescue LoadError
+    task :prepare do
+      abort "Forgery is not available. In order to run prepare, you must: sudo gem install forgery"
     end
   end
-rescue LoadError
-  task :prepare do
-    abort "Forgery is not available. In order to run prepare, you must: sudo gem install forgery"
-  end
 end
-
-__END__
-DROP DATABASE IF EXISTS coupler_test;
-CREATE DATABASE coupler_test;
-GRANT ALL PRIVILEGES ON coupler_test.* to coupler@localhost identified by 'cupla';
-
-USE coupler_test;
-CREATE TABLE people (
-  id INT NOT NULL AUTO_INCREMENT,
-  first_name VARCHAR(50),
-  last_name VARCHAR(50),
-  PRIMARY KEY(id)
-)
