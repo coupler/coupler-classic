@@ -23,15 +23,17 @@ rescue LoadError
   puts "Jeweler (or a dependency) not available. Install it with: sudo gem install jeweler"
 end
 
+task :set_test_env do
+  ENV['COUPLER_ENV'] = "test"
+end
+
 require 'rake/testtask'
 Rake::TestTask.new(:test) do |test|
-  # this is a bad place to put this
-  ENV['COUPLER_ENV'] = "test"
-
   test.libs << 'lib' << 'test'
   test.pattern = 'test/**/test_*.rb'
   test.verbose = true
 end
+task :test => [:set_test_env, :check_dependencies, 'db:bootstrap']
 
 begin
   require 'rcov/rcovtask'
@@ -46,20 +48,18 @@ rescue LoadError
   end
 end
 
-task :test => [:check_dependencies, 'db:bootstrap']
-
 begin
   require 'cucumber/rake/task'
   require 'git'
 
   Cucumber::Rake::Task.new(:features)
-  task :features => :check_dependencies
+  task :features => [:set_test_env, :check_dependencies, 'db:bootstrap']
 
   Cucumber::Rake::Task.new(:features_html, "Run Cucumber features with HTML output") do |t|
     outfile = "pages/_posts/#{Date.today.to_s}-features.html"
     t.cucumber_opts = "--format Coupler::JekyllFormatter --out #{outfile} features"
   end
-  task :features_html => :check_dependencies
+  task :features_html => [:set_test_env, :check_dependencies, 'db:bootstrap']
 
   desc "Update github pages for coupler"
   task :update_pages => :features_html do

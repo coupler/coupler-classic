@@ -17,7 +17,4 @@ module CouplerWorld
   end
 end
 
-Coupler::Project.delete
-Coupler::Resource.delete
-
 World(CouplerWorld)
