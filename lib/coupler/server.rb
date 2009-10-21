@@ -52,5 +52,9 @@ module Coupler
       end
       retval
     end
+
+    def is_running?
+      @server.is_running
+    end
   end
 end

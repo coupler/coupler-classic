@@ -25,6 +25,9 @@ end
 
 require 'rake/testtask'
 Rake::TestTask.new(:test) do |test|
+  # this is a bad place to put this
+  ENV['COUPLER_ENV'] = "test"
+
   test.libs << 'lib' << 'test'
   test.pattern = 'test/**/test_*.rb'
   test.verbose = true
@@ -43,7 +46,7 @@ rescue LoadError
   end
 end
 
-task :test => :check_dependencies
+task :test => [:check_dependencies, 'db:bootstrap']
 
 begin
   require 'cucumber/rake/task'
@@ -89,6 +92,26 @@ Rake::RDocTask.new do |rdoc|
 end
 
 namespace :db do
+  desc "Bootstrap the server schema"
+  task :bootstrap => :environment do
+    if COUPLER_ENV != "test"
+      answer = nil
+      while answer != "y" && answer != "n"
+        print "This will delete any existing configuration data.  Are you sure? [yn] "
+        $stdout.flush
+        answer = $stdin.gets.chomp.downcase
+      end
+      exit if answer == "n"
+    end
+
+    server = Coupler::Server.instance
+    server.start
+
+    config = Coupler::Config.instance
+    config.tables.each { |t| config.drop_table(t) }
+    config.create_schema
+  end
+
   desc "Start server daemon"
   task :start => :environment do
     server = Coupler::Server.instance
@@ -99,6 +122,12 @@ namespace :db do
   task :stop => :environment do
     server = Coupler::Server.instance
     server.shutdown
+  end
+
+  desc "Check server status"
+  task :status => :environment do
+    server = Coupler::Server.instance
+    puts server.is_running? ? "Server is running." : "Server is not running."
   end
 
   begin

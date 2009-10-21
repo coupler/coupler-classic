@@ -1,4 +1,4 @@
-Factory.define :resource, :class => Coupler::Resource do |r|
+Factory.define :resource, :class => Coupler::Models::Resource do |r|
   r.name "testing"
   r.adapter "mysql"
   r.host "localhost"
@@ -10,6 +10,6 @@ Factory.define :resource, :class => Coupler::Resource do |r|
   r.association :project
 end
 
-Factory.define :project, :class => Coupler::Project do |d|
+Factory.define :project, :class => Coupler::Models::Project do |d|
   d.name "Birth defects"
 end
