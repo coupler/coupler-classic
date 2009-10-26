@@ -2,7 +2,7 @@ require File.dirname(__FILE__) + '/../../helper'
 
 module Coupler
   module Models
-    class TestResource < Test::Unit::TestCase
+    class TestResource < ActiveSupport::TestCase
       def setup
         Project.delete
         Resource.delete

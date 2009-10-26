@@ -9,6 +9,7 @@ module Coupler
     use Rack::Flash
     register Extensions::Projects
     register Extensions::Resources
+    register Extensions::Transformations
 
     get "/" do
       erb :index

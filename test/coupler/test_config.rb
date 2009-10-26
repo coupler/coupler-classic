@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + "/../helper"
 
-class Coupler::TestConfig < Test::Unit::TestCase
+class Coupler::TestConfig < ActiveSupport::TestCase
   def setup
     @config = Coupler::Config.instance
   end

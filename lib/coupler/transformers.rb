@@ -12,4 +12,4 @@ module Coupler
 end
 
 require File.dirname(__FILE__) + "/transformers/base"
-require File.dirname(__FILE__) + "/transformers/downcase"
+require File.dirname(__FILE__) + "/transformers/downcaser"

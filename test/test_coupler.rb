@@ -1,6 +1,6 @@
 require 'helper'
 
-class TestCoupler < Test::Unit::TestCase
+class TestCoupler < ActiveSupport::TestCase
   def test_truth
     assert true
   end

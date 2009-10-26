@@ -7,7 +7,7 @@ module Coupler
     def initialize
       database_name = COUPLER_ENV ? "coupler_#{COUPLER_ENV}" : "coupler"
       connection_string = Coupler::Server.instance.connection_string(database_name, :create_database => true)
-      @database = Sequel.connect(connection_string)
+      @database = Sequel.connect(connection_string, :loggers => [Logger.new(File.join(Coupler::ROOT, 'log', 'db.log'))])
       super(@database)
 
       if @database.tables.empty?
@@ -42,14 +42,10 @@ module Coupler
 
       @database.create_table :transformations do
         primary_key :id
-        String :name
         String :field_name
-        String :method_name
+        String :transformer_name
         Integer :resource_id
       end
     end
   end
 end
-
-# instantiate it
-Coupler::Config.instance

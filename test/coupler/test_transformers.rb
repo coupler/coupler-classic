@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + '/../helper'
 
-class Coupler::TestTransformers < Test::Unit::TestCase
+class Coupler::TestTransformers < ActiveSupport::TestCase
   def test_registering
     before = Coupler::Transformers.list.keys
     klass = Class.new(Coupler::Transformers::Base)

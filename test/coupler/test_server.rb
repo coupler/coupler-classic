@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + "/../helper"
 
-class Coupler::TestServer < Test::Unit::TestCase
+class Coupler::TestServer < ActiveSupport::TestCase
   def test_connection_string
     server = Coupler::Server.instance
     assert_equal(
