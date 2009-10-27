@@ -26,6 +26,6 @@ Feature: Coupler
     When I go to the resource page
     And I click the "Add transformation" link
     And I select "first_name" for "Field"
-    And I select "downcase" for "Method"
+    And I select "downcaser" for "Transformer"
     And I click the "Submit" button
     Then it should take me back to the resource page

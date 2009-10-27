@@ -1,0 +1,22 @@
+<%= error_messages_for @resource %>
+<form method="post" action="/projects/<%= @project.slug %>/resources/<%= @resource.id %>/transformations">
+  <p>
+    <label for="field_name">Field</label><br/>
+    <select id="field_name" name="transformation[field_name]">
+    <% @resource.schema.each do |(column_name, info)| %>
+      <option><%= column_name %></option>
+    <% end %>
+    </select>
+  </p>
+  <p>
+    <label for="transformer_name">Transformer</label><br/>
+    <select id="transformer_name" name="transformation[transformer_name]">
+    <% Coupler::Transformers.list.keys.each do |transformer_name| %>
+      <option><%= transformer_name %></option>
+    <% end %>
+    </select>
+  </p>
+  <p>
+    <input type="submit" value="Submit" /> or <a href="/projects/<%= @project.slug %>/resources/<%= @resource.id %>">Cancel</a>
+  </p>
+</form>

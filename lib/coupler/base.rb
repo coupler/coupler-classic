@@ -10,6 +10,7 @@ module Coupler
     register Extensions::Projects
     register Extensions::Resources
     register Extensions::Transformations
+    helpers Coupler::Helpers
 
     get "/" do
       erb :index

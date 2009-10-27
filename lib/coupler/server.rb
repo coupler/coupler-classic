@@ -1,6 +1,6 @@
 require 'jdbc/mysql'
 
-base_dir = File.join(Coupler::ROOT, "vendor", "mysql-connector-mxj-gpl-5-0-9")
+base_dir = File.join(COUPLER_ROOT, "vendor", "mysql-connector-mxj-gpl-5-0-9")
 require File.join(base_dir, "mysql-connector-mxj-gpl-5-0-9.jar")
 require File.join(base_dir, "mysql-connector-mxj-gpl-5-0-9-db-files.jar")
 require File.join(base_dir, "lib", "aspectjrt.jar")
@@ -12,7 +12,7 @@ module Coupler
     PORT = 12345
     USER = 'coupler'
     PASSWORD = 'cupla'
-    BASE_DIR = File.join(Coupler::ROOT, "db")
+    BASE_DIR = File.join(COUPLER_ROOT, "db")
     CONN_STR = "jdbc:mysql://localhost:%d/%s?user=%s&password=%s"
 
     def initialize

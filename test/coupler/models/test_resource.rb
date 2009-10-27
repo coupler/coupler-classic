@@ -4,9 +4,6 @@ module Coupler
   module Models
     class TestResource < ActiveSupport::TestCase
       def setup
-        Project.delete
-        Resource.delete
-
         @database = mock("sequel database")
         @database.stubs(:test_connection).returns(true)
         @database.stubs(:tables).returns([:people])
@@ -22,8 +19,12 @@ module Coupler
         assert_respond_to Resource.new, :project
       end
 
+      def test_one_to_many_transformations
+        assert_respond_to Resource.new, :transformations
+      end
+
       def test_requires_name
-        resource = ::Factory.create(:resource, :name => nil)
+        resource = ::Factory.build(:resource, :name => nil)
         assert !resource.valid?
 
         resource.name = ""
@@ -62,12 +63,12 @@ module Coupler
       end
 
       def test_mysql_connection
-        ::Sequel.expects(:connect).with("jdbc:mysql://localhost/coupler_test?user=coupler&password=cupla").returns(@database)
+        ::Sequel.expects(:connect).with("jdbc:mysql://localhost:12345/coupler_test?user=coupler&password=cupla").returns(@database)
         resource = ::Factory.create(:resource, {
           :name => "testing",
           :adapter => "mysql",
           :host => "localhost",
-          :port => 3306,
+          :port => 12345,
           :username => "coupler",
           :password => "cupla",
           :database_name => "coupler_test",

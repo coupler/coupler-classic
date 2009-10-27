@@ -30,7 +30,8 @@ module Coupler
 
         app.get "/projects/:slug/resources/:id" do
           @project = Models::Project[:slug => params[:slug]]
-          @resource = Models::Resource[:id => params[:id], :project_id => @project.id]
+          @resource = @project.resources_dataset[:id => params[:id]]
+          @transformations = @resource.transformations
           erb 'resources/show'.to_sym
         end
       end

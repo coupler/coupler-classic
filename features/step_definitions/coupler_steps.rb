@@ -16,7 +16,7 @@ When /^I go to the (.+?) page$/ do |page_name|
         when "project"
           "/projects/#{@project.slug}"
         when "resource"
-          "/project/#{@project.slug}/resources/#{@resource.id}"
+          "/projects/#{@project.slug}/resources/#{@resource.id}"
         end
   @response = visit(url)
 end
@@ -36,11 +36,16 @@ When /^I fill in the form$/ do
 
     fill_in 'Name', :with => 'people'
     fill_in 'Host', :with => 'localhost'
+    fill_in 'Port', :with => '12345'
     fill_in 'Username', :with => 'coupler'
     fill_in 'Password', :with => 'cupla'
-    fill_in 'Database', :with => 'coupler_test'
+    fill_in 'Database', :with => 'fake_data'
     fill_in 'Table', :with => 'people'
   end
+end
+
+When /^I select "([^"]*)" for "([^"]*)"$/ do |option, select|
+  select option, :from => select
 end
 
 When /^I click the "(.+?)" button$/ do |button_name|
@@ -53,4 +58,11 @@ end
 
 Then /^ask me to (.+)$/ do |question|
   assert @response.body.include?(question)
+end
+
+Then /^it should take me back to the (\w+) page$/ do |page_name|
+  case page_name
+  when 'resource'
+    assert_equal "/projects/#{@project.slug}/resources/#{@resource.id}", current_url
+  end
 end

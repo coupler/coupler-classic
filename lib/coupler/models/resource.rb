@@ -3,11 +3,13 @@ module Coupler
     class Resource < Sequel::Model
       include CommonModel
       many_to_one :project
+      one_to_many :transformations
 
       def connection
-        @connection ||= Sequel.connect("jdbc:%s://%s/%s?user=%s&password=%s" % [
-          adapter, host, database_name, username, password
-        ])
+        connection_string = "jdbc:%s://%s:%d/%s?user=%s&password=%s" % [
+          adapter, host, port, database_name, username, password
+        ]
+        @connection ||= Sequel.connect(connection_string)
       end
 
       def dataset

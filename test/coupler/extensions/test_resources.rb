@@ -4,9 +4,6 @@ module Coupler
   module Extensions
     class TestResources < ActiveSupport::TestCase
       def setup
-        Models::Project.delete
-        Models::Resource.delete
-
         @project = ::Factory.create(:project, :slug => "roflcopter")
         @database = mock("sequel database")
         @database.stubs(:test_connection).returns(true)
@@ -58,18 +55,28 @@ module Coupler
 
       def test_show_resource
         resource = Factory(:resource, :name => "roflsauce", :project => @project)
+        transformation = Factory(:transformation, :transformer_name => 'downcaser', :resource => resource)
         get "/projects/roflcopter/resources/#{resource.id}"
         assert last_response.ok?
 
         doc = Nokogiri::HTML(last_response.body)
-        assert_equal "roflsauce", doc.at('h1').inner_html
+        assert_equal "roflsauce in #{@project.name}", doc.at('h1').inner_html
 
-        rows = doc.css('table tbody tr')
+        tables = doc.css('table')
+
+        # resource table
+        rows = tables[0].css('tbody tr')
         assert_equal 3, rows.length
         rows.each_with_index do |row, i|
           cells = row.css('td')
           assert_equal %w{id first_name last_name}[i], cells[0].inner_html
         end
+
+        # transformations table
+        rows = tables[1].css('tbody tr')
+        assert_equal 1, rows.length
+        cells = rows[0].css('td')
+        assert_equal %w{first_name downcaser}, cells.collect(&:inner_html)
       end
     end
   end

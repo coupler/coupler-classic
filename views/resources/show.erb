@@ -1,4 +1,4 @@
-<h1><%= @resource.name %></h1>
+<h1><%= @resource.name %> in <%= @project.name %></h1>
 
 <% if flash[:newly_created] %>
   <p class="flash">
@@ -26,3 +26,23 @@
 </table>
 
 <h2>Transformations</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Field name</th>
+      <th>Transformer</th>
+    </tr>
+  </thead>
+  <tbody>
+  <% @transformations.each do |transformation| %>
+    <tr>
+      <td><%= transformation[:field_name] %></td>
+      <td><%= transformation[:transformer_name] %></td>
+    </tr>
+  <% end %>
+  </tbody>
+</table>
+<p>
+  <a href="/projects/<%= @project.slug %>/resources/<%= @resource.id %>/transformations/new">Add transformation</a>
+</p>

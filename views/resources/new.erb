@@ -1,14 +1,4 @@
-<% if !@resource.errors.empty? %>
-  <div class="errors">
-    <ul>
-      <% @resource.errors.each do |(attr, messages)| %>
-        <% messages.each do |message| %>
-          <li><%= attr.to_s.tr("_", " ").capitalize if attr != :base %> <%= message %></li>
-        <% end %>
-      <% end %>
-    </ul>
-  </div>
-<% end %>
+<%= error_messages_for @resource %>
 <form method="post" action="/projects/<%= @project.slug %>/resources">
   <p>
     <label for="name">Name</label><br/>
@@ -47,6 +37,6 @@
     <input id="table_name" name="resource[table_name]" type="text" value="<%= @resource.table_name %>" />
   </p>
   <p>
-    <input type="submit" value="Submit" /> or <a href="/resources">Cancel</a>
+    <input type="submit" value="Submit" /> or <a href="/projects/<%= @project.slug %>/resources">Cancel</a>
   </p>
 </form>

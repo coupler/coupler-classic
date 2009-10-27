@@ -31,7 +31,5 @@ class ActiveSupport::TestCase < ::Test::Unit::TestCase
   end
 end
 
-Sequel::Model::InstanceMethods.send(:alias_method, :save!, :save)
-
 require 'factory_girl'
 Factory.definition_file_paths = [ File.dirname(__FILE__) + "/factories" ]

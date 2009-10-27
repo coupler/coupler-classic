@@ -1,17 +1,23 @@
+<h1>Resources for <%= @project.name %></h1>
+
 <table>
-  <tr>
-    <th>Name</th>
-    <th>Database</th>
-    <th>Table</th>
-  </tr>
-<% @resources.each do |resource| %>
-  <tr>
-    <td><%= resource[:name] %></td>
-    <td><%= resource[:database_name] %></td>
-    <td><%= resource[:table_name] %></td>
-  </tr>
-<% end %>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Database</th>
+      <th>Table</th>
+    </tr>
+  </thead>
+  <tbody>
+  <% @resources.each do |resource| %>
+    <tr>
+      <td><%= resource[:name] %></td>
+      <td><%= resource[:database_name] %></td>
+      <td><%= resource[:table_name] %></td>
+    </tr>
+  <% end %>
+  </tbody>
 </table>
 <p>
-  <a href="/projects/<%= @project.slug %>/resources/new">New resource</a>
+  <a href="/projects/<%= @project.slug %>/resources/new">Add resource</a>
 </p>

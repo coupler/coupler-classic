@@ -7,7 +7,7 @@ module Coupler
     def initialize
       database_name = COUPLER_ENV ? "coupler_#{COUPLER_ENV}" : "coupler"
       connection_string = Coupler::Server.instance.connection_string(database_name, :create_database => true)
-      @database = Sequel.connect(connection_string, :loggers => [Logger.new(File.join(Coupler::ROOT, 'log', 'db.log'))])
+      @database = Sequel.connect(connection_string, :loggers => [Coupler.logger])
       super(@database)
 
       if @database.tables.empty?
@@ -20,6 +20,11 @@ module Coupler
     end
 
     def create_schema
+      # FIXME: this isn't really the best solution
+      if COUPLER_ENV == "test"
+        Sequel::MySQL.default_engine = "InnoDB"
+      end
+
       @database.create_table :projects do
         primary_key :id
         String :name

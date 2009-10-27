@@ -4,18 +4,36 @@ module Coupler
   module Extensions
     class TestTransformations < ActiveSupport::TestCase
       def setup
-        Models::Project.delete
-        Models::Resource.delete
-
         @project = ::Factory.create(:project, :slug => "roflcopter")
-        @database = mock("sequel database")
-        @database.stubs(:test_connection).returns(true)
-        @database.stubs(:tables).returns([:people])
-        Models::Resource.any_instance.stubs(:connection).returns(@database)
-        Models::Resource.any_instance.stubs(:schema).returns([[:id, {:allow_null=>false, :default=>nil, :primary_key=>true, :db_type=>"int(11)", :type=>:integer, :ruby_default=>nil}], [:first_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(50)", :type=>:string, :ruby_default=>nil}], [:last_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(50)", :type=>:string, :ruby_default=>nil}]])
+        @resource = ::Factory.create(:resource, :project => @project)
       end
 
-      def test_truth
+      def test_new
+        get "/projects/roflcopter/resources/#{@resource.id}/transformations/new"
+        assert last_response.ok?
+
+        doc = Nokogiri::HTML(last_response.body)
+        fields = doc.at('select[name="transformation[field_name]"]')
+        assert_equal %w{id first_name last_name}, fields.css('option').collect(&:inner_html)
+
+        transformers = doc.at('select[name="transformation[transformer_name]"]')
+        assert_equal Transformers.list.keys.collect(&:to_s),
+          transformers.css('option').collect(&:inner_html)
+      end
+
+      def test_successfully_creating_transformation
+        attribs = Factory.attributes_for(:transformation)
+        post("/projects/roflcopter/resources/#{@resource.id}/transformations", { 'transformation' => attribs })
+        transformation = @resource.transformations_dataset.first
+        assert transformation
+
+        assert last_response.redirect?, "Wasn't redirected"
+        follow_redirect!
+        assert_equal "http://example.org/projects/roflcopter/resources/#{@resource.id}", last_request.url
+      end
+
+      def test_failing_to_create_transformation
+        # This doesn't ever happen yet, well, supposedly.
       end
     end
   end

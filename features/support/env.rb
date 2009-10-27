@@ -17,4 +17,9 @@ module CouplerWorld
   end
 end
 
+Before do
+  config = Coupler::Config.instance
+  config.tables.each { |t| config[t].delete }
+end
+
 World(CouplerWorld)
