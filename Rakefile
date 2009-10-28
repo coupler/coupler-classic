@@ -157,3 +157,10 @@ namespace :db do
     end
   end
 end
+
+namespace :web do
+  desc "Start web server"
+  task :start => [:environment, 'db:start'] do
+    Coupler::Base.run!
+  end
+end
