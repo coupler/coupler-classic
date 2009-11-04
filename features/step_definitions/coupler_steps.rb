@@ -18,7 +18,7 @@ When /^I go to the (.+?) page$/ do |page_name|
          when "resource"
            "/projects/#{@project.slug}/resources/#{@resource.id}"
          end
-  visit(path)
+  visit("http://localhost:4567#{path}")
 end
 
 When /^I click the "(.+?)" link$/ do |link_name|

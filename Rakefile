@@ -57,7 +57,7 @@ begin
 
   Cucumber::Rake::Task.new(:features_html, "Run Cucumber features with HTML output") do |t|
     outfile = "pages/_posts/#{Date.today.to_s}-features.html"
-    t.cucumber_opts = "--format Coupler::JekyllFormatter --out #{outfile} features"
+    t.cucumber_opts = "--format Butternut::Formatter --out #{outfile} features"
   end
   task :features_html => [:set_test_env, :check_dependencies, 'db:bootstrap']
 
