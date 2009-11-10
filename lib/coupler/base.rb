@@ -1,5 +1,8 @@
 module Coupler
   class Base < Sinatra::Base
+    set :root, COUPLER_ROOT
+    set :static, true
+    #set :port, 37222
     set :raise_errors, Proc.new { test? }
     set :show_exceptions, Proc.new { development? }
     set :dump_errors, true
@@ -14,6 +17,10 @@ module Coupler
 
     get "/" do
       erb :index
+    end
+
+    get "/test" do
+      erb :lorem_ipsum
     end
   end
 end
