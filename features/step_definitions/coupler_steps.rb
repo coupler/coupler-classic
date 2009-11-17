@@ -30,11 +30,11 @@ When /^I fill in the form$/ do
     case current_url
     when %r{/projects/new$}
       @type = 'project'
-      fill_in 'Name', :with => 'foo'
+      fill_in 'Name', :with => 'My Project'
 
     when %r{/projects/.+?/resources/new$}
       @type = 'resource'
-      fill_in 'Name', :with => 'people'
+      fill_in 'Name', :with => 'People'
       fill_in 'Host', :with => 'localhost'
       fill_in 'Port', :with => '12345'
       fill_in 'Username', :with => 'coupler'

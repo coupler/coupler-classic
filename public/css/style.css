@@ -63,7 +63,7 @@ body {
   padding: 1em;
   background-color: green;
   color: white;
-  margin: 1em;
+  margin-bottom: 1em;
 }
 #notice a,
 #notice a:visited {
@@ -111,6 +111,14 @@ table.form td {
 }
 table.form td.left {
   padding-right: 1em;
+}
+
+table.list th {
+  border-bottom: 2px solid gray;
+  padding: 0 0.5em;
+}
+table.list td {
+  padding: 0.5em;
 }
 
 input, select, textarea {

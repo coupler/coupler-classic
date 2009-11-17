@@ -1,0 +1,16 @@
+<table class="list">
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Transformer</th>
+    </tr>
+  </thead>
+  <tbody>
+  <% @transformations.each do |transformation| %>
+    <tr>
+      <td><%= transformation[:field_name] %></td>
+      <td><%= transformation[:transformer_name] %></td>
+    </tr>
+  <% end %>
+  </tbody>
+</table>
