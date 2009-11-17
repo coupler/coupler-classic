@@ -13,8 +13,15 @@
 </head>
 <body>
   <div id="main" class="container_16">
-    <div id="content" class="grid_16">
-      <%= yield %>
+    <div id="sidebar" class="grid_2">
+      <ul>
+        <li><a href="/"><img src="/images/home.gif" />Home</a></li>
+      </ul>
+    </div>
+    <div id="content" class="grid_14">
+      <div class="inner">
+        <%= yield %>
+      </div>
     </div>
     <div class="clear"></div>
   </div>

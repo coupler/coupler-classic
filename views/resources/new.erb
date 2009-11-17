@@ -1,41 +1,61 @@
+<h1>New Resource for <%= @project.name %></h1>
+
 <%= error_messages_for @resource %>
 <form method="post" action="/projects/<%= @project.slug %>/resources">
-  <p>
-    <label for="name">Name</label><br/>
-    <input id="name" name="resource[name]" type="text" value="<%= @resource.name %>" />
-  </p>
-  <p>
-    <label for="adapter">Adapter</label><br/>
-    <select id="adapter" name="resource[adapter]">
-      <% [%w{mysql MySQL}].each do |(value, label)| %>
-        <option value="<%= value %>"<%= ' selected="selected"' if @resource.adapter == value %>><%= label %></option>
-      <% end %>
-    </select>
-  </p>
-  <p>
-    <label for="host">Host</label><br/>
-    <input id="host" name="resource[host]" type="text" value="<%= @resource.host %>" />
-  </p>
-  <p>
-    <label for="port">Port</label><br/>
-    <input id="port" name="resource[port]" type="text" value="<%= @resource.port %>" />
-  </p>
-  <p>
-    <label for="username">Username</label><br/>
-    <input id="username" name="resource[username]" type="text" value="<%= @resource.username %>" />
-  </p>
-  <p>
-    <label for="password">Password</label><br/>
-    <input id="password" name="resource[password]" type="password" value="<%= @resource.password %>" />
-  </p>
-  <p>
-    <label for="database_name">Database</label><br/>
-    <input id="database_name" name="resource[database_name]" type="text" value="<%= @resource.database_name %>" />
-  </p>
-  <p>
-    <label for="table_name">Table</label><br/>
-    <input id="table_name" name="resource[table_name]" type="text" value="<%= @resource.table_name %>" />
-  </p>
+  <table class="form">
+    <tr>
+      <td class="left"><label for="name">Name</label></td>
+      <td>
+        <input id="name" name="resource[name]" type="text" value="<%= @resource.name %>" />
+      </td>
+    </tr>
+    <tr class="alt">
+      <td class="left"><label for="adapter">Type</label></td>
+      <td>
+        <select id="adapter" name="resource[adapter]">
+          <% [%w{mysql MySQL}].each do |(value, label)| %>
+            <option value="<%= value %>"<%= ' selected="selected"' if @resource.adapter == value %>><%= label %></option>
+          <% end %>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td class="left"><label for="host">Host</label></td>
+      <td>
+        <input id="host" name="resource[host]" type="text" value="<%= @resource.host %>" />
+      </td>
+    </tr>
+    <tr class="alt">
+      <td class="left"><label for="port">Port</label></td>
+      <td>
+        <input id="port" name="resource[port]" type="text" value="<%= @resource.port %>" />
+      </td>
+    </tr>
+    <tr>
+      <td class="left"><label for="username">Username</label></td>
+      <td>
+        <input id="username" name="resource[username]" type="text" value="<%= @resource.username %>" />
+      </td>
+    </tr>
+    <tr class="alt">
+      <td class="left"><label for="password">Password</label><br/></td>
+      <td>
+        <input id="password" name="resource[password]" type="password" value="<%= @resource.password %>" />
+      </td>
+    </tr>
+    <tr>
+      <td class="left"><label for="database_name">Database</label></td>
+      <td>
+        <input id="database_name" name="resource[database_name]" type="text" value="<%= @resource.database_name %>" />
+      </td>
+    </tr>
+    <tr class="alt">
+      <td class="left"><label for="table_name">Table</label></td>
+      <td>
+        <input id="table_name" name="resource[table_name]" type="text" value="<%= @resource.table_name %>" />
+      </td>
+    </tr>
+  </table>
   <p>
     <input type="submit" value="Submit" /> or <a href="/projects/<%= @project.slug %>/resources">Cancel</a>
   </p>

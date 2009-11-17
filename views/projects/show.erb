@@ -1,9 +1,11 @@
-<h1><%= @project.name %></h1>
-
 <% if flash[:newly_created] %>
+<div id="notice">
   Project successfully created!
 
   You'll need to <a href="/projects/<%= @project.slug %>/resources/new">add a resource</a> next.
-<% else %>
-  <a href="/projects/<%= @project.slug %>/resources/new">Add resource</a>
+</div>
 <% end %>
+
+<h1>Project : <%= @project.name %></h1>
+
+<%= erb(:"resources/list", :layout => false) %>

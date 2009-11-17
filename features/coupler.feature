@@ -20,7 +20,7 @@ Feature: Coupler
     Then it should show me a confirmation page
     And ask me to add transformations
 
-  Scenario: transforming a resource
+  Scenario: adding transformations
     Given that I have created a project called "My Project"
     And that I have added a resource called "Patients"
     When I go to the resource page

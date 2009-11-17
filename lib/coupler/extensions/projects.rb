@@ -20,6 +20,7 @@ module Coupler
 
         app.get "/projects/:slug" do
           @project = Models::Project[:slug => params[:slug]]
+          @resources = @project.resources
           erb 'projects/show'.to_sym
         end
       end
