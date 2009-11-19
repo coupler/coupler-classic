@@ -1,0 +1,14 @@
+<h1>Your Coupler Projects</h1>
+
+<table class="list">
+  <tr>
+    <th>Name</th>
+    <th>Description</th>
+  </tr>
+  <% @projects.each_with_index do |project, i| %>
+  <tr<% " class='alt'" if i % 2 == 1 %>>
+    <td><a href="/projects/<%= project.slug %>"><%= project.name %></a></td>
+    <td><%= project.description %></td>
+  </tr>
+  <% end %>
+</table>

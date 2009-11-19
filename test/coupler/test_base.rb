@@ -1,13 +1,24 @@
 require File.dirname(__FILE__) + '/../helper'
 
-class Coupler::TestBase < ActiveSupport::TestCase
-  def test_subclasses_sinatra_base
-    assert_equal Sinatra::Base, Coupler::Base.superclass
-  end
+module Coupler
+  class TestBase < ActiveSupport::TestCase
+    def test_subclasses_sinatra_base
+      assert_equal Sinatra::Base, Coupler::Base.superclass
+    end
 
-  def test_index_when_no_projects
-    get "/"
-    assert last_response.ok?
-    assert_match /Getting Started/, last_response.body
+    def test_index_when_no_projects
+      Models::Project.delete
+      get "/"
+      assert last_response.ok?
+      assert_match /Getting Started/, last_response.body
+    end
+
+    def test_redirect_when_projects_exist
+      project = Factory(:project)
+      get "/"
+      assert last_response.redirect?
+      follow_redirect!
+      assert_equal "http://example.org/projects", last_request.url
+    end
   end
 end

@@ -10,8 +10,8 @@ module Coupler
         raise NotImplementedError
       end
 
-      def schema(old_schema)
-        old_schema
+      def schema(original_schema)
+        original_schema
       end
     end
   end

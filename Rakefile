@@ -2,6 +2,16 @@ require 'rubygems'
 require 'rake'
 require 'sequel'
 
+def confirm(prompt)
+  answer = nil
+  while answer != "y" && answer != "n"
+    print "#{prompt} Are you sure? [yn] "
+    $stdout.flush
+    answer = $stdin.gets.chomp.downcase
+  end
+  exit if answer == "n"
+end
+
 desc "Load coupler environment"
 task :environment do
   require File.join(File.dirname(__FILE__), 'lib', 'coupler')
@@ -33,7 +43,7 @@ Rake::TestTask.new(:test) do |test|
   test.pattern = 'test/**/test_*.rb'
   test.verbose = true
 end
-task :test => [:set_test_env, :check_dependencies, 'db:bootstrap']
+task :test => [:set_test_env, :check_dependencies, 'db:bootstrap', 'db:fake']
 
 begin
   require 'rcov/rcovtask'
@@ -53,13 +63,13 @@ begin
   require 'git'
 
   Cucumber::Rake::Task.new(:features)
-  task :features => [:set_test_env, :check_dependencies, 'db:bootstrap']
+  task :features => [:set_test_env, :check_dependencies, 'db:bootstrap', 'db:fake']
 
   Cucumber::Rake::Task.new(:features_html, "Run Cucumber features with HTML output") do |t|
     outfile = "pages/_posts/#{Date.today.to_s}-features.html"
     t.cucumber_opts = "--format Butternut::Formatter --out #{outfile} features"
   end
-  task :features_html => [:set_test_env, :check_dependencies, 'db:bootstrap']
+  task :features_html => [:set_test_env, :check_dependencies, 'db:bootstrap', 'db:fake']
 
   desc "Update github pages for coupler"
   task :update_pages => :features_html do
@@ -92,17 +102,17 @@ Rake::RDocTask.new do |rdoc|
 end
 
 namespace :db do
+  desc "Obliterate the local database"
+  task :obliterate => :stop do
+    confirm("This will completely obliterate the local database.")
+
+    require 'fileutils'
+    FileUtils.rm_rf(Dir.glob(File.join(Coupler::Server::BASE_DIR, "*")), :verbose => true)
+  end
+
   desc "Bootstrap the server schema"
-  task :bootstrap => :environment do
-    if COUPLER_ENV != "test"
-      answer = nil
-      while answer != "y" && answer != "n"
-        print "This will delete any existing configuration data.  Are you sure? [yn] "
-        $stdout.flush
-        answer = $stdin.gets.chomp.downcase
-      end
-      exit if answer == "n"
-    end
+  task :bootstrap => :start do
+    confirm("This will delete any existing configuration data.") if COUPLER_ENV != "test"
 
     server = Coupler::Server.instance
     server.start
@@ -133,7 +143,7 @@ namespace :db do
   begin
     require 'forgery'
     desc "Create database with fake data"
-    task :fake => [:environment, :start] do
+    task :fake => :start do
       server = Coupler::Server.instance
       db = Sequel.connect(server.connection_string("fake_data", :create_database => true))
       db.tables.each { |t| db.drop_table(t) }
@@ -144,7 +154,7 @@ namespace :db do
       end
       people = db[:people]
 
-      500.times do |i|
+      50.times do |i|
         people.insert({
           :first_name => Forgery(:name).first_name,
           :last_name  => Forgery(:name).last_name

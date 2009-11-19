@@ -19,6 +19,8 @@ body {
 
 #sidebar {
   color: white;
+  height: 750px;
+  position: relative;
 }
 #sidebar h3 {
   font-size: 1.1em;
@@ -27,7 +29,6 @@ body {
   list-style-type: none;
   margin: 0;
   padding: 0;
-  height: 750px;
 }
 #sidebar li {
   margin: 0;
@@ -47,6 +48,16 @@ body {
   vertical-align: middle;
   float: left;
   margin-right: 0.5em;
+}
+#sidebar .about {
+  position: absolute;
+  bottom: 1em;
+  font-size: smaller;
+  text-align: justify;
+}
+#sidebar .about a,
+#sidebar .about a:visited {
+  text-decoration: underline;
 }
 
 #content {
@@ -103,9 +114,6 @@ label {
   padding: 1em;
 }
 
-table.form tr.alt td {
-  background-color: #eee;
-}
 table.form td {
   padding: 0.3em 0 0.3em 1em;
 }
@@ -119,6 +127,10 @@ table.list th {
 }
 table.list td {
   padding: 0.5em;
+}
+
+tr.alt td {
+  background-color: #eee;
 }
 
 input, select, textarea {

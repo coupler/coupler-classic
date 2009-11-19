@@ -8,6 +8,10 @@ module Coupler
     def self.register(name, klass)
       @@list[name] = klass
     end
+
+    def self.[](name)
+      @@list[name]
+    end
   end
 end
 

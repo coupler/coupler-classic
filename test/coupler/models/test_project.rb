@@ -12,11 +12,6 @@ module Coupler
         assert_equal :projects, Project.table_name
       end
 
-      def test_sets_slug_from_name
-        project = Project.create('name' => 'Foo bar')
-        assert_equal "foo-bar", project.slug
-      end
-
       def test_one_to_many_resources
         assert_respond_to Project.new, :resources
       end
@@ -27,6 +22,11 @@ module Coupler
 
         project.name = ""
         assert !project.valid?
+      end
+
+      def test_sets_slug_from_name
+        project = Project.create('name' => 'Foo bar')
+        assert_equal "foo-bar", project.slug
       end
 
       def test_requires_unique_slug
@@ -44,8 +44,26 @@ module Coupler
 
       def test_saves_existing_project
         project = Factory(:project, :slug => 'pants')
+        project.description = "Foo"
         assert project.valid?
         project.save
+      end
+
+      def test_timestamps_on_create
+        Timecop.freeze(Time.now) do
+          project = Factory(:project)
+          assert_equal Time.now.to_i, project.created_at.to_i
+          assert_equal Time.now.to_i, project.updated_at.to_i
+        end
+      end
+
+      def test_timestamps_on_update
+        project = Factory(:project)
+        Timecop.freeze(1000) do
+          project.description = "omg ponies"
+          project.save!
+          assert_equal Time.now.to_i, project.updated_at.to_i
+        end
       end
     end
   end

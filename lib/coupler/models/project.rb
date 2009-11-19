@@ -4,20 +4,22 @@ module Coupler
       include CommonModel
       one_to_many :resources
 
-      def before_create
-        self.slug ||= self.name.downcase.gsub(/\s+/, "-")
-      end
+      private
+        def validate
+          errors[:name] << "is required"  if self.name.nil? || self.name == ""
 
-      def validate
-        errors[:name] << "is required"  if self.name.nil? || self.name == ""
-
-        obj = self.class[:slug => self.slug]
-        if self.new?
-          errors[:slug] << "is already taken"   if obj
-        else
-          errors[:slug] << "is already taken"   if obj != self
+          obj = self.class[:slug => self.slug]
+          if self.new?
+            errors[:slug] << "is already taken"   if obj
+          else
+            errors[:slug] << "is already taken"   if obj.id != self.id
+          end
         end
-      end
+
+        def before_save
+          super
+          self.slug ||= self.name.downcase.gsub(/\s+/, "-")
+        end
     end
   end
 end

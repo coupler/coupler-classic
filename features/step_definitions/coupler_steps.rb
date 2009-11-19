@@ -8,6 +8,13 @@ Given /^that I have added a resource called "(.+?)"$/ do |resource_name|
   @resource = Factory(:resource, :name => resource_name, :project => @project)
 end
 
+Given /^that I have added a "([^\"]*)" transformation for "([^\"]*)"$/ do |transformer, field|
+  @transformation = Factory(:transformation, {
+    :resource => @resource, :transformer_name => transformer,
+    :field_name => field
+  })
+end
+
 When /^I go to the (.+?) page$/ do |page_name|
   @page_name = page_name
   path = case page_name

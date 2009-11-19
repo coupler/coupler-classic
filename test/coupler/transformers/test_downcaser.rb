@@ -8,7 +8,7 @@ module Coupler
       end
 
       def test_registers_itself
-        assert Coupler::Transformers.list.include?(:downcaser)
+        assert Coupler::Transformers.list.include?("downcaser")
       end
 
       def test_transform

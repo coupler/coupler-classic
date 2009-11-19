@@ -22,10 +22,18 @@ Feature: Coupler
 
   Scenario: adding transformations
     Given that I have created a project called "My Project"
-    And that I have added a resource called "Patients"
+    And that I have added a resource called "People"
     When I go to the resource page
     And I click the "Add transformation" link
     And I select "first_name" for "Field"
     And I select "downcaser" for "Transformer"
     And I click the "Submit" button
     Then it should take me back to the resource page
+
+  Scenario: transforming a resource
+    Given that I have created a project called "My Project"
+    And that I have added a resource called "People"
+    And that I have added a "downcaser" transformation for "first_name"
+    When I go to the resource page
+    And I click the "Transform" link
+    Then it should start transforming

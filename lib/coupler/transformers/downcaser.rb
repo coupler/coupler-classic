@@ -6,7 +6,7 @@ module Coupler
         record
       end
     end
-    self.register(:downcaser, Downcaser)
+    self.register("downcaser", Downcaser)
   end
 end
 

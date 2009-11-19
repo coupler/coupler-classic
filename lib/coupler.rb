@@ -7,6 +7,8 @@ require 'delegate'
 require 'jdbc/mysql'
 require 'sequel'
 require 'logger'
+require 'loggable'
+require File.join(File.dirname(__FILE__), "..", "vendor", 'thread_pool', 'lib', 'thread_pool')
 
 COUPLER_ROOT = File.expand_path(File.join(File.dirname(__FILE__), ".."))
 COUPLER_ENV  = ENV['COUPLER_ENV']

@@ -1,13 +1,12 @@
 <% if flash[:newly_created] %>
 <div id="notice">
-  Resource successfully created!
-
-  Next, if you want to add or change this resource's fields, you'll need to add transformations.
+  Resource successfully created!  Next, if you want to change this resource's fields, you'll need to add transformations.
 </div>
 <% end %>
 
 <h1><%= @resource.name %> in <%= @project.name %></h1>
 
+<h2>Source Fields</h2>
 <table class="list">
   <thead>
     <tr>
@@ -37,3 +36,7 @@
 <p>
   <a href="/projects/<%= @project.slug %>/resources/<%= @resource.id %>/transformations/new">Add transformation</a>
 </p>
+
+<h2>Status</h2>
+
+Transform me!

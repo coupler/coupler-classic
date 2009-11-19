@@ -16,7 +16,11 @@ module Coupler
     helpers Coupler::Helpers
 
     get "/" do
-      erb :index
+      if Models::Project.count > 0
+        redirect "/projects"
+      else
+        erb :index
+      end
     end
 
     get "/test" do
