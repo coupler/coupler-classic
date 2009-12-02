@@ -20,6 +20,10 @@ module Coupler
         assert_respond_to Resource.new, :transformations
       end
 
+      def test_one_to_many_jobs
+        assert_respond_to Resource.new, :jobs
+      end
+
       def test_requires_name
         resource = Factory.build(:resource, :name => nil)
         assert !resource.valid?
@@ -71,7 +75,7 @@ module Coupler
 
       def test_sets_slug_from_name
         resource = Factory(:resource, :name => 'Foo bar')
-        assert_equal "foo-bar", resource.slug
+        assert_equal "foo_bar", resource.slug
       end
 
       def test_requires_unique_slug_across_projects
@@ -145,7 +149,7 @@ module Coupler
       end
 
       def test_transform
-        project = Factory(:project, :name => "roflsauce")
+        project = Factory(:project, :name => "Awesome Test Project")
         resource = Factory(:resource, :name => "pants", :project => project)
         transformation = Factory(:transformation, {
           :resource => resource, :transformer_name => "downcaser",
@@ -153,9 +157,14 @@ module Coupler
         })
 
         original_row = resource.dataset.first
-        resource.transform!
+        Timecop.freeze(Time.now) do
+          result = resource.transform!
+          assert_kind_of Thread, result
+          result.join
+          assert_equal Time.now, resource.transformed_at
+        end
 
-        result_db = Sequel.connect(Coupler::Server.instance.connection_string("roflsauce"))
+        result_db = Sequel.connect(Coupler::Server.instance.connection_string("awesome_test_project"))
         assert result_db.tables.include?(:pants)
 
         expected = [[:id, {:allow_null=>false, :default=>nil, :primary_key=>true, :db_type=>"int(11)", :type=>:integer, :ruby_default=>nil}], [:first_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}], [:last_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}]]

@@ -1,17 +1,22 @@
+COUPLER_ROOT = File.expand_path(File.join(File.dirname(__FILE__), ".."))
+COUPLER_ENV  = ENV['COUPLER_ENV']
+
+# gems/stdlibs
+require 'java'
+require 'erb'
+require 'delegate'
+require 'singleton'
+require 'logger'
 require 'rubygems'
 require 'sinatra/base'
 require 'rack/flash'
-require 'erb'
-require 'singleton'
-require 'delegate'
 require 'jdbc/mysql'
 require 'sequel'
-require 'logger'
-require 'loggable'
-require File.join(File.dirname(__FILE__), "..", "vendor", 'thread_pool', 'lib', 'thread_pool')
 
-COUPLER_ROOT = File.expand_path(File.join(File.dirname(__FILE__), ".."))
-COUPLER_ENV  = ENV['COUPLER_ENV']
+# vendored stuff
+require File.join(COUPLER_ROOT, "vendor", 'thread_pool', 'lib', 'thread_pool')
+#require File.join(COUPLER_ROOT, "vendor", 'quartz', 'quartz-1.6.6.jar')
+#require File.join(COUPLER_ROOT, "vendor", 'quartz', 'lib', 'core', 'commons-logging-1.1.jar')
 
 module Coupler
   @@logger = Logger.new(File.join(COUPLER_ROOT, 'log', 'coupler.log'))

@@ -34,6 +34,13 @@ module Coupler
           @transformations = @resource.transformations
           erb 'resources/show'.to_sym
         end
+
+        app.get "/projects/:slug/resources/:id/transform" do
+          @project = Models::Project[:slug => params[:slug]]
+          @resource = @project.resources_dataset[:id => params[:id]]
+          @resource.transform!   # returns immediately
+          erb 'resources/transform'.to_sym
+        end
       end
     end
   end

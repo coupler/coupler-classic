@@ -1,3 +1,5 @@
+<% add_javascript("jquery-ui.min.js", "resource.js") %>
+<% add_stylesheet("jquery-ui.css") %>
 <% if flash[:newly_created] %>
 <div id="notice">
   Resource successfully created!  Next, if you want to change this resource's fields, you'll need to add transformations.
@@ -37,6 +39,26 @@
   <a href="/projects/<%= @project.slug %>/resources/<%= @resource.id %>/transformations/new">Add transformation</a>
 </p>
 
-<h2>Status</h2>
+<h3>Status</h3>
 
-Transform me!
+<p>
+  Last transformed at: <strong><%= @resource.transformed_at || "Never" %></strong>
+</p>
+<p>
+  <input id="transform-button" type="button" value="Transform &raquo;" />
+</p>
+
+<div id="transform-dialog">
+  <div id="transform-1" style="display: block;">
+    <p>
+      This may take a while.  Make sure you have your transformations set up
+      correctly.  Do you want to proceed?
+    </p>
+    <div style="text-align: center">
+      <input id="transform-ok-button" type="button" value="Yes" />
+      <input id="transform-cancel-button" type="button" value="No" />
+    </div>
+  </div>
+  <div id="transform-2" style="display: none;">
+  </div>
+</div>

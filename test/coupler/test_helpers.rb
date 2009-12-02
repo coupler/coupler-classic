@@ -21,5 +21,8 @@ module Coupler
       assert_equal "Pants are dirty", li[1].inner_html
       assert_equal "Pants are smelly", li[2].inner_html
     end
+
+    def test_tilt
+    end
   end
 end

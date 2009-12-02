@@ -35,5 +35,5 @@ Feature: Coupler
     And that I have added a resource called "People"
     And that I have added a "downcaser" transformation for "first_name"
     When I go to the resource page
-    And I click the "Transform" link
+    And I click the "Transform" button
     Then it should start transforming

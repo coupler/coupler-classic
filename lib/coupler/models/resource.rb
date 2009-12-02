@@ -4,6 +4,7 @@ module Coupler
       include CommonModel
       many_to_one :project
       one_to_many :transformations
+      one_to_many :jobs
 
       def connection
         unless @connection
@@ -21,7 +22,7 @@ module Coupler
 
       def result_connection
         unless @result_connection
-          connection_string = Server.instance.connection_string(project.slug, :create_database => true)
+          connection_string = Server.instance.connection_string(self.project.slug, :create_database => true)
           @result_connection = Sequel.connect(connection_string, :loggers => [Coupler.logger])
         end
         @result_connection
@@ -32,33 +33,7 @@ module Coupler
       end
 
       def transform!
-        # create transformers and get result schema
-        result_schema = self.schema
-        @transformers = []
-        transformations.each do |transformation|
-          klass = Transformers[transformation.transformer_name]
-          @transformers << klass.new(:field_name => transformation.field_name)
-          result_schema = @transformers[-1].schema(result_schema)
-        end
-
-        result_connection.create_table!(self.slug) do
-          result_schema.each do |(name, info)|
-            options = info.dup
-            options[:type] = options.delete(:db_type)
-            options[:name] = name
-            if options[:primary_key]
-              options.delete(:default)  unless options[:default]
-            end
-            columns << options
-          end
-        end
-        @result_dataset = result_connection[self.slug.to_sym]
-
-        thread_pool = ThreadPool.new(10)
-        dataset.each do |row|
-          thread_pool.execute(row) { |local| process_row(row) }
-        end
-        thread_pool.join
+        Thread.new { do_transform }
       end
 
       private
@@ -109,7 +84,40 @@ module Coupler
 
         def before_save
           super
-          self.slug ||= self.name.downcase.gsub(/\s+/, "-")
+          self.slug ||= self.name.downcase.gsub(/\s+/, "_")
+        end
+
+        def do_transform
+          # create transformers and get result schema
+          result_schema = self.schema
+          @transformers = []
+          transformations.each do |transformation|
+            klass = Transformers[transformation.transformer_name]
+            @transformers << klass.new(:field_name => transformation.field_name)
+            result_schema = @transformers[-1].schema(result_schema)
+          end
+
+          result_connection.create_table!(self.slug) do
+            result_schema.each do |(name, info)|
+              options = info.dup
+              options[:type] = options.delete(:db_type)
+              options[:name] = name
+              if options[:primary_key]
+                options.delete(:default)  unless options[:default]
+              end
+              columns << options
+            end
+          end
+          @result_dataset = result_connection[self.slug.to_sym]
+
+          thread_pool = ThreadPool.new(10)
+          dataset.each do |row|
+            thread_pool.execute(row) { |local| process_row(row) }
+          end
+          thread_pool.join
+
+          self.transformed_at = Time.now
+          self.save
         end
     end
   end

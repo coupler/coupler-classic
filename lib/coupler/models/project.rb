@@ -18,7 +18,7 @@ module Coupler
 
         def before_save
           super
-          self.slug ||= self.name.downcase.gsub(/\s+/, "-")
+          self.slug ||= self.name.downcase.gsub(/\s+/, "_")
         end
     end
   end

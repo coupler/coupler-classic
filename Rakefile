@@ -103,7 +103,7 @@ end
 
 namespace :db do
   desc "Obliterate the local database"
-  task :obliterate => :stop do
+  task :nuke => :stop do
     confirm("This will completely obliterate the local database.")
 
     require 'fileutils'
@@ -154,7 +154,8 @@ namespace :db do
       end
       people = db[:people]
 
-      50.times do |i|
+      num = ENV['num'] || 50
+      num.times do |i|
         people.insert({
           :first_name => Forgery(:name).first_name,
           :last_name  => Forgery(:name).last_name

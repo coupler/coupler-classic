@@ -78,6 +78,14 @@ module Coupler
         cells = rows[0].css('td')
         assert_equal %w{first_name downcaser}, cells.collect(&:inner_html)
       end
+
+      def test_transform_resource
+        Models::Project.stubs(:[]).returns(@project)
+        resource = mock("resource", :transform! => true)
+        @project.stubs(:resources_dataset).returns(stub("resources dataset", :[] => resource))
+        get "/projects/roflcopter/resources/123/transform"
+        assert last_response.ok?
+      end
     end
   end
 end

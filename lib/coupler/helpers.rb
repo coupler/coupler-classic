@@ -15,5 +15,33 @@ module Coupler
 
       retval
     end
+
+    def javascripts
+      @javascripts ||= %w{jquery.min.js}
+    end
+
+    def javascript_includes
+      javascripts.collect do |name|
+        %{<script type="text/javascript" src="/js/#{name}"></script>}
+      end.join("\n  ")
+    end
+
+    def add_javascript(*names)
+      javascripts.push(*names)
+    end
+
+    def stylesheets
+      @stylesheets ||= %w{reset.css text.css 960.css style.css}
+    end
+
+    def stylesheet_links
+      stylesheets.collect do |name|
+        %{<link rel="stylesheet" type="text/css" media="all" href="/css/#{name}" />}
+      end.join("\n  ")
+    end
+
+    def add_stylesheet(*names)
+      stylesheets.push(*names)
+    end
   end
 end

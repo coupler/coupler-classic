@@ -1,3 +1,6 @@
+require 'java'
+JRuby.objectspace = true
+
 require 'test/unit'
 require 'pp'
 require 'rubygems'
@@ -24,12 +27,19 @@ class ActiveSupport::TestCase < ::Test::Unit::TestCase
     Coupler::Base
   end
 
-  def run(*args, &block)
-    Coupler::Config.instance.transaction do
-      super
-      raise Sequel::Rollback
+  def teardown
+    config = Coupler::Config.instance
+    config.tables.each do |name|
+      config[name].delete
     end
   end
+
+  #def run(*args, &block)
+    #Coupler::Config.instance.transaction do
+      #super
+      #raise Sequel::Rollback
+    #end
+  #end
 end
 
 require 'factory_girl'

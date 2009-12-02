@@ -60,6 +60,18 @@ module Coupler
         Time :created_at
         Time :updated_at
       end
+
+      @database.create_table :jobs do
+        primary_key :id
+        Integer :resource_id
+        String :type
+        Integer :completed
+        Integer :total
+        String :status
+        String :message
+        Time :created_at
+        Time :updated_at
+      end
     end
   end
 end

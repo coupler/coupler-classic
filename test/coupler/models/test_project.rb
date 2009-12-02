@@ -26,7 +26,7 @@ module Coupler
 
       def test_sets_slug_from_name
         project = Project.create('name' => 'Foo bar')
-        assert_equal "foo-bar", project.slug
+        assert_equal "foo_bar", project.slug
       end
 
       def test_requires_unique_slug
