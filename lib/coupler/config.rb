@@ -20,8 +20,8 @@ module Coupler
     end
 
     def create_schema
-      # FIXME: this isn't really the best solution
       if COUPLER_ENV == "test"
+        # FIXME: this isn't really the best solution
         Sequel::MySQL.default_engine = "InnoDB"
       end
 
@@ -61,17 +61,17 @@ module Coupler
         Time :updated_at
       end
 
-      @database.create_table :jobs do
-        primary_key :id
-        Integer :resource_id
-        String :type
-        Integer :completed
-        Integer :total
-        String :status
-        String :message
-        Time :created_at
-        Time :updated_at
-      end
+      #@database.create_table :jobs do
+        #primary_key :id
+        #Integer :resource_id
+        #String :type
+        #Integer :completed
+        #Integer :total
+        #String :status
+        #String :message
+        #Time :created_at
+        #Time :updated_at
+      #end
     end
   end
 end

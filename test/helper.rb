@@ -11,7 +11,6 @@ require 'rack/test'
 require 'rack/flash'
 require 'rack/flash/test'
 require 'nokogiri'
-require 'ruby-debug'
 require 'timecop'
 
 $LOAD_PATH.unshift(File.dirname(__FILE__))

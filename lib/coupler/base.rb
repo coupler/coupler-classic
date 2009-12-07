@@ -1,5 +1,12 @@
 module Coupler
   class Base < Sinatra::Base
+    def self.run!(*args)
+      scheduler = Scheduler.instance
+      scheduler.start
+      at_exit { scheduler.shutdown }
+      super
+    end
+
     set :root, COUPLER_ROOT
     set :static, true
     #set :port, 37222

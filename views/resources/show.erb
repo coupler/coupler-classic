@@ -50,15 +50,15 @@
 
 <div id="transform-dialog">
   <div id="transform-1" style="display: block;">
-    <p>
-      This may take a while.  Make sure you have your transformations set up
-      correctly.  Do you want to proceed?
-    </p>
-    <div style="text-align: center">
-      <input id="transform-ok-button" type="button" value="Yes" />
-      <input id="transform-cancel-button" type="button" value="No" />
-    </div>
-  </div>
-  <div id="transform-2" style="display: none;">
+    <form method="get" action="/projects/<%= @project.slug %>/resources/<%= @resource.id %>/transform">
+      <p>
+        This may take a while.  Make sure you have your transformations set up
+        correctly.  Do you want to proceed?
+      </p>
+      <div style="text-align: center">
+        <input id="transform-ok-button" type="submit" value="Yes" />
+        <input id="transform-cancel-button" type="button" value="No" />
+      </div>
+    </form>
   </div>
 </div>

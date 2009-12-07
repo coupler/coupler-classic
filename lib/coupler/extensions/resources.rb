@@ -38,7 +38,7 @@ module Coupler
         app.get "/projects/:slug/resources/:id/transform" do
           @project = Models::Project[:slug => params[:slug]]
           @resource = @project.resources_dataset[:id => params[:id]]
-          @resource.transform!   # returns immediately
+          Scheduler.instance.schedule_transform_job(@resource)
           erb 'resources/transform'.to_sym
         end
       end

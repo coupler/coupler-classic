@@ -33,7 +33,7 @@ module Coupler
       end
 
       def transform!
-        Thread.new { do_transform }
+        do_transform
       end
 
       private

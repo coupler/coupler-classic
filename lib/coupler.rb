@@ -1,8 +1,11 @@
 COUPLER_ROOT = File.expand_path(File.join(File.dirname(__FILE__), ".."))
 COUPLER_ENV  = ENV['COUPLER_ENV']
 
-# gems/stdlibs
+# java integration
 require 'java'
+require 'jruby/core_ext'
+
+# gems/stdlibs
 require 'erb'
 require 'delegate'
 require 'singleton'
@@ -14,9 +17,13 @@ require 'jdbc/mysql'
 require 'sequel'
 
 # vendored stuff
-require File.join(COUPLER_ROOT, "vendor", 'thread_pool', 'lib', 'thread_pool')
-#require File.join(COUPLER_ROOT, "vendor", 'quartz', 'quartz-1.6.6.jar')
-#require File.join(COUPLER_ROOT, "vendor", 'quartz', 'lib', 'core', 'commons-logging-1.1.jar')
+vendor_dir = File.join(COUPLER_ROOT, "vendor")
+require File.join(vendor_dir, "mysql-connector-mxj-gpl-5-0-9", "mysql-connector-mxj-gpl-5-0-9.jar")
+require File.join(vendor_dir, "mysql-connector-mxj-gpl-5-0-9", "mysql-connector-mxj-gpl-5-0-9-db-files.jar")
+require File.join(vendor_dir, "mysql-connector-mxj-gpl-5-0-9", "lib", "aspectjrt.jar")
+require File.join(vendor_dir, 'thread_pool', 'lib', 'thread_pool')
+require File.join(vendor_dir, 'quartz', 'quartz-1.6.6.jar')
+require File.join(vendor_dir, 'quartz', 'lib', 'core', 'commons-logging-1.1.jar')
 
 module Coupler
   @@logger = Logger.new(File.join(COUPLER_ROOT, 'log', 'coupler.log'))
@@ -27,6 +34,7 @@ end
 
 require File.dirname(__FILE__) + "/coupler/server"
 require File.dirname(__FILE__) + "/coupler/config"
+require File.dirname(__FILE__) + "/coupler/scheduler"
 
 # FIXME: this is a crappy hack; Sequel doesn't play nicely
 if Coupler::Server.instance.is_running?
@@ -35,6 +43,7 @@ if Coupler::Server.instance.is_running?
 
   require File.dirname(__FILE__) + "/coupler/models"
   require File.dirname(__FILE__) + "/coupler/transformers"
+  require File.dirname(__FILE__) + "/coupler/jobs"
   require File.dirname(__FILE__) + "/coupler/extensions"
 
   require File.dirname(__FILE__) + "/coupler/helpers"

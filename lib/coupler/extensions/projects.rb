@@ -1,4 +1,3 @@
-require 'ruby-debug'
 module Coupler
   module Extensions
     module Projects

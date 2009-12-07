@@ -80,8 +80,12 @@ module Coupler
       end
 
       def test_transform_resource
+        resource = mock("resource")
+        @scheduler = mock("scheduler") do
+          expects(:schedule_transform_job).with(resource)
+        end
+        Scheduler.stubs(:instance).returns(@scheduler)
         Models::Project.stubs(:[]).returns(@project)
-        resource = mock("resource", :transform! => true)
         @project.stubs(:resources_dataset).returns(stub("resources dataset", :[] => resource))
         get "/projects/roflcopter/resources/123/transform"
         assert last_response.ok?

@@ -158,9 +158,7 @@ module Coupler
 
         original_row = resource.dataset.first
         Timecop.freeze(Time.now) do
-          result = resource.transform!
-          assert_kind_of Thread, result
-          result.join
+          resource.transform!
           assert_equal Time.now, resource.transformed_at
         end
 

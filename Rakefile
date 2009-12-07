@@ -154,7 +154,7 @@ namespace :db do
       end
       people = db[:people]
 
-      num = ENV['num'] || 50
+      num = ENV.has_key?('NUM') ? ENV['NUM'].to_i : 50
       num.times do |i|
         people.insert({
           :first_name => Forgery(:name).first_name,

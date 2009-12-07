@@ -1,10 +1,3 @@
-require 'jdbc/mysql'
-
-base_dir = File.join(COUPLER_ROOT, "vendor", "mysql-connector-mxj-gpl-5-0-9")
-require File.join(base_dir, "mysql-connector-mxj-gpl-5-0-9.jar")
-require File.join(base_dir, "mysql-connector-mxj-gpl-5-0-9-db-files.jar")
-require File.join(base_dir, "lib", "aspectjrt.jar")
-
 module Coupler
   class Server
     include Singleton
