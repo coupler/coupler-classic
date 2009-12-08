@@ -1,6 +1,4 @@
 require 'java'
-JRuby.objectspace = true
-
 require 'test/unit'
 require 'pp'
 require 'rubygems'

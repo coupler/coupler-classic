@@ -12,6 +12,16 @@ def confirm(prompt)
   exit if answer == "n"
 end
 
+alias :original_ruby :ruby
+def ruby(*args, &block)
+  # turn on objectspace (for nokogiri)
+  unless String === args[0]
+    args = [""] + args
+  end
+  args[0] = "-X+O #{args[0]}"
+  original_ruby(args, &block)
+end
+
 desc "Load coupler environment"
 task :environment do
   require File.join(File.dirname(__FILE__), 'lib', 'coupler')
