@@ -6,7 +6,9 @@ Feature: Coupler
   Scenario: creating a project
     When I go to the front page
     And I click the "create a project" link
-    And I fill in the form
+    And I fill in the form:
+      | Name        | My Project             |
+      | Description | This is a test project |
     And I click the "Submit" button
     Then it should show me a confirmation page
     And ask me to add a resource
@@ -15,7 +17,14 @@ Feature: Coupler
     Given that I have created a project called "My Project"
     When I go to the project page
     And I click the "Add resource" link
-    And I fill in the form
+    And I fill in the form:
+      | Name     | People    |
+      | Host     | localhost |
+      | Port     | 12345     |
+      | Username | coupler   |
+      | Password | cupla     |
+      | Database | fake_data |
+      | Table    | people    |
     And I click the "Submit" button
     Then it should show me a confirmation page
     And ask me to add transformations
@@ -25,8 +34,9 @@ Feature: Coupler
     And that I have added a resource called "People"
     When I go to the resource page
     And I click the "Add transformation" link
-    And I select "first_name" for "Field"
-    And I select "downcaser" for "Transformer"
+    And I fill in the form:
+      | Field       | first_name |
+      | Transformer | downcaser  |
     And I click the "Submit" button
     Then it should take me back to the resource page
 
@@ -44,7 +54,7 @@ Feature: Coupler
     And that I have added a resource called "People"
     When I go to the project page
     And I click the "Create scenario" link
-    And I fill in the form
+    And I fill in the form:
       | Name             | Link by Last name |
       | Type             | Self-join         |
       | Resource         | People            |
@@ -60,7 +70,7 @@ Feature: Coupler
     And that I have created a scenario called "Link by Last name"
     When I go to the scenario page
     And I click the "Add matcher" link
-    And I fill in the form
+    And I fill in the form:
       | Field | last_name |
       | Type  | Exact     |
     And I click the "Submit" button

@@ -29,34 +29,27 @@ When /^I go to the (.+?) page$/ do |page_name|
 end
 
 When /^I click the "(.+?)" link$/ do |link_name|
-  browser.link(:text, link_name).click
+  link = browser.link(:text, link_name)
+  assert link.exist?, "can't find the '#{link_name}' link"
+  link.click
 end
 
-When /^I fill in the form$/ do
-  begin
-    case current_url
-    when %r{/projects/new$}
-      @type = 'project'
-      fill_in 'Name', :with => 'My Project'
-
-    when %r{/projects/.+?/resources/new$}
-      @type = 'resource'
-      fill_in 'Name', :with => 'People'
-      fill_in 'Host', :with => 'localhost'
-      fill_in 'Port', :with => '12345'
-      fill_in 'Username', :with => 'coupler'
-      fill_in 'Password', :with => 'cupla'
-      fill_in 'Database', :with => 'fake_data'
-      fill_in 'Table', :with => 'people'
+When /^I fill in the form:$/ do |table|
+  table.raw.each do |(label_or_name, value)|
+    elt = nil
+    [:text_field, :select_list].each do |type|
+      elt = find_element_by_label_or_name(type, label_or_name)
+      break if elt.exist?
     end
-  rescue
-    puts current_page_source
-    raise
-  end
-end
+    assert elt.exist?, "can't find element with label or name of '#{label_or_name}'"
 
-When /^I select "([^"]*)" for "([^"]*)"$/ do |option, select|
-  select option, :from => select
+    case elt
+    when Celerity::TextField
+      elt.value = value
+    when Celerity::SelectList
+      elt.select(value)
+    end
+  end
 end
 
 When /^I click the "(.+?)" button$/ do |button_name|
@@ -64,7 +57,7 @@ When /^I click the "(.+?)" button$/ do |button_name|
 end
 
 Then /^it should show me a confirmation page$/ do
-  assert_match /#{@type.capitalize} successfully created/, current_page_source
+  assert_match /successfully created/, current_page_source
 end
 
 Then /^ask me to (.+)$/ do |question|

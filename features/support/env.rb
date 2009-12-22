@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + "/../../test/helper"
 require 'test/unit/assertions'
-require 'butternut'
+require '/home/stephej1/Projects/butternut/lib/butternut'
 
 module CouplerWorld
   include Test::Unit::Assertions

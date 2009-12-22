@@ -1,2 +1,2 @@
-- Add cucumber features for matching and performing transformations
 - Make layout for coupler github pages the same
+- Fix too many connections problem in Sequel
