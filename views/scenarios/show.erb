@@ -1,0 +1,7 @@
+<% if flash[:newly_created] %>
+<div id="notice">
+  Scenario successfully created!  Next you'll need to add matchers.
+</div>
+<% end %>
+
+<h1><%= @scenario.name %> in <%= @project.name %></h1>

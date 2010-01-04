@@ -16,6 +16,10 @@ module Coupler
         assert_respond_to Project.new, :resources
       end
 
+      def test_one_to_many_scenarios
+        assert_respond_to Project.new, :scenarios
+      end
+
       def test_requires_name
         project = ::Factory.build(:project, :name => nil)
         assert !project.valid?

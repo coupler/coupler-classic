@@ -20,8 +20,8 @@ module Coupler
         assert_respond_to Resource.new, :transformations
       end
 
-      def test_one_to_many_jobs
-        assert_respond_to Resource.new, :jobs
+      def test_many_to_many_scenarios
+        assert_respond_to Resource.new, :scenarios
       end
 
       def test_requires_name

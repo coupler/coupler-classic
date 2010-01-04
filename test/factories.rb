@@ -19,3 +19,8 @@ Factory.define :transformation, :class => Coupler::Models::Transformation do |t|
   t.transformer_name 'downcaser'
   t.association :resource
 end
+
+Factory.define :scenario, :class => Coupler::Models::Scenario do |s|
+  s.sequence(:name) { |n| "Scenario #{n}" }
+  s.association :project
+end

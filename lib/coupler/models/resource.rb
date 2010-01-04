@@ -4,7 +4,7 @@ module Coupler
       include CommonModel
       many_to_one :project
       one_to_many :transformations
-      one_to_many :jobs
+      many_to_many :scenarios
 
       def connection
         unless @connection

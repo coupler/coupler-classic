@@ -20,6 +20,7 @@ module Coupler
     register Extensions::Projects
     register Extensions::Resources
     register Extensions::Transformations
+    register Extensions::Scenarios
     helpers Coupler::Helpers
 
     get "/" do

@@ -46,6 +46,7 @@ module Coupler
         String :database_name
         String :table_name
         String :primary_key, :default => "id"
+        String :status
         Integer :project_id
         Time :transformed_at
         Time :created_at
@@ -57,6 +58,36 @@ module Coupler
         String :field_name
         String :transformer_name
         Integer :resource_id
+        Time :created_at
+        Time :updated_at
+      end
+
+      @database.create_table :scenarios do
+        primary_key :id
+        String :name
+        String :description
+        String :type
+        String :status
+        Integer :project_id
+        Time :run_at
+        Time :created_at
+        Time :updated_at
+      end
+
+      @database.create_table :resources_scenarios do
+        primary_key :id
+        Integer :resource_id
+        Integer :scenario_id
+        Time :created_at
+        Time :updated_at
+      end
+
+      @database.create_table :matchers do
+        primary_key :id
+        String :field
+        String :comparator_name
+        Text :comparator_options
+        Integer :scenario_id
         Time :created_at
         Time :updated_at
       end

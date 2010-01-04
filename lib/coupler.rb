@@ -43,6 +43,7 @@ if Coupler::Server.instance.is_running?
 
   require File.dirname(__FILE__) + "/coupler/models"
   require File.dirname(__FILE__) + "/coupler/transformers"
+  require File.dirname(__FILE__) + "/coupler/comparators"
   require File.dirname(__FILE__) + "/coupler/jobs"
   require File.dirname(__FILE__) + "/coupler/extensions"
 

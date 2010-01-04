@@ -14,7 +14,7 @@ class Coupler::TestConfig < ActiveSupport::TestCase
   end
 
   def test_create_schema
-    [:projects, :resources, :transformations].each do |name|
+    [:projects, :resources, :transformations, :scenarios, :resources_scenarios, :matchers].each do |name|
       @config.expects(:create_table).with(name)
     end
     @config.create_schema

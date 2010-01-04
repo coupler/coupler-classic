@@ -3,6 +3,7 @@ module Coupler
     class Project < Sequel::Model
       include CommonModel
       one_to_many :resources
+      one_to_many :scenarios
 
       private
         def validate
