@@ -155,6 +155,8 @@ module Coupler
         result_set = result_db[:pants]
         changed_row = result_set[:id => original_row[:id]]
         assert_equal original_row[:first_name].downcase, changed_row[:first_name]
+
+        assert_equal "ok", resource.status
       end
 
       def test_initial_status
@@ -164,7 +166,7 @@ module Coupler
 
       def test_update_status_changes_status_after_adding_first_transformation
         resource = Factory(:resource)
-        transformation = Factory(:transformation, :resource => nil, :resource_id => resource.id)
+        transformation = Factory(:transformation, :resource => resource)
         resource.update(:status => "ok")  # just to make sure
         resource.update_status!
         assert_equal "out of date", resource.status
@@ -172,7 +174,7 @@ module Coupler
 
       def test_update_status_changes_status_when_transformed_at_is_old
         resource = Factory(:resource, :transformed_at => Time.now - 20)
-        transformation = Factory(:transformation, :resource => nil, :resource_id => resource.id)
+        transformation = Factory(:transformation, :resource => resource)
         resource.update(:status => "ok")  # just to make sure
         resource.update_status!
         assert_equal "out of date", resource.status
@@ -180,11 +182,20 @@ module Coupler
 
       def test_update_status_changes_status_when_transformations_are_updated
         resource = Factory(:resource, :transformed_at => Time.now - 20)
-        transformation = Factory(:transformation, :resource => nil, :resource_id => resource.id)
+        transformation = Factory(:transformation, :resource => resource)
         resource.update(:status => "ok")  # just to make sure
         transformation.update(:field_name => "blahblah")
         resource.update_status!
         assert_equal "out of date", resource.status
+      end
+
+      def test_update_status_changes_status_when_transformations_are_removed
+        resource = Factory(:resource, :transformed_at => Time.now - 20)
+        transformation = Factory(:transformation, :resource => resource)
+        resource.update(:status => "out of date")  # just to make sure
+        transformation.destroy
+        resource.update_status!
+        assert_equal "ok", resource.status
       end
     end
   end

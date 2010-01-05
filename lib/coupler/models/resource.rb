@@ -3,7 +3,7 @@ module Coupler
     class Resource < Sequel::Model
       include CommonModel
       many_to_one :project
-      one_to_many :transformations, :after_add => :update_status
+      one_to_many :transformations
       many_to_many :scenarios
 
       def connection
@@ -33,21 +33,20 @@ module Coupler
       end
 
       def update_status!
-        new_status = nil
         if transformed_at.nil?
           if transformations_dataset.count > 0
-            new_status = "out of date"
+            self.status = "out of date"
+          else
+            self.status = "ok"
           end
         else
           if transformations_dataset.filter("updated_at > ?", self.transformed_at).count > 0
-            new_status = "out of date"
+            self.status = "out of date"
+          else
+            self.status = "ok"
           end
         end
-
-        if new_status
-          self.status = new_status
-          save
-        end
+        save
       end
 
       def transform!
@@ -136,6 +135,7 @@ module Coupler
           thread_pool.join
 
           self.transformed_at = Time.now
+          self.status = "ok"
           self.save
         end
     end

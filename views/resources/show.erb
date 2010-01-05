@@ -40,8 +40,10 @@
 </p>
 
 <% if !@transformations.empty? %>
-<h3>Status</h3>
-
+<h3>Transform</h3>
+<p>
+  Status: <strong><%= @resource.status %></strong>
+</p>
 <p>
   Last transformed at: <strong><%= @resource.transformed_at || "Never" %></strong>
 </p>
