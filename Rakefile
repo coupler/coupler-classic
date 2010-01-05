@@ -52,6 +52,7 @@ Rake::TestTask.new(:test) do |test|
   test.libs << 'lib' << 'test'
   test.pattern = 'test/**/test_*.rb'
   test.verbose = true
+  test.ruby_opts = %w{--debug}
 end
 task :test => [:set_test_env, :check_dependencies, 'db:bootstrap', 'db:fake']
 

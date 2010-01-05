@@ -3,7 +3,7 @@ module Coupler
     class Resource < Sequel::Model
       include CommonModel
       many_to_one :project
-      one_to_many :transformations
+      one_to_many :transformations, :after_add => :update_status
       many_to_many :scenarios
 
       def connection
@@ -32,6 +32,24 @@ module Coupler
         connection.schema(table_name)
       end
 
+      def update_status!
+        new_status = nil
+        if transformed_at.nil?
+          if transformations_dataset.count > 0
+            new_status = "out of date"
+          end
+        else
+          if transformations_dataset.filter("updated_at > ?", self.transformed_at).count > 0
+            new_status = "out of date"
+          end
+        end
+
+        if new_status
+          self.status = new_status
+          save
+        end
+      end
+
       def transform!
         do_transform
       end
@@ -40,6 +58,12 @@ module Coupler
         def process_row(row)
           values = @transformers.inject(row) { |row, t| t.transform(row) }
           @result_dataset.insert(values)
+        end
+
+        def before_create
+          super
+          self.slug ||= self.name.downcase.gsub(/\s+/, "_")
+          self.status = "ok"
         end
 
         def validate
@@ -80,11 +104,6 @@ module Coupler
               errors[:base] << "Couldn't connect to the database"
             end
           end
-        end
-
-        def before_save
-          super
-          self.slug ||= self.name.downcase.gsub(/\s+/, "_")
         end
 
         def do_transform

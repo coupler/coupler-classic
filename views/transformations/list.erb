@@ -3,6 +3,7 @@
     <tr>
       <th>Field</th>
       <th>Transformer</th>
+      <th></th>
     </tr>
   </thead>
   <tbody>
@@ -10,6 +11,7 @@
     <tr>
       <td><%= transformation[:field_name] %></td>
       <td><%= transformation[:transformer_name] %></td>
+      <td><%= delete_link("Delete", "/projects/#{@project.slug}/resources/#{@resource.id}/transformations/#{transformation.id}") %></td>
     </tr>
   <% end %>
   </tbody>

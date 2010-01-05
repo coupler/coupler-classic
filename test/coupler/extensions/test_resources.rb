@@ -66,7 +66,7 @@ module Coupler
         rows = tables[1].css('tbody tr')
         assert_equal 1, rows.length
         cells = rows[0].css('td')
-        assert_equal %w{first_name downcaser}, cells.collect(&:inner_html)
+        assert_equal %w{first_name downcaser}, cells[0..1].collect(&:inner_html)
       end
 
       def test_transform_resource

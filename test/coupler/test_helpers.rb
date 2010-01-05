@@ -22,7 +22,9 @@ module Coupler
       assert_equal "Pants are smelly", li[2].inner_html
     end
 
-    def test_tilt
+    def test_delete_link
+      expected = %^<a href="/foo/bar" onclick="if (confirm('Are you sure?')) { var f = document.createElement('form'); f.style.display = 'none'; this.parentNode.appendChild(f); f.method = 'POST'; f.action = this.href; var m = document.createElement('input'); m.setAttribute('type', 'hidden'); m.setAttribute('name', '_method'); m.setAttribute('value', 'delete'); f.appendChild(m); f.submit(); }; return false;">Foo bar</a>^
+      assert_equal expected, delete_link("Foo bar", "/foo/bar")
     end
   end
 end

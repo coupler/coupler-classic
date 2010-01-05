@@ -39,6 +39,7 @@
   <a href="/projects/<%= @project.slug %>/resources/<%= @resource.id %>/transformations/new">Add transformation</a>
 </p>
 
+<% if !@transformations.empty? %>
 <h3>Status</h3>
 
 <p>
@@ -62,3 +63,4 @@
     </form>
   </div>
 </div>
+<% end %>

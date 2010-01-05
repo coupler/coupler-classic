@@ -21,6 +21,14 @@ module Coupler
             erb 'transformations/new'.to_sym
           end
         end
+
+        app.delete "/projects/:slug/resources/:resource_id/transformations/:id" do
+          @project = Models::Project[:slug => params[:slug]]
+          @resource = @project.resources_dataset[:id => params[:resource_id]]
+          @transformation = @resource.transformations_dataset[:id => params[:id]]
+          @transformation.destroy
+          redirect "/projects/#{@project.slug}/resources/#{@resource.id}"
+        end
       end
     end
   end

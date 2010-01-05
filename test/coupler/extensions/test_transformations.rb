@@ -32,8 +32,14 @@ module Coupler
         assert_equal "http://example.org/projects/roflcopter/resources/#{@resource.id}", last_request.url
       end
 
-      def test_failing_to_create_transformation
-        # This doesn't ever happen yet, well, supposedly.
+      def test_delete
+        transformation = Factory(:transformation, :resource => @resource)
+        delete "/projects/roflcopter/resources/#{@resource.id}/transformations/#{transformation.id}"
+        assert_equal 0, Models::Transformation.filter(:id => transformation.id).count
+
+        assert last_response.redirect?, "Wasn't redirected"
+        follow_redirect!
+        assert_equal "http://example.org/projects/roflcopter/resources/#{@resource.id}", last_request.url
       end
     end
   end

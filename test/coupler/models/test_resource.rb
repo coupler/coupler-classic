@@ -120,22 +120,6 @@ module Coupler
         assert_equal expected, resource.schema
       end
 
-      #def test_transform
-        #Mocha::Mockery.instance.stubba.unstub_all
-        #project = Factory(:project, :name => "roflsauce")
-        #resource = Factory(:resource, :name => "pants", :project => project)
-        #transformation = Factory(:transformation, {
-          #:resource => resource, :transformer_name => "downcaser",
-          #:field_name => "first_name"
-        #})
-        #row = resource.dataset[:id => 1]
-        #resource.transform!
-
-        #result_set = Sequel.connect(Coupler::Server.instance.connection_string("roflsauce[pants]"))
-        #assert result_set.test_connection
-        #assert_equal row[:first_name].downcase, result_set[:id => 1][:first_name]
-      #end
-
       def test_result_connection_creates_database
         databases = @config["SHOW DATABASES"].collect { |x| x[:Database] }
         @config.run("DROP DATABASE roflsauce")  if databases.include?("rolfsauce")
@@ -171,6 +155,36 @@ module Coupler
         result_set = result_db[:pants]
         changed_row = result_set[:id => original_row[:id]]
         assert_equal original_row[:first_name].downcase, changed_row[:first_name]
+      end
+
+      def test_initial_status
+        resource = Factory(:resource)
+        assert_equal "ok", resource.status
+      end
+
+      def test_update_status_changes_status_after_adding_first_transformation
+        resource = Factory(:resource)
+        transformation = Factory(:transformation, :resource => nil, :resource_id => resource.id)
+        resource.update(:status => "ok")  # just to make sure
+        resource.update_status!
+        assert_equal "out of date", resource.status
+      end
+
+      def test_update_status_changes_status_when_transformed_at_is_old
+        resource = Factory(:resource, :transformed_at => Time.now - 20)
+        transformation = Factory(:transformation, :resource => nil, :resource_id => resource.id)
+        resource.update(:status => "ok")  # just to make sure
+        resource.update_status!
+        assert_equal "out of date", resource.status
+      end
+
+      def test_update_status_changes_status_when_transformations_are_updated
+        resource = Factory(:resource, :transformed_at => Time.now - 20)
+        transformation = Factory(:transformation, :resource => nil, :resource_id => resource.id)
+        resource.update(:status => "ok")  # just to make sure
+        transformation.update(:field_name => "blahblah")
+        resource.update_status!
+        assert_equal "out of date", resource.status
       end
     end
   end

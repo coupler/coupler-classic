@@ -14,6 +14,7 @@ module Coupler
     set :show_exceptions, Proc.new { development? }
     set :dump_errors, true
     set :logging, Proc.new { !test? }
+    set :methodoverride, true
     enable :sessions
 
     use Rack::Flash
