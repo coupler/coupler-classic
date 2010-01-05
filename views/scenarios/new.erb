@@ -1,0 +1,42 @@
+<h1>New Scenario for <%= @project.name %></h1>
+
+<%= error_messages_for @scenario %>
+<form method="post" action="/projects/<%= @project.slug %>/scenarios">
+  <table class="form">
+    <tr>
+      <td class="left"><label for="name">Name</label></td>
+      <td>
+        <input id="name" name="scenario[name]" type="text" value="<%= @scenario.name %>" />
+      </td>
+    </tr>
+    <tr class="alt">
+      <td class="left"><label for="description">Description</label></td>
+      <td>
+        <input id="name" name="scenario[description]" type="text" value="<%= @scenario.description %>" />
+      </td>
+    </tr>
+    <tr>
+      <td class="left"><label for="type">Type</label></td>
+      <td>
+        <select id="type" name="scenario[type]">
+          <% [%w{self-join Self-join}].each do |(value, label)| %>
+            <option value="<%= value %>"<%= ' selected="selected"' if @scenario[:type] == value %>><%= label %></option>
+          <% end %>
+        </select>
+      </td>
+    </tr>
+    <tr class="alt">
+      <td class="left"><label for="resource">Resource</label></td>
+      <td>
+        <select id="resource" name="resource_ids[]">
+          <% @project.resources.each do |resource| %>
+            <option value="<%= resource.id %>"><%= resource.name %></option>
+          <% end %>
+        </select>
+      </td>
+    </tr>
+  </table>
+  <p>
+    <input type="submit" value="Submit" /> or <a href="/projects/<%= @project.slug %>">Cancel</a>
+  </p>
+</form>

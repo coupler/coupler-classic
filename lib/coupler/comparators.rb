@@ -16,4 +16,4 @@ module Coupler
 end
 
 require File.dirname(__FILE__) + "/comparators/base"
-#require File.dirname(__FILE__) + "/comparators/exact"
+require File.dirname(__FILE__) + "/comparators/exact"

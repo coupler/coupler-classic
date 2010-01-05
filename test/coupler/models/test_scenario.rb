@@ -23,6 +23,35 @@ module Coupler
       def test_one_to_many_matchers
         assert_respond_to Scenario.new, :matchers
       end
+
+      def test_requires_name
+        scenario = Factory.build(:scenario, :name => nil)
+        assert !scenario.valid?
+
+        scenario.name = ""
+        assert !scenario.valid?
+      end
+
+      def test_requires_unique_name_across_projects
+        project = Factory.create(:project)
+        scenario_1 = Factory.create(:scenario, :name => "avast", :project => project)
+        scenario_2 = Factory.build(:scenario, :name => "avast", :project => project)
+        assert !scenario_2.valid?
+      end
+
+      def test_required_unique_name_on_update
+        project = Factory.create(:project)
+        scenario_1 = Factory.create(:scenario, :name => "avast", :project => project)
+        scenario_2 = Factory.create(:scenario, :name => "ahoy", :project => project)
+        scenario_1.name = "ahoy"
+        assert !scenario_1.valid?, "Resource wasn't invalid"
+      end
+
+      def test_updating
+        project = Factory.create(:project)
+        scenario = Factory.create(:scenario, :name => "avast", :project => project)
+        scenario.save!
+      end
     end
   end
 end

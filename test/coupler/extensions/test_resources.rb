@@ -12,16 +12,6 @@ module Coupler
         Models::Resource.any_instance.stubs(:schema).returns([[:id, {:allow_null=>false, :default=>nil, :primary_key=>true, :db_type=>"int(11)", :type=>:integer, :ruby_default=>nil}], [:first_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(50)", :type=>:string, :ruby_default=>nil}], [:last_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(50)", :type=>:string, :ruby_default=>nil}]])
       end
 
-      def test_resources
-        my_resource = Factory(:resource, :name => "roflsauce", :project => @project)
-        nacho_resource = Factory(:resource, :name => "omgponies")
-
-        get "/projects/roflcopter/resources"
-        assert last_response.ok?
-        assert_match /roflsauce/, last_response.body
-        assert_no_match /omgponies/, last_response.body
-      end
-
       def test_new_resource
         get "/projects/roflcopter/resources/new"
         assert last_response.ok?

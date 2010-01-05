@@ -58,8 +58,6 @@ Feature: Coupler
       | Name             | Link by Last name |
       | Type             | Self-join         |
       | Resource         | People            |
-      | Range            | 50-100            |
-      | Combining Method | Sum               |
     And I click the "Submit" button
     Then it should show me a confirmation page
     And ask me to add matchers

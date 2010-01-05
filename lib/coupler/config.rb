@@ -69,7 +69,7 @@ module Coupler
         String :type
         String :status
         Integer :project_id
-        Time :run_at
+        Time :last_run_at
         Time :created_at
         Time :updated_at
       end

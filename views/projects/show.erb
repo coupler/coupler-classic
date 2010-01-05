@@ -10,6 +10,12 @@
 
 <h2>Resources</h2>
 <%= erb(:"resources/list", :layout => false) %>
+<p>
+  <a href="/projects/<%= @project.slug %>/resources/new">Add resource</a>
+</p>
 
 <h2>Scenarios</h2>
 <%= erb(:"scenarios/list", :layout => false) %>
+<p>
+  <a href="/projects/<%= @project.slug %>/scenarios/new">Create scenario</a>
+</p>

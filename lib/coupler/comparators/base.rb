@@ -1,10 +1,10 @@
 module Coupler
   module Comparators
     class Base
-      def initialize()
+      def initialize
       end
 
-      def compare(*args)
+      def score(*args)
         raise NotImplementedError
       end
     end
