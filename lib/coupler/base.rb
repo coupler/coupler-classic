@@ -22,7 +22,12 @@ module Coupler
     register Extensions::Resources
     register Extensions::Transformations
     register Extensions::Scenarios
-    helpers Coupler::Helpers
+    register Extensions::Matchers
+    helpers do
+      include Coupler::Helpers
+      include Rack::Utils
+      alias_method :h, :escape_html
+    end
 
     get "/" do
       if Models::Project.count > 0

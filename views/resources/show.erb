@@ -6,7 +6,7 @@
 </div>
 <% end %>
 
-<h1><%= @resource.name %> in <%= @project.name %></h1>
+<h1><%= @resource.name %> in <a href="/projects/<%= @project.slug %>"><%= @project.name %></a></h1>
 
 <h2>Source Fields</h2>
 <table class="list">

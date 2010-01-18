@@ -17,7 +17,8 @@ Feature: managing scenarios
     Given that I have created a project called "My Project"
     And that I have added a resource called "People"
     And that I have created a scenario called "Link by Last name"
-    And that I have added an "Exact" matcher for "last_name"
+    And that I have added a "exact" matcher with these options:
+      | field_name | last_name |
     When I go to the scenario page
     And I click the "Run" button
     And I click the "Yes" button

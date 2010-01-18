@@ -4,4 +4,11 @@
 </div>
 <% end %>
 
-<h1><%= @scenario.name %> in <%= @project.name %></h1>
+<h1><%= @scenario.name %> in <a href="/projects/<%= @project.slug %>"><%= @project.name %></a></h1>
+
+<h2>Matchers</h2>
+
+<%= erb(:"matchers/list", :layout => false) %>
+<p>
+  <a href="/projects/<%= @project.slug %>/scenarios/<%= @scenario.id %>/matchers/new">Add matcher</a>
+</p>

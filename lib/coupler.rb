@@ -15,6 +15,7 @@ require 'sinatra/base'
 require 'rack/flash'
 require 'jdbc/mysql'
 require 'sequel'
+require 'json'
 
 # vendored stuff
 vendor_dir = File.join(COUPLER_ROOT, "vendor")
@@ -45,8 +46,8 @@ if Coupler::Server.instance.is_running?
   require File.dirname(__FILE__) + "/coupler/transformers"
   require File.dirname(__FILE__) + "/coupler/comparators"
   require File.dirname(__FILE__) + "/coupler/jobs"
+  require File.dirname(__FILE__) + "/coupler/score_set"
   require File.dirname(__FILE__) + "/coupler/extensions"
-
   require File.dirname(__FILE__) + "/coupler/helpers"
   require File.dirname(__FILE__) + "/coupler/base"
 end

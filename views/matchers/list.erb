@@ -1,0 +1,20 @@
+<% if @matchers.empty? %>
+<p>There are currently no matchers for this scenario.</p>
+<% else %>
+<table class="list">
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Options</th>
+    </tr>
+  </thead>
+  <tbody>
+  <% @matchers.each do |matcher| %>
+    <tr>
+      <td><%=h matcher.comparator_name %></td>
+      <td><%=h matcher.comparator_options.inspect %></td>
+    </tr>
+  <% end %>
+  </tbody>
+</table>
+<% end %>

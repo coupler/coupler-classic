@@ -24,3 +24,8 @@ Factory.define :scenario, :class => Coupler::Models::Scenario do |s|
   s.sequence(:name) { |n| "Scenario #{n}" }
   s.association :project
 end
+
+Factory.define :matcher, :class => Coupler::Models::Matcher do |m|
+  m.comparator_name 'exact'
+  m.comparator_options('field_name' => 'first_name')
+end

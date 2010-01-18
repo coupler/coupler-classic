@@ -27,6 +27,7 @@ module Coupler
         app.get '/projects/:slug/scenarios/:id' do
           @project = Models::Project[:slug => params[:slug]]
           @scenario = @project.scenarios_dataset[:id => params[:id]]
+          @matchers = @scenario.matchers
           erb 'scenarios/show'.to_sym
         end
       end

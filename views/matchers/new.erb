@@ -1,0 +1,46 @@
+<script type="text/javascript">
+  var comparator_options = {
+  <% Coupler::Comparators.list.each_pair do |name, klass| %>
+    '<%= name %>': <%= klass.const_get(:OPTIONS).to_json %>
+  <% end %>
+  };
+  $(function() {
+    $('#comparator_name').change(function() {
+      div = $('#comparator_options').html('');
+      opts = comparator_options[$(this).val()];
+      if (opts) {
+        $.each(opts, function() {
+          p = $('<p/>');
+          label = $('<label/>')
+            .attr('for', this.name)
+            .html(this.label);
+          input = $('<input/>')
+            .attr('type', this.type)
+            .attr('id', this.name)
+            .attr('name', 'matcher[comparator_options]['+this.name+']');
+          p.append(label).append('<br/>').append(input);
+          div.append(p);
+        });
+      }
+    });
+  });
+</script>
+<h1>New Matcher for <%= @scenario.name %> in <%= @project.name %></h1>
+
+<%= error_messages_for @matcher %>
+<form method="post" action="/projects/<%= @project.slug %>/scenarios/<%= @scenario.id %>/matchers">
+  <p>
+    <label for="comparator_name">Comparator</label><br/>
+    <select id="comparator_name" name="matcher[comparator_name]">
+      <option></option>
+    <% Coupler::Comparators.list.keys.each do |comparator_name| %>
+      <option><%= comparator_name %></option>
+    <% end %>
+    </select>
+  </p>
+  <div id="comparator_options">
+  </div>
+  <p>
+    <input type="submit" value="Submit" /> or <a href="/projects/<%= @project.slug %>/scenarios/<%= @scenario.id %>">Cancel</a>
+  </p>
+</form>

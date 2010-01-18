@@ -69,6 +69,7 @@ module Coupler
         String :type
         String :status
         Integer :project_id
+        Integer :score_set_id
         Time :last_run_at
         Time :created_at
         Time :updated_at
@@ -84,25 +85,12 @@ module Coupler
 
       @database.create_table :matchers do
         primary_key :id
-        String :field
         String :comparator_name
         Text :comparator_options
         Integer :scenario_id
         Time :created_at
         Time :updated_at
       end
-
-      #@database.create_table :jobs do
-        #primary_key :id
-        #Integer :resource_id
-        #String :type
-        #Integer :completed
-        #Integer :total
-        #String :status
-        #String :message
-        #Time :created_at
-        #Time :updated_at
-      #end
     end
   end
 end

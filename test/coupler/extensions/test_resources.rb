@@ -50,7 +50,7 @@ module Coupler
         assert last_response.ok?
 
         doc = Nokogiri::HTML(last_response.body)
-        assert_equal "roflsauce in #{@project.name}", doc.at('h1').inner_html
+        assert_match /roflsauce in.+#{@project.name}/, doc.at('h1').inner_html
 
         tables = doc.css('table')
 

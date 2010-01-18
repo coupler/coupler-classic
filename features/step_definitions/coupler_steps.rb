@@ -15,6 +15,26 @@ Given /^that I have added a "([^\"]*)" transformation for "([^\"]*)"$/ do |trans
   })
 end
 
+Given /^that I have created a scenario called "([^"]*)"$/ do |scenario_name|
+  @scenario = Factory(:scenario, {
+    :name => scenario_name, :type => "self-join",
+    :project => @project
+  })
+  @scenario.add_resource(@resource)
+end
+
+Given /^that I have added a "([^\"]*)" matcher with these options:$/ do |comparator_name, table|
+  comparator_options = {}
+  table.raw.each do |(key, value)|
+    comparator_options[key] = value
+  end
+  @matcher = Factory(:matcher, {
+    :comparator_name => comparator_name,
+    :comparator_options => comparator_options,
+    :scenario => @scenario
+  })
+end
+
 When /^I go to the (.+?) page$/ do |page_name|
   @page_name = page_name
   path = case page_name
@@ -24,6 +44,8 @@ When /^I go to the (.+?) page$/ do |page_name|
            "/projects/#{@project.slug}"
          when "resource"
            "/projects/#{@project.slug}/resources/#{@resource.id}"
+         when "scenario"
+           "/projects/#{@project.slug}/scenarios/#{@scenario.id}"
          end
   visit("http://localhost:4567#{path}")
 end
