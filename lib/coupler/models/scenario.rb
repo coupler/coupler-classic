@@ -6,7 +6,39 @@ module Coupler
       many_to_many :resources
       one_to_many :matchers
 
+      def run!
+        @score_set = ScoreSet.create
+        self.update(:score_set_id => @score_set.id)
+
+        # self-join
+        resource = self.resources_dataset.first
+        dataset = resource.final_dataset.order(:id) # FIXME: id
+
+        thread_pool = ThreadPool.new(10)
+        dataset.each do |record_1|
+          dataset.filter("id > ?", record_1[:id]).each do |record_2|
+            thread_pool.execute(record_1, record_2) do |first, second|
+              result = comparators.inject(0) do |score, comparator|
+                score + comparator.score(first, second)
+              end
+              @score_set.insert({
+                :first_id => first[:id], :second_id => second[:id],
+                :score => result
+              })
+            end
+          end
+        end
+        thread_pool.join
+      end
+
       private
+        def comparators
+          @comparators ||= matchers.collect do |matcher|
+            klass = Comparators[matcher.comparator_name]
+            klass.new(matcher.comparator_options)
+          end
+        end
+
         def validate
           if self.name.nil? || self.name == ""
             errors[:name] << "is required"

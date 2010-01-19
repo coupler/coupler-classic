@@ -17,7 +17,7 @@
     </tr>
   </thead>
   <tbody>
-    <% @resource.schema.each do |(column_name, info)| %>
+    <% @resource.source_schema.each do |(column_name, info)| %>
       <tr>
         <td><%= column_name %></td>
         <td><%= info[:db_type] %></td>

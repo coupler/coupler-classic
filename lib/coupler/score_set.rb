@@ -26,7 +26,7 @@ module Coupler
       end
       housekeeping.update(:last_table => new_table_num)
 
-      new(database[new_table_sym])
+      new(new_table_num, database[new_table_sym])
     end
 
     def self.find(id)
@@ -34,13 +34,15 @@ module Coupler
 
       table_sym = id.is_a?(Symbol) ? id : id.to_s.to_sym
       if database.tables.include?(table_sym)
-        new(database[table_sym])
+        new(id.to_i, database[table_sym])
       else
         nil
       end
     end
 
-    def initialize(dataset)
+    attr_reader :id
+    def initialize(id, dataset)
+      @id = id
       @dataset = dataset
     end
     private :initialize

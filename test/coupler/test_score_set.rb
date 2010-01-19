@@ -51,5 +51,10 @@ module Coupler
       score_set = Coupler::ScoreSet.find(1337)
       assert_nil score_set
     end
+
+    def test_id
+      score_set = Coupler::ScoreSet.create
+      assert_equal 1, score_set.id
+    end
   end
 end

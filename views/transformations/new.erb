@@ -5,7 +5,7 @@
   <p>
     <label for="field_name">Field</label><br/>
     <select id="field_name" name="transformation[field_name]">
-    <% @resource.schema.each do |(column_name, info)| %>
+    <% @resource.source_schema.each do |(column_name, info)| %>
       <option><%= column_name %></option>
     <% end %>
     </select>

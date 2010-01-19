@@ -52,6 +52,40 @@ module Coupler
         scenario = Factory.create(:scenario, :name => "avast", :project => project)
         scenario.save!
       end
+
+      def test_run_self_join_without_transformations
+        server = Coupler::Server.instance
+        inf = Sequel.connect(server.connection_string("information_schema"))
+        inf.execute("DROP DATABASE IF EXISTS score_sets")
+
+        project = Factory(:project, :name => "Test without transformations")
+        resource = Factory(:resource, :name => "Resource 1", :project => project)
+        scenario = Factory(:scenario, {
+          :name => "Scenario 1", :project => project, :type => "self-join"
+        })
+        scenario.add_resource(resource)
+        matcher_1 = Factory(:matcher, {
+          :comparator_name => "exact", :comparator_options => { "field_name" => "last_name" },
+          :scenario => scenario
+        })
+        matcher_2 = Factory(:matcher, {
+          :comparator_name => "exact", :comparator_options => { "field_name" => "first_name" },
+          :scenario => scenario
+        })
+
+        scenario.run!
+
+        score_set = ScoreSet.find(1)
+        assert_not_nil score_set, "Didn't create score set"
+        assert_equal 1, scenario.score_set_id
+
+        ds = resource.source_dataset
+        ds.order("id").each do |row|
+          expected = ds.filter("last_name = ? AND first_name = ? AND id > ?", row[:last_name], row[:first_name], row[:id]).count
+          actual = score_set.filter("first_id = ? AND score = 200", row[:id]).count
+          assert_equal expected, actual, "Expected #{expected} for id #{row[:id]}"
+        end
+      end
     end
   end
 end
