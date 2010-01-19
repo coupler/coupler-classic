@@ -38,6 +38,18 @@ module Coupler
         assert last_response.ok?
         assert_match /Name is required/, last_response.body
       end
+
+      def test_run_scenario
+        scenario = mock("scenario")
+        @scheduler = mock("scheduler") do
+          expects(:schedule_run_scenario_job).with(scenario)
+        end
+        Scheduler.stubs(:instance).returns(@scheduler)
+        Models::Project.stubs(:[]).returns(@project)
+        @project.stubs(:scenarios_dataset).returns(stub("scenarios dataset", :[] => scenario))
+        get "/projects/roflcopter/scenarios/123/run"
+        assert last_response.ok?
+      end
     end
   end
 end

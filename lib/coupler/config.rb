@@ -65,6 +65,7 @@ module Coupler
       @database.create_table :scenarios do
         primary_key :id
         String :name
+        String :slug
         String :description
         String :type
         String :status

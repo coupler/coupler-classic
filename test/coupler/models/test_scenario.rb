@@ -53,6 +53,11 @@ module Coupler
         scenario.save!
       end
 
+      def test_sets_slug_from_name
+        scenario = Factory(:scenario, :name => 'Foo bar')
+        assert_equal "foo_bar", scenario.slug
+      end
+
       def test_run_self_join_without_transformations
         server = Coupler::Server.instance
         inf = Sequel.connect(server.connection_string("information_schema"))

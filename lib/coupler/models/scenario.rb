@@ -39,6 +39,11 @@ module Coupler
           end
         end
 
+        def before_create
+          super
+          self.slug ||= self.name.downcase.gsub(/\s+/, "_")
+        end
+
         def validate
           if self.name.nil? || self.name == ""
             errors[:name] << "is required"

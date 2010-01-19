@@ -30,6 +30,13 @@ module Coupler
           @matchers = @scenario.matchers
           erb 'scenarios/show'.to_sym
         end
+
+        app.get "/projects/:slug/scenarios/:id/run" do
+          @project = Models::Project[:slug => params[:slug]]
+          @scenario = @project.scenarios_dataset[:id => params[:id]]
+          Scheduler.instance.schedule_run_scenario_job(@scenario)
+          erb 'scenarios/run'.to_sym
+        end
       end
     end
   end

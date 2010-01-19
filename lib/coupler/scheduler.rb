@@ -20,5 +20,12 @@ module Coupler
       trigger = SimpleTrigger.new("transform_#{resource.slug}_trigger", "coupler")
       @scheduler.schedule_job(job_detail, trigger)
     end
+
+    def schedule_run_scenario_job(scenario)
+      job_detail = JobDetail.new("run_scenario_#{scenario.slug}", "coupler", Jobs::RunScenario.java_class)
+      job_detail.job_data_map.put(java.lang.String.new("scenario_id"), scenario[:id])
+      trigger = SimpleTrigger.new("run_scenario_#{scenario.slug}_trigger", "coupler")
+      @scheduler.schedule_job(job_detail, trigger)
+    end
   end
 end
