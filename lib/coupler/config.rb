@@ -46,7 +46,6 @@ module Coupler
         String :database_name
         String :table_name
         String :primary_key, :default => "id"
-        String :status
         Integer :project_id
         Time :transformed_at
         Time :created_at
@@ -68,7 +67,6 @@ module Coupler
         String :slug
         String :description
         String :type
-        String :status
         Integer :project_id
         Integer :score_set_id
         Time :last_run_at

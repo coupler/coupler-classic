@@ -10,16 +10,6 @@ module Coupler
             errors[:name] << "is required"
           end
         end
-
-        def after_save
-          super
-          self.resource.update_status!  if self.resource
-        end
-
-        def after_destroy
-          super
-          self.resource.update_status!  if self.resource
-        end
     end
   end
 end

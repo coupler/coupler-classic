@@ -26,9 +26,14 @@ class ActiveSupport::TestCase < ::Test::Unit::TestCase
   end
 
   def teardown
-    config = Coupler::Config.instance
-    config.tables.each do |name|
-      config[name].delete
+    nuke_tables
+  end
+
+  def nuke_tables
+    @config ||= Coupler::Config.instance
+    @config.tables.each do |name|
+      #puts "DELETE FROM #{name}"
+      @config[name].delete
     end
   end
 

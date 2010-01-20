@@ -71,21 +71,20 @@ module Coupler
         end
       end
 
-      def update_status!
+      def status
         if transformed_at.nil?
           if transformations_dataset.count > 0
-            self.status = "out of date"
+            "out_of_date"
           else
-            self.status = "ok"
+            "ok"
           end
         else
           if transformations_dataset.filter("updated_at > ?", self.transformed_at).count > 0
-            self.status = "out of date"
+            "out_of_date"
           else
-            self.status = "ok"
+            "ok"
           end
         end
-        save
       end
 
       def transform!
@@ -108,7 +107,6 @@ module Coupler
         def before_create
           super
           self.slug ||= self.name.downcase.gsub(/\s+/, "_")
-          self.status = "ok"
         end
 
         def validate
@@ -181,7 +179,6 @@ module Coupler
           thread_pool.join
 
           self.transformed_at = Time.now
-          self.status = "ok"
           self.save
         end
     end

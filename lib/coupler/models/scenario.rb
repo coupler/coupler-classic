@@ -6,6 +6,18 @@ module Coupler
       many_to_many :resources
       one_to_many :matchers
 
+      def status
+        if self.matchers_dataset.count == 0
+          "no_matchers"
+        elsif self.resources_dataset.count == 0
+          "no_resources"
+        elsif self.resources.any? { |r| r.status == "out_of_date" }
+          "resources_out_of_date"
+        else
+          "ok"
+        end
+      end
+
       def run!
         @score_set = ScoreSet.create
         self.update(:score_set_id => @score_set.id)

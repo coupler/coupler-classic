@@ -6,50 +6,53 @@
 </div>
 <% end %>
 
-<h1><%= @resource.name %> in <a href="/projects/<%= @project.slug %>"><%= @project.name %></a></h1>
-
 <h2>Source Fields</h2>
-<table class="list">
-  <thead>
-    <tr>
-      <th>Field</th>
-      <th>Type</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @resource.source_schema.each do |(column_name, info)| %>
+<div class="section">
+  <table class="list">
+    <thead>
       <tr>
-        <td><%= column_name %></td>
-        <td><%= info[:db_type] %></td>
+        <th>Field</th>
+        <th>Type</th>
       </tr>
-    <% end %>
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      <% @resource.source_schema.each do |(column_name, info)| %>
+        <tr>
+          <td><%= column_name %></td>
+          <td><%= info[:db_type] %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
 
 <h2>Transformations</h2>
-
-<% if @transformations.empty? %>
-<p>
-  There are currently no transformations for this resource.
-</p>
-<% else %>
-<%= erb(:"transformations/list", :layout => false) %>
-<% end %>
-<p>
-  <a href="/projects/<%= @project.slug %>/resources/<%= @resource.id %>/transformations/new">Add transformation</a>
-</p>
+<div class="section">
+  <% if @transformations.empty? %>
+  <p>
+    There are currently no transformations for this resource.
+  </p>
+  <% else %>
+  <%= erb(:"transformations/list", :layout => false) %>
+  <% end %>
+  <p>
+    <a href="/projects/<%= @project.slug %>/resources/<%= @resource.id %>/transformations/new">Add transformation</a>
+  </p>
+</div>
 
 <% if !@transformations.empty? %>
 <h3>Transform</h3>
-<p>
-  Status: <strong><%= @resource.status %></strong>
-</p>
-<p>
-  Last transformed at: <strong><%= @resource.transformed_at || "Never" %></strong>
-</p>
-<p>
-  <input id="transform-button" type="button" value="Transform Now" />
-</p>
+<div class="section">
+  <p>
+    Status: <strong><%= @resource.status %></strong>
+  </p>
+  <p>
+    Last transformed at: <strong><%= @resource.transformed_at || "Never" %></strong>
+  </p>
+  <p>
+    <input id="transform-button" type="button" value="Transform Now" />
+  </p>
+</div>
 
 <div id="transform-dialog">
   <div id="transform-1" style="display: block;">

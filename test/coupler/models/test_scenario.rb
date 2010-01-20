@@ -91,6 +91,42 @@ module Coupler
           assert_equal expected, actual, "Expected #{expected} for id #{row[:id]}"
         end
       end
+
+      def test_status_when_self_join_and_no_resources
+        scenario = Factory(:scenario, :type => "self-join")
+        matcher = Factory(:matcher, :scenario => scenario)
+        assert_equal "no_resources", scenario.status
+      end
+
+      def test_status_with_no_matchers
+        project = Factory(:project)
+        resource = Factory(:resource, :project => project)
+        scenario = Factory(:scenario, :project => project, :type => "self-join")
+        scenario.add_resource(resource)
+
+        assert_equal "no_matchers", scenario.status
+      end
+
+      def test_status_with_matchers
+        project = Factory(:project)
+        resource = Factory(:resource, :project => project)
+        scenario = Factory(:scenario, :project => project, :type => "self-join")
+        scenario.add_resource(resource)
+        matcher = Factory(:matcher, :scenario => scenario)
+
+        assert_equal "ok", scenario.status
+      end
+
+      def test_status_with_outdated_resources
+        project = Factory(:project)
+        resource = Factory(:resource, :project => project)
+        transformation = Factory(:transformation, :resource => resource)
+        scenario = Factory(:scenario, :project => project, :type => "self-join")
+        scenario.add_resource(resource)
+        matcher = Factory(:matcher, :scenario => scenario)
+
+        assert_equal "resources_out_of_date", scenario.status
+      end
     end
   end
 end

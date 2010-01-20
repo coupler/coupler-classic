@@ -68,6 +68,17 @@ body {
   height: 750px;
 }
 
+#breadcrumbs {
+  position: relative;
+  color: #383538;
+  padding: 1em;
+}
+#breadcrumbs .crumb {
+  float: left;
+  font-size: 1.7em;
+  margin-right: 0.5em;
+}
+
 #notice {
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
@@ -104,7 +115,18 @@ body {
 }
 
 h1, h2, h3 {
-  font-family: georgia;
+  font-weight: normal;
+}
+h2 {
+  font-size: 1.5em;
+  border-bottom: 1px solid black;
+}
+
+a {
+  color: #AE3B3A;
+}
+a:visited {
+  color: #AE3B3A;
 }
 
 label {
@@ -136,4 +158,8 @@ tr.alt td {
 
 input, select, textarea {
   border: 1px solid gray;
+}
+
+.section {
+  padding: 0 0 1em 1.5em;
 }

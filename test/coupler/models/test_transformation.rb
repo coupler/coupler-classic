@@ -16,21 +16,6 @@ module Coupler
         transformation = Factory.build(:transformation, :resource => nil, :resource_id => nil)
         assert !transformation.valid?
       end
-
-      def test_runs_update_status_on_resource_after_save
-        resource = Factory(:resource)
-        resource.expects(:update_status!)
-        transformation = Factory(:transformation, :resource => resource)
-      end
-
-      def test_runs_update_status_on_resource_after_destroy
-        # can't use mocks because the resource is re-initialized
-        resource = Factory(:resource)
-        transformation = Factory(:transformation, :resource => resource)
-        assert_equal "out of date", resource.reload.status
-        transformation.destroy
-        assert_equal "ok", resource.reload.status
-      end
     end
   end
 end

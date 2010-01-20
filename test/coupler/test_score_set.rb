@@ -1,7 +1,7 @@
 require File.dirname(__FILE__) + "/../helper"
 
 module Coupler
-  class TestScores < ActiveSupport::TestCase
+  class TestScoreSet < ActiveSupport::TestCase
     def setup
       @server = Coupler::Server.instance
       @inf = Sequel.connect(@server.connection_string("information_schema"))
