@@ -11,7 +11,7 @@ module Coupler
           connection_string = "jdbc:%s://%s:%d/%s?user=%s&password=%s" % [
             adapter, host, port, database_name, username, password
           ]
-          @source_connection = Sequel.connect(connection_string, :loggers => [Coupler.logger])
+          @source_connection = Sequel.connect(connection_string, :loggers => [Coupler.logger], :max_connections => 10)
         end
         @source_connection
       end

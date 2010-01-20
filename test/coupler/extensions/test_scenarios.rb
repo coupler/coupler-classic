@@ -40,7 +40,7 @@ module Coupler
       end
 
       def test_run_scenario
-        scenario = mock("scenario")
+        scenario = stub("scenario", :new? => false, :name => "foo", :slug => "foo", :id => 1)
         @scheduler = mock("scheduler") do
           expects(:schedule_run_scenario_job).with(scenario)
         end

@@ -35,6 +35,16 @@ module Coupler
         matcher = @scenario.matchers_dataset.first
         assert matcher
       end
+
+      def test_delete
+        matcher = Factory(:matcher, :scenario => @scenario)
+        delete "/projects/roflcopter/scenarios/#{@scenario.id}/matchers/#{matcher.id}"
+        assert_equal 0, Models::Matcher.filter(:id => matcher.id).count
+
+        assert last_response.redirect?, "Wasn't redirected"
+        follow_redirect!
+        assert_equal "http://example.org/projects/roflcopter/scenarios/#{@scenario.id}", last_request.url
+      end
     end
   end
 end

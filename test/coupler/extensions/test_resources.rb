@@ -48,9 +48,9 @@ module Coupler
         transformation = Factory(:transformation, :transformer_name => 'downcaser', :resource => resource)
         get "/projects/roflcopter/resources/#{resource.id}"
         assert last_response.ok?
+        assert_match /Roflsauce/, last_response.body
 
         doc = Nokogiri::HTML(last_response.body)
-        assert_match /roflsauce in.+#{@project.name}/, doc.at('h1').inner_html
 
         tables = doc.css('table')
 
@@ -70,7 +70,7 @@ module Coupler
       end
 
       def test_transform_resource
-        resource = mock("resource")
+        resource = stub("resource", :new? => false, :name => "foo", :slug => "foo", :id => 1)
         @scheduler = mock("scheduler") do
           expects(:schedule_transform_job).with(resource)
         end

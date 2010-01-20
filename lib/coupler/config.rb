@@ -7,7 +7,7 @@ module Coupler
     def initialize
       database_name = COUPLER_ENV ? "coupler_#{COUPLER_ENV}" : "coupler"
       connection_string = Coupler::Server.instance.connection_string(database_name, :create_database => true)
-      @database = Sequel.connect(connection_string, :loggers => [Coupler.logger])
+      @database = Sequel.connect(connection_string, :loggers => [Coupler.logger], :max_connections => 10)
       super(@database)
 
       if @database.tables.empty?

@@ -21,6 +21,14 @@ module Coupler
             erb 'matchers/new'.to_sym
           end
         end
+
+        app.delete "/projects/:slug/scenarios/:scenario_id/matchers/:id" do
+          @project = Models::Project[:slug => params[:slug]]
+          @scenario = @project.scenarios_dataset[:id => params[:scenario_id]]
+          @matcher = @scenario.matchers_dataset[:id => params[:id]]
+          @matcher.destroy
+          redirect "/projects/#{@project.slug}/scenarios/#{@scenario.id}"
+        end
       end
     end
   end
