@@ -36,9 +36,5 @@ module Coupler
         erb :index
       end
     end
-
-    get "/test" do
-      erb :lorem_ipsum
-    end
   end
 end

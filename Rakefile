@@ -31,13 +31,23 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "coupler"
-    gem.summary = %Q{TODO: one-line summary of your gem}
-    gem.description = %Q{TODO: longer description of your gem}
-    gem.email = "viking415@gmail.com"
+    gem.summary = %Q{Coupler is an application for linking data}
+    gem.description = %Q{Coupler is an application based on Sinatra and JRuby for linking data}
+    gem.email = "jeremy.f.stephens@vanderbilt.edu"
     gem.homepage = "http://github.com/coupler/coupler"
     gem.authors = ["Jeremy Stephens"]
+    gem.files.exclude /\.git(ignore|modules)/, "vendor/960-grid-system", "gfx"
+    gem.add_dependency "sinatra"
+    gem.add_dependency "rack-flash"
+    gem.add_dependency "jdbc-mysql"
+    gem.add_dependency "sequel"
+    gem.add_development_dependency "mocha"
     gem.add_development_dependency "cucumber"
-    # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
+    gem.add_development_dependency "activesupport"
+    gem.add_development_dependency "rack-test"
+    gem.add_development_dependency "nokogiri"
+    gem.add_development_dependency "timecop"
+    gem.add_development_dependency "butternut"
   end
 rescue LoadError
   puts "Jeweler (or a dependency) not available. Install it with: sudo gem install jeweler"
@@ -118,7 +128,7 @@ namespace :db do
     confirm("This will completely obliterate the local database.")
 
     require 'fileutils'
-    FileUtils.rm_rf(Dir.glob(File.join(Coupler::Server::BASE_DIR, "*")), :verbose => true)
+    FileUtils.rm_rf(Dir.glob(File.join(Coupler::Server.base_dir, "*")), :verbose => true)
   end
 
   desc "Bootstrap the server schema"

@@ -10,18 +10,13 @@ require 'erb'
 require 'delegate'
 require 'singleton'
 require 'logger'
-require 'rubygems'
 require 'sinatra/base'
 require 'rack/flash'
 require 'jdbc/mysql'
 require 'sequel'
-require 'json'
 
 # vendored stuff
 vendor_dir = File.join(COUPLER_ROOT, "vendor")
-require File.join(vendor_dir, "mysql-connector-mxj-gpl-5-0-9", "mysql-connector-mxj-gpl-5-0-9.jar")
-require File.join(vendor_dir, "mysql-connector-mxj-gpl-5-0-9", "mysql-connector-mxj-gpl-5-0-9-db-files.jar")
-require File.join(vendor_dir, "mysql-connector-mxj-gpl-5-0-9", "lib", "aspectjrt.jar")
 require File.join(vendor_dir, 'thread_pool', 'lib', 'thread_pool')
 require File.join(vendor_dir, 'quartz', 'quartz-1.6.6.jar')
 require File.join(vendor_dir, 'quartz', 'lib', 'core', 'commons-logging-1.1.jar')
