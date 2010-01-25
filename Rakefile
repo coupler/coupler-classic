@@ -22,9 +22,10 @@ def ruby(*args, &block)
   original_ruby(args, &block)
 end
 
-desc "Load coupler environment"
-task :environment do
-  require File.join(File.dirname(__FILE__), 'lib', 'coupler')
+namespace :coupler do
+  task :environment do
+    require File.join(File.dirname(__FILE__), 'lib', 'coupler')
+  end
 end
 
 begin
@@ -123,6 +124,10 @@ Rake::RDocTask.new do |rdoc|
 end
 
 namespace :db do
+  task :environment do
+    require File.join(File.dirname(__FILE__), "lib", "coupler", "server")
+  end
+
   desc "Obliterate the local database"
   task :nuke => :stop do
     confirm("This will completely obliterate the local database.")
@@ -132,15 +137,15 @@ namespace :db do
   end
 
   desc "Bootstrap the server schema"
-  task :bootstrap => :start do
-    confirm("This will delete any existing configuration data.") if COUPLER_ENV != "test"
+  task :bootstrap => [:start, 'coupler:environment'] do
+    confirm("This will delete any existing configuration data.") if ENV['COUPLER_ENV'] != "test"
 
     server = Coupler::Server.instance
     server.start
 
-    config = Coupler::Config.instance
-    config.tables.each { |t| config.drop_table(t) }
-    config.create_schema
+    database = Coupler::Database.instance
+    database.tables.each { |t| database.drop_table(t) }
+    database.create_schema
   end
 
   desc "Start server daemon"
@@ -164,9 +169,8 @@ namespace :db do
   begin
     require 'forgery'
     desc "Create database with fake data"
-    task :fake => :start do
-      server = Coupler::Server.instance
-      db = Sequel.connect(server.connection_string("fake_data", :create_database => true))
+    task :fake => [:start, 'coupler:environment'] do
+      db = Sequel.connect(Coupler::Config.connection_string("fake_data", :create_database => true))
       db.tables.each { |t| db.drop_table(t) }
       db.create_table :people do
         primary_key :id
@@ -192,7 +196,7 @@ end
 
 namespace :web do
   desc "Start web server"
-  task :start => [:environment, 'db:start'] do
+  task :start => ['db:start', 'coupler:environment'] do
     Coupler::Base.run!
   end
 end

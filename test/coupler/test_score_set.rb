@@ -3,8 +3,7 @@ require File.dirname(__FILE__) + "/../helper"
 module Coupler
   class TestScoreSet < ActiveSupport::TestCase
     def setup
-      @server = Coupler::Server.instance
-      @inf = Sequel.connect(@server.connection_string("information_schema"))
+      @inf = Sequel.connect(Config.connection_string("information_schema"))
       @inf.execute("DROP DATABASE IF EXISTS score_sets")
     end
 

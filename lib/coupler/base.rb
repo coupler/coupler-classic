@@ -7,7 +7,7 @@ module Coupler
       super
     end
 
-    set :root, COUPLER_ROOT
+    set :root, File.expand_path(File.join(File.dirname(__FILE__), "..", ".."))
     set :static, true
     #set :port, 37222
     set :raise_errors, Proc.new { test? }

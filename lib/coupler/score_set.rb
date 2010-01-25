@@ -1,8 +1,8 @@
 module Coupler
   class ScoreSet < Delegator
     def self.database
-      connection_string = Coupler::Server.instance.connection_string('score_sets', :create_database => true)
-      database = Sequel.connect(connection_string, :loggers => [Coupler.logger], :max_connections => 10)
+      connection_string = Config.connection_string('score_sets', :create_database => true)
+      database = Sequel.connect(connection_string, :loggers => [Coupler::Logger.instance], :max_connections => 10)
       if database.tables.empty?
         database.create_table(:housekeeping) do
           Integer :last_table

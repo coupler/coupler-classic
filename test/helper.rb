@@ -30,15 +30,15 @@ class ActiveSupport::TestCase < ::Test::Unit::TestCase
   end
 
   def nuke_tables
-    @config ||= Coupler::Config.instance
-    @config.tables.each do |name|
+    @__database ||= Coupler::Database.instance
+    @__database.tables.each do |name|
       #puts "DELETE FROM #{name}"
-      @config[name].delete
+      @__database[name].delete
     end
   end
 
   #def run(*args, &block)
-    #Coupler::Config.instance.transaction do
+    #Coupler::Database.instance.transaction do
       #super
       #raise Sequel::Rollback
     #end

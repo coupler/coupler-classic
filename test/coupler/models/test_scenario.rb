@@ -59,8 +59,7 @@ module Coupler
       end
 
       def test_run_self_join_without_transformations
-        server = Coupler::Server.instance
-        inf = Sequel.connect(server.connection_string("information_schema"))
+        inf = Sequel.connect(Config.connection_string("information_schema"))
         inf.execute("DROP DATABASE IF EXISTS score_sets")
 
         project = Factory(:project, :name => "Test without transformations")

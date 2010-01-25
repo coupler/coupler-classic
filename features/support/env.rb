@@ -12,8 +12,8 @@ module CouplerWorld
 end
 
 Before do
-  config = Coupler::Config.instance
-  config.tables.each { |t| config[t].delete }
+  database = Coupler::Database.instance
+  database.tables.each { |t| database[t].delete }
 end
 
 Butternut.setup_hooks(self)

@@ -4,9 +4,8 @@ module Coupler
   module Models
     class TestResource < ActiveSupport::TestCase
       def setup
-        @config = Coupler::Config.instance
-        @server = Coupler::Server.instance
-        @inf = Sequel.connect(@server.connection_string("information_schema"))
+        @database = Coupler::Database.instance
+        @inf = Sequel.connect(Config.connection_string("information_schema"))
       end
 
       def test_sequel_model
@@ -123,8 +122,8 @@ module Coupler
       end
 
       def test_local_connection_creates_database
-        databases = @config["SHOW DATABASES"].collect { |x| x[:Database] }
-        @config.run("DROP DATABASE roflsauce")  if databases.include?("rolfsauce")
+        databases = @database["SHOW DATABASES"].collect { |x| x[:Database] }
+        @database.run("DROP DATABASE roflsauce")  if databases.include?("rolfsauce")
 
         project = Factory(:project, :name => "roflsauce")
         resource = Factory(:resource, :name => "pants", :project => project)
@@ -146,7 +145,7 @@ module Coupler
 
         local_dataset = resource.local_dataset
 
-        local_connection = Sequel.connect(Coupler::Server.instance.connection_string("local_dataset_test"))
+        local_connection = Sequel.connect(Config.connection_string("local_dataset_test"))
         assert local_connection.tables.include?(:resource_1)
 
         expected_schema = [[:id, {:allow_null=>false, :default=>nil, :primary_key=>true, :db_type=>"int(11)", :type=>:integer, :ruby_default=>nil}], [:first_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}], [:last_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}]]
@@ -169,7 +168,7 @@ module Coupler
           assert_equal Time.now, resource.transformed_at
         end
 
-        result_db = Sequel.connect(Coupler::Server.instance.connection_string("awesome_test_project"))
+        result_db = Sequel.connect(Config.connection_string("awesome_test_project"))
         assert result_db.tables.include?(:pants)
 
         expected = [[:id, {:allow_null=>false, :default=>nil, :primary_key=>true, :db_type=>"int(11)", :type=>:integer, :ruby_default=>nil}], [:first_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}], [:last_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}]]

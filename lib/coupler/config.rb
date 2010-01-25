@@ -1,94 +1,70 @@
-module Coupler
-  CONFIG_PATH = File.dirname(__FILE__) + "/../../config/"
+if !defined? Coupler::Config
+  module Coupler
+    module Config
+      DEFAULT_CONFIG = {
+        :port => 12345,
+        :user => 'coupler',
+        :password => 'cupla',
+        :conn_str => 'jdbc:mysql://localhost:%d/%s?user=%s&password=%s'
+      }
 
-  class Config < Delegator
-    include Singleton
+      @@config = nil
+      def self.[](key)
+        if @@config.nil?
+          @@config = DEFAULT_CONFIG
+        end
 
-    def initialize
-      database_name = COUPLER_ENV ? "coupler_#{COUPLER_ENV}" : "coupler"
-      connection_string = Coupler::Server.instance.connection_string(database_name, :create_database => true)
-      @database = Sequel.connect(connection_string, :loggers => [Coupler.logger], :max_connections => 10)
-      super(@database)
+        if !@@config.has_key?(key) && key == :data_path
+          # FIXME: this is a little naive
+          dir = File.join(File.dirname(__FILE__), "..", "..")
+          if ENV['APPDATA']
+            # Windows
+            dir = File.join(ENV['APPDATA'], "coupler")
+          elsif !File.readable?(dir)
+            if ENV['HOME']
+              dir = File.join(ENV['HOME'], ".coupler")
+            else
+              raise "don't know where to put data!"
+            end
+          end
+          dir = File.expand_path(dir)
+          Dir.mkdir(dir)  if !File.exist?(dir)
+          @@config[key] = dir
+        end
 
-      if @database.tables.empty?
-        create_schema
-      end
-    end
-
-    def __getobj__
-      @database
-    end
-
-    def create_schema
-      if COUPLER_ENV == "test"
-        # FIXME: this isn't really the best solution
-        Sequel::MySQL.default_engine = "InnoDB"
-      end
-
-      @database.create_table :projects do
-        primary_key :id
-        String :name
-        String :slug
-        String :description
-        Time :created_at
-        Time :updated_at
-      end
-
-      @database.create_table :resources do
-        primary_key :id
-        String :name
-        String :slug
-        String :adapter
-        String :host
-        Integer :port
-        String :username
-        String :password
-        String :database_name
-        String :table_name
-        String :primary_key, :default => "id"
-        Integer :project_id
-        Time :transformed_at
-        Time :created_at
-        Time :updated_at
+        @@config[key]
       end
 
-      @database.create_table :transformations do
-        primary_key :id
-        String :field_name
-        String :transformer_name
-        Integer :resource_id
-        Time :created_at
-        Time :updated_at
+      @@data_path = nil
+      def self.data_path
+        # FIXME: this is a little naive
+
+        if @@data_path.nil?
+          dir = File.join(File.dirname(__FILE__), "..", "..")
+          if ENV['APPDATA']
+            # Windows
+            dir = File.join(ENV['APPDATA'], "coupler")
+          elsif !File.readable?(dir)
+            if ENV['HOME']
+              dir = File.join(ENV['HOME'], ".coupler")
+            else
+              raise "don't know where to put data!"
+            end
+          end
+          dir = File.expand_path(dir)
+          Dir.mkdir(dir)  if !File.exist?(dir)
+          @@data_path = dir
+        end
+
+        @@data_path
       end
 
-      @database.create_table :scenarios do
-        primary_key :id
-        String :name
-        String :slug
-        String :description
-        String :type
-        Integer :project_id
-        Integer :score_set_id
-        Time :last_run_at
-        Time :created_at
-        Time :updated_at
-      end
-
-      @database.create_table :resources_scenarios do
-        primary_key :id
-        Integer :resource_id
-        Integer :scenario_id
-        Time :created_at
-        Time :updated_at
-      end
-
-      @database.create_table :matchers do
-        primary_key :id
-        String :comparator_name
-        Text :comparator_options
-        Integer :scenario_id
-        Time :created_at
-        Time :updated_at
+      def self.connection_string(database, options = {})
+        retval = self[:conn_str] % [self[:port], database, self[:user], self[:password]]
+        if options[:create_database]
+          retval += "&createDatabaseIfNotExist=true"
+        end
+        retval
       end
     end
   end

@@ -1,22 +1,17 @@
 require File.dirname(__FILE__) + "/../helper"
 
-class Coupler::TestConfig < ActiveSupport::TestCase
-  def setup
-    @config = Coupler::Config.instance
-  end
+module Coupler
+  class TestConfig < ActiveSupport::TestCase
+    def test_connection_string
+      assert_equal(
+        "jdbc:mysql://localhost:12345/ponies?user=coupler&password=cupla",
+        Config.connection_string("ponies")
+      )
 
-  def test_connection
-    assert_kind_of Sequel::JDBC::Database, @config.__getobj__
-
-    server = Coupler::Server.instance
-    expected = server.connection_string("coupler_test", :create_database => true)
-    assert_equal expected, @config.uri
-  end
-
-  def test_create_schema
-    [:projects, :resources, :transformations, :scenarios, :resources_scenarios, :matchers].each do |name|
-      @config.expects(:create_table).with(name)
+      assert_equal(
+        "jdbc:mysql://localhost:12345/ponies?user=coupler&password=cupla&createDatabaseIfNotExist=true",
+        Config.connection_string("ponies", :create_database => true)
+      )
     end
-    @config.create_schema
   end
 end
