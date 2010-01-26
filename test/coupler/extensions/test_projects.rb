@@ -20,8 +20,6 @@ module Coupler
       end
 
       def test_create_project
-        Models::Project.delete
-        assert_equal 0, Models::Project.count
         post "/projects", {
           'project' => {
             'name' => 'omgponies', 'description' => 'Ponies',
@@ -30,13 +28,15 @@ module Coupler
         assert_equal 1, Models::Project.count
         assert last_response.redirect?, "Wasn't redirected"
         follow_redirect!
-        assert_equal "http://example.org/projects/omgponies", last_request.url
+
+        project = Models::Project.first
+        assert_equal "http://example.org/projects/#{project.id}", last_request.url
         assert_match /Project successfully created/, last_response.body
       end
 
       def test_show_project
         project = Factory(:project, :name => "Blah blah")
-        get "/projects/#{project.slug}"
+        get "/projects/#{project.id}"
         assert last_response.ok?
         assert_match /Blah blah/, last_response.body
       end

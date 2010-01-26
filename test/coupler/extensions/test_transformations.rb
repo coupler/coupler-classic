@@ -4,12 +4,12 @@ module Coupler
   module Extensions
     class TestTransformations < ActiveSupport::TestCase
       def setup
-        @project = ::Factory.create(:project, :slug => "roflcopter")
+        @project = ::Factory.create(:project)
         @resource = ::Factory.create(:resource, :project => @project)
       end
 
       def test_new
-        get "/projects/roflcopter/resources/#{@resource.id}/transformations/new"
+        get "/projects/#{@project.id}/resources/#{@resource.id}/transformations/new"
         assert last_response.ok?
 
         doc = Nokogiri::HTML(last_response.body)
@@ -23,23 +23,23 @@ module Coupler
 
       def test_successfully_creating_transformation
         attribs = Factory.attributes_for(:transformation)
-        post("/projects/roflcopter/resources/#{@resource.id}/transformations", { 'transformation' => attribs })
+        post("/projects/#{@project.id}/resources/#{@resource.id}/transformations", { 'transformation' => attribs })
         transformation = @resource.transformations_dataset.first
         assert transformation
 
         assert last_response.redirect?, "Wasn't redirected"
         follow_redirect!
-        assert_equal "http://example.org/projects/roflcopter/resources/#{@resource.id}", last_request.url
+        assert_equal "http://example.org/projects/#{@project.id}/resources/#{@resource.id}", last_request.url
       end
 
       def test_delete
         transformation = Factory(:transformation, :resource => @resource)
-        delete "/projects/roflcopter/resources/#{@resource.id}/transformations/#{transformation.id}"
+        delete "/projects/#{@project.id}/resources/#{@resource.id}/transformations/#{transformation.id}"
         assert_equal 0, Models::Transformation.filter(:id => transformation.id).count
 
         assert last_response.redirect?, "Wasn't redirected"
         follow_redirect!
-        assert_equal "http://example.org/projects/roflcopter/resources/#{@resource.id}", last_request.url
+        assert_equal "http://example.org/projects/#{@project.id}/resources/#{@resource.id}", last_request.url
       end
     end
   end

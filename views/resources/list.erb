@@ -12,7 +12,7 @@
   <tbody>
   <% @resources.each do |resource| %>
     <tr>
-      <td><a href="/projects/<%= @project.slug %>/resources/<%= resource.id %>"><%= resource[:name] %></a></td>
+      <td><a href="/projects/<%= @project.id %>/resources/<%= resource.id %>"><%= resource[:name] %></a></td>
       <td><%= resource[:database_name] %></td>
       <td><%= resource[:table_name] %></td>
     </tr>

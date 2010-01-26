@@ -37,6 +37,7 @@ begin
     gem.email = "jeremy.f.stephens@vanderbilt.edu"
     gem.homepage = "http://github.com/coupler/coupler"
     gem.authors = ["Jeremy Stephens"]
+    gem.platform = "java"
     gem.files.exclude /\.git(ignore|modules)/, "vendor/960-grid-system", "gfx"
     gem.add_dependency "sinatra"
     gem.add_dependency "rack-flash"

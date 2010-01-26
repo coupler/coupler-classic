@@ -5,7 +5,9 @@ module Coupler
     include Singleton
 
     def initialize
-      @logger = ::Logger.new(File.join(File.dirname(__FILE__), "..", "..", "log", "coupler.log"))
+      log_path = File.join(Config[:data_path], "log")
+      Dir.mkdir(log_path)    if !File.exist?(log_path)
+      @logger = ::Logger.new(File.join(log_path, 'coupler.log'))
     end
 
     def __getobj__

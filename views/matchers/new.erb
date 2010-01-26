@@ -1,3 +1,4 @@
+<% @breadcrumbs = [@project, @scenario, @matcher] %>
 <script type="text/javascript">
   var comparator_options = {
   <% Coupler::Comparators.list.each_pair do |name, klass| %>
@@ -27,7 +28,7 @@
 </script>
 
 <%= error_messages_for @matcher %>
-<form method="post" action="/projects/<%= @project.slug %>/scenarios/<%= @scenario.id %>/matchers">
+<form method="post" action="/projects/<%= @project.id %>/scenarios/<%= @scenario.id %>/matchers">
   <p>
     <label for="comparator_name">Comparator</label><br/>
     <select id="comparator_name" name="matcher[comparator_name]">
@@ -40,6 +41,6 @@
   <div id="comparator_options">
   </div>
   <p>
-    <input type="submit" value="Submit" /> or <a href="/projects/<%= @project.slug %>/scenarios/<%= @scenario.id %>">Cancel</a>
+    <input type="submit" value="Submit" /> or <a href="/projects/<%= @project.id %>/scenarios/<%= @scenario.id %>">Cancel</a>
   </p>
 </form>

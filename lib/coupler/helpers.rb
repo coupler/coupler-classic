@@ -47,5 +47,28 @@ module Coupler
     def delete_link(text, url)
       %^<a href="#{url}" onclick="if (confirm('Are you sure?')) { var f = document.createElement('form'); f.style.display = 'none'; this.parentNode.appendChild(f); f.method = 'POST'; f.action = this.href; var m = document.createElement('input'); m.setAttribute('type', 'hidden'); m.setAttribute('name', '_method'); m.setAttribute('value', 'delete'); f.appendChild(m); f.submit(); }; return false;">#{text}</a>^
     end
+
+    def breadcrumbs
+      # This method is fun but silly.
+      if @breadcrumbs
+        url = ""
+        %{<div id="breadcrumbs">} +
+          @breadcrumbs.inject([]) do |arr, obj|
+            strings = if obj.is_a?(String)
+                        [obj]
+                      else
+                        name = obj.class.to_s.split("::")[-1]
+                        if obj.new?
+                          ["New #{name}"]
+                        else
+                          url += "/#{name.downcase}s/#{obj.id}"
+                          ["#{name}s", %{<a href="#{url}">#{obj.name}</a>}]
+                        end
+                      end
+            arr.push(*strings.collect { |x| %{<div class="crumb">#{x}</div>} })
+          end.join(%{<div class="crumb">/</div>}) +
+          %{</div><div class="clear"></div>}
+      end
+    end
   end
 end

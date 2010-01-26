@@ -6,10 +6,11 @@
 Gem::Specification.new do |s|
   s.name = %q{coupler}
   s.version = "0.0.0"
+  s.platform = %q{java}
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jeremy Stephens"]
-  s.date = %q{2010-01-25}
+  s.date = %q{2010-01-26}
   s.default_executable = %q{coupler}
   s.description = %q{Coupler is an application based on Sinatra and JRuby for linking data}
   s.email = %q{jeremy.f.stephens@vanderbilt.edu}

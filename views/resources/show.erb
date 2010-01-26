@@ -1,3 +1,4 @@
+<% @breadcrumbs = [@project, @resource] %>
 <% add_javascript("jquery-ui.min.js", "resource.js") %>
 <% add_stylesheet("jquery-ui.css") %>
 <% if flash[:newly_created] %>
@@ -36,7 +37,7 @@
   <%= erb(:"transformations/list", :layout => false) %>
   <% end %>
   <p>
-    <a href="/projects/<%= @project.slug %>/resources/<%= @resource.id %>/transformations/new">Add transformation</a>
+    <a href="/projects/<%= @project.id %>/resources/<%= @resource.id %>/transformations/new">Add transformation</a>
   </p>
 </div>
 
@@ -56,7 +57,7 @@
 
 <div id="transform-dialog">
   <div id="transform-1" style="display: block;">
-    <form method="get" action="/projects/<%= @project.slug %>/resources/<%= @resource.id %>/transform">
+    <form method="get" action="/projects/<%= @project.id %>/resources/<%= @resource.id %>/transform">
       <p>
         This may take a while.  Make sure you have your transformations set up
         correctly.  Do you want to proceed?

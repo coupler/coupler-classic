@@ -2,32 +2,32 @@ module Coupler
   module Extensions
     module Matchers
       def self.registered(app)
-        app.get "/projects/:slug/scenarios/:scenario_id/matchers/new" do
-          @project = Models::Project[:slug => params[:slug]]
+        app.get "/projects/:project_id/scenarios/:scenario_id/matchers/new" do
+          @project = Models::Project[:id => params[:project_id]]
           @scenario = @project.scenarios_dataset[:id => params[:scenario_id]]
           @matcher = Models::Matcher.new
           erb 'matchers/new'.to_sym
         end
 
-        app.post "/projects/:slug/scenarios/:scenario_id/matchers" do
-          @project = Models::Project[:slug => params[:slug]]
+        app.post "/projects/:project_id/scenarios/:scenario_id/matchers" do
+          @project = Models::Project[:id => params[:project_id]]
           @scenario = @project.scenarios_dataset[:id => params[:scenario_id]]
           @matcher = Models::Matcher.new(params[:matcher])
           @matcher.scenario = @scenario
 
           if @matcher.save
-            redirect "/projects/#{@project.slug}/scenarios/#{@scenario.id}"
+            redirect "/projects/#{@project.id}/scenarios/#{@scenario.id}"
           else
             erb 'matchers/new'.to_sym
           end
         end
 
-        app.delete "/projects/:slug/scenarios/:scenario_id/matchers/:id" do
-          @project = Models::Project[:slug => params[:slug]]
+        app.delete "/projects/:project_id/scenarios/:scenario_id/matchers/:id" do
+          @project = Models::Project[:id => params[:project_id]]
           @scenario = @project.scenarios_dataset[:id => params[:scenario_id]]
           @matcher = @scenario.matchers_dataset[:id => params[:id]]
           @matcher.destroy
-          redirect "/projects/#{@project.slug}/scenarios/#{@scenario.id}"
+          redirect "/projects/#{@project.id}/scenarios/#{@scenario.id}"
         end
       end
     end

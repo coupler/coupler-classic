@@ -2,14 +2,14 @@ module Coupler
   module Extensions
     module Scenarios
       def self.registered(app)
-        app.get '/projects/:slug/scenarios/new' do
-          @project = Models::Project[:slug => params[:slug]]
+        app.get '/projects/:project_id/scenarios/new' do
+          @project = Models::Project[:id => params[:project_id]]
           @scenario = Models::Scenario.new
           erb 'scenarios/new'.to_sym
         end
 
-        app.post "/projects/:slug/scenarios" do
-          @project = Models::Project[:slug => params[:slug]]
+        app.post "/projects/:project_id/scenarios" do
+          @project = Models::Project[:id => params[:project_id]]
           @scenario = Models::Scenario.new(params[:scenario])
           @scenario.project = @project
 
@@ -18,21 +18,21 @@ module Coupler
             resources.each { |resource| @scenario.add_resource(resource) }
 
             flash[:newly_created] = true
-            redirect "/projects/#{@project.slug}/scenarios/#{@scenario.id}"
+            redirect "/projects/#{@project.id}/scenarios/#{@scenario.id}"
           else
             erb 'scenarios/new'.to_sym
           end
         end
 
-        app.get '/projects/:slug/scenarios/:id' do
-          @project = Models::Project[:slug => params[:slug]]
+        app.get '/projects/:project_id/scenarios/:id' do
+          @project = Models::Project[:id => params[:project_id]]
           @scenario = @project.scenarios_dataset[:id => params[:id]]
           @matchers = @scenario.matchers
           erb 'scenarios/show'.to_sym
         end
 
-        app.get "/projects/:slug/scenarios/:id/run" do
-          @project = Models::Project[:slug => params[:slug]]
+        app.get "/projects/:project_id/scenarios/:id/run" do
+          @project = Models::Project[:id => params[:project_id]]
           @scenario = @project.scenarios_dataset[:id => params[:id]]
           Scheduler.instance.schedule_run_scenario_job(@scenario)
           erb 'scenarios/run'.to_sym

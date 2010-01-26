@@ -1,5 +1,6 @@
-<%= error_messages_for @resource %>
-<form method="post" action="/projects/<%= @project.slug %>/resources/<%= @resource.id %>/transformations">
+<% @breadcrumbs = [@project, @resource, @transformation] %>
+<%= error_messages_for @transformation %>
+<form method="post" action="/projects/<%= @project.id %>/resources/<%= @resource.id %>/transformations">
   <p>
     <label for="field_name">Field</label><br/>
     <select id="field_name" name="transformation[field_name]">
@@ -17,6 +18,6 @@
     </select>
   </p>
   <p>
-    <input type="submit" value="Submit" /> or <a href="/projects/<%= @project.slug %>/resources/<%= @resource.id %>">Cancel</a>
+    <input type="submit" value="Submit" /> or <a href="/projects/<%= @project.id %>/resources/<%= @resource.id %>">Cancel</a>
   </p>
 </form>

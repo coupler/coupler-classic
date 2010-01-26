@@ -8,17 +8,18 @@ module Coupler
         end
 
         app.get "/projects/new" do
+          @project = Models::Project.new
           erb 'projects/new'.to_sym
         end
 
         app.post "/projects" do
-          project = Models::Project.create(params['project'])
+          @project = Models::Project.create(params['project'])
           flash[:newly_created] = true
-          redirect "/projects/#{project.slug}"
+          redirect "/projects/#{@project.id}"
         end
 
-        app.get "/projects/:slug" do
-          @project = Models::Project[:slug => params[:slug]]
+        app.get "/projects/:id" do
+          @project = Models::Project[:id => params[:id]]
           @resources = @project.resources
           @scenarios = @project.scenarios
           erb 'projects/show'.to_sym

@@ -1,3 +1,4 @@
+<% @breadcrumbs = ["Projects"] %>
 <table class="list">
   <tr>
     <th>Name</th>
@@ -5,7 +6,7 @@
   </tr>
   <% @projects.each_with_index do |project, i| %>
   <tr<% " class='alt'" if i % 2 == 1 %>>
-    <td><a href="/projects/<%= project.slug %>"><%= project.name %></a></td>
+    <td><a href="/projects/<%= project.id %>"><%= project.name %></a></td>
     <td><%= project.description %></td>
   </tr>
   <% end %>

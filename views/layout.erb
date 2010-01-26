@@ -22,41 +22,7 @@
 </div>
 
 <div id="content" class="grid_14">
-<div id="breadcrumbs">
-  <div class="crumb">Projects</div>
-  <% if @project %>
-    <div class="crumb">/</div>
-    <div class="crumb"><a href="/projects/<%= @project.slug %>"><%= @project.name.capitalize %></a></div>
-    <% if @resource %>
-      <div class="crumb">/</div>
-      <% if @resource.new? %>
-        <div class="crumb">New Resource</div>
-      <% else %>
-        <div class="crumb">Resources</div>
-        <div class="crumb">/</div>
-        <div class="crumb"><a href="/projects/<%= @project.slug %>/resources/<%= @resource.id %>"><%= @resource.name.capitalize %></a></div>
-        <% if @transformation %>
-          <div class="crumb">/</div>
-          <div class="crumb">New Transformation</div>
-        <% end %>
-      <% end %>
-    <% elsif @scenario %>
-      <div class="crumb">/</div>
-      <% if @scenario.new? %>
-        <div class="crumb">New Scenario</div>
-      <% else %>
-        <div class="crumb">Scenarios</div>
-        <div class="crumb">/</div>
-        <div class="crumb"><a href="/projects/<%= @project.slug %>/scenarios/<%= @scenario.id %>"><%= @scenario.name.capitalize %></a></div>
-        <% if @matcher %>
-          <div class="crumb">/</div>
-          <div class="crumb">New Matcher</div>
-        <% end %>
-      <% end %>
-    <% end %>
-  <% end %>
-  <div class="clear"></div>
-</div>
+<%= breadcrumbs %>
 <div class="inner">
   <%= yield %>
 </div>

@@ -1,5 +1,6 @@
+<% @breadcrumbs = [@project, @resource] %>
 <%= error_messages_for @resource %>
-<form method="post" action="/projects/<%= @project.slug %>/resources">
+<form method="post" action="/projects/<%= @project.id %>/resources">
   <table class="form">
     <tr>
       <td class="left"><label for="name">Name</label></td>
@@ -55,6 +56,6 @@
     </tr>
   </table>
   <p>
-    <input type="submit" value="Submit" /> or <a href="/projects/<%= @project.slug %>">Cancel</a>
+    <input type="submit" value="Submit" /> or <a href="/projects/<%= @project.id %>">Cancel</a>
   </p>
 </form>
