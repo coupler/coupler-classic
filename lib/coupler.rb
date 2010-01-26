@@ -9,6 +9,7 @@ require 'singleton'
 require 'sinatra/base'
 require 'rack/flash'
 require 'sequel'
+require 'json'
 
 # vendored stuff
 vendor_dir = File.join(File.dirname(__FILE__), "..", "vendor")

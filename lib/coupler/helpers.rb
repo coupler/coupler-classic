@@ -54,8 +54,11 @@ module Coupler
         url = ""
         %{<div id="breadcrumbs">} +
           @breadcrumbs.inject([]) do |arr, obj|
-            strings = if obj.is_a?(String)
+            strings = case obj
+                      when String
                         [obj]
+                      when nil
+                        []
                       else
                         name = obj.class.to_s.split("::")[-1]
                         if obj.new?
@@ -69,6 +72,10 @@ module Coupler
           end.join(%{<div class="crumb">/</div>}) +
           %{</div><div class="clear"></div>}
       end
+    end
+
+    def humanize(string)
+      string.gsub(/_+/, " ").capitalize
     end
   end
 end

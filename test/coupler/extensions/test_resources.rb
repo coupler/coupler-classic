@@ -80,6 +80,13 @@ module Coupler
         get "/projects/#{@project.id}/resources/123/transform"
         assert last_response.ok?
       end
+
+      def test_progress
+        resource = Factory(:resource, :project => @project, :completed => 100, :total => 1000)
+        get "/projects/#{@project.id}/resources/#{resource.id}/progress"
+        assert last_response.ok?
+        assert_equal "10", last_response.body
+      end
     end
   end
 end

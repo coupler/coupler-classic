@@ -43,6 +43,7 @@ begin
     gem.add_dependency "rack-flash"
     gem.add_dependency "jdbc-mysql"
     gem.add_dependency "sequel"
+    gem.add_dependency "json-jruby"
     gem.add_development_dependency "mocha"
     gem.add_development_dependency "cucumber"
     gem.add_development_dependency "activesupport"
@@ -134,7 +135,7 @@ namespace :db do
     confirm("This will completely obliterate the local database.")
 
     require 'fileutils'
-    FileUtils.rm_rf(Dir.glob(File.join(Coupler::Server.base_dir, "*")), :verbose => true)
+    FileUtils.rm_rf(Dir.glob(File.join(Coupler::Config[:data_path], "db", "*")), :verbose => true)
   end
 
   desc "Bootstrap the server schema"

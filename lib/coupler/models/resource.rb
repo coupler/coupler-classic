@@ -102,6 +102,7 @@ module Coupler
         def process_row(row)
           values = @transformers.inject(row) { |row, t| t.transform(row) }
           @local_dataset.insert(values)
+          self.class.filter(:id => self.id).update("completed = completed + 1")
         end
 
         def before_create
@@ -172,14 +173,16 @@ module Coupler
           end
           @local_dataset = local_connection[self.slug.to_sym]
 
+          # for progress bar
+          self.update(:total => source_dataset.count, :completed => 0)
+
           thread_pool = ThreadPool.new(10)
           source_dataset.each do |row|
             thread_pool.execute(row) { |r| process_row(r) }
           end
           thread_pool.join
 
-          self.transformed_at = Time.now
-          self.save
+          self.update(:transformed_at => Time.now)
         end
     end
   end

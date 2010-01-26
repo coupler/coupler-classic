@@ -41,11 +41,11 @@ When /^I go to the (.+?) page$/ do |page_name|
          when "front"
            "/"
          when "project"
-           "/projects/#{@project.slug}"
+           "/projects/#{@project.id}"
          when "resource"
-           "/projects/#{@project.slug}/resources/#{@resource.id}"
+           "/projects/#{@project.id}/resources/#{@resource.id}"
          when "scenario"
-           "/projects/#{@project.slug}/scenarios/#{@scenario.id}"
+           "/projects/#{@project.id}/scenarios/#{@scenario.id}"
          end
   visit("http://localhost:4567#{path}")
 end
@@ -89,6 +89,6 @@ end
 Then /^it should take me back to the (\w+) page$/ do |page_name|
   case page_name
   when 'resource'
-    assert_match %r{/projects/#{@project.slug}/resources/#{@resource.id}$}, current_url
+    assert_match %r{/projects/#{@project.id}/resources/#{@resource.id}$}, current_url
   end
 end

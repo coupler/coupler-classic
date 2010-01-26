@@ -44,7 +44,7 @@ module Coupler
 
     def console
       if @server.is_running
-        puts "mysql -P #{Config[:port]} -u #{Config[:user]} --password=#{Config[:password]} -S #{File.join(self.class.base_dir, "data", "mysql.sock")}"
+        puts "mysql -P #{Config[:port]} -u #{Config[:user]} --password=#{Config[:password]} -S #{File.join(Config[:data_path], "db", "data", "mysql.sock")}"
         true
       else
         false

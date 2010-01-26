@@ -35,6 +35,11 @@ module Coupler
           Scheduler.instance.schedule_transform_job(@resource)
           erb 'resources/transform'.to_sym
         end
+
+        app.get "/projects/:project_id/resources/:id/progress" do
+          resource = Models::Resource[:project_id => params[:project_id], :id => params[:id]]
+          (resource[:completed] * 100 / resource[:total]).to_s
+        end
       end
     end
   end
