@@ -24,29 +24,31 @@ module Coupler
 
         # self-join
         resource = self.resources_dataset.first
-        dataset = resource.final_dataset.order(:id) # FIXME: id
+        resource.final_dataset do |dataset|
+          dataset = dataset.order(:id) # FIXME: id
 
-        num = dataset.count
-        self.update(:completed => 0, :total => num * (num - 1) / 2)
+          num = dataset.count
+          self.update(:completed => 0, :total => num * (num - 1) / 2)
 
-        thread_pool = ThreadPool.new(10)
-        dataset.each do |record_1|
-          dataset.filter("id > ?", record_1[:id]).each do |record_2|
-            thread_pool.execute(record_1, record_2) do |first, second|
-              result = comparators.inject(0) do |score, comparator|
-                score + comparator.score(first, second)
+          thread_pool = ThreadPool.new(10)
+          dataset.each do |record_1|
+            dataset.filter("id > ?", record_1[:id]).each do |record_2|
+              thread_pool.execute(record_1, record_2) do |first, second|
+                result = comparators.inject(0) do |score, comparator|
+                  score + comparator.score(first, second)
+                end
+                @score_set.insert({
+                  :first_id => first[:id], :second_id => second[:id],
+                  :score => result
+                })
+                self.class.filter(:id => self.id).update("completed = completed + 1")
               end
-              @score_set.insert({
-                :first_id => first[:id], :second_id => second[:id],
-                :score => result
-              })
-              self.class.filter(:id => self.id).update("completed = completed + 1")
             end
           end
-        end
-        thread_pool.join
+          thread_pool.join
 
-        self.update(:run_at => Time.now)
+          self.update(:run_at => Time.now)
+        end
       end
 
       private

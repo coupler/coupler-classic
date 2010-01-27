@@ -39,39 +39,31 @@ module VerboseConnectionMessages
 
   def push(*args)
     super
-    puts "======================="
-    puts "COUNT: #{self.length}"
-
-    stmt = $conn.createStatement
-    rs = stmt.executeQuery("SHOW PROCESSLIST")
-    count = 0
-    while (rs.next) do
-      count += 1
-    end
-    rs.close
-    stmt.close
-
-    puts "CONNECTIONS: #{count}"
-    puts caller.join("\n")
+    barf("push")
   end
 
   def delete(*args)
     super
-    puts "======================="
-    puts "COUNT: #{self.length}"
-
-    stmt = $conn.createStatement
-    rs = stmt.executeQuery("SHOW PROCESSLIST")
-    count = 0
-    while (rs.next) do
-      count += 1
-    end
-    rs.close
-    stmt.close
-
-    puts "CONNECTIONS: #{count}"
-    puts caller.join("\n")
+    barf("delete")
   end
+
+  private
+    def barf(mog)
+      puts "========== #{mog} =========="
+      puts "COUNT: #{self.length}"
+
+      stmt = $conn.createStatement
+      rs = stmt.executeQuery("SHOW PROCESSLIST")
+      count = 0
+      while (rs.next) do
+        count += 1
+      end
+      rs.close
+      stmt.close
+
+      puts "CONNECTIONS: #{count}"
+      puts caller.join("\n")
+    end
 end
 #Sequel::DATABASES.extend(VerboseConnectionMessages)
 
