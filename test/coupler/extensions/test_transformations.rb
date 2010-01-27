@@ -2,8 +2,9 @@ require File.dirname(__FILE__) + '/../../helper'
 
 module Coupler
   module Extensions
-    class TestTransformations < ActiveSupport::TestCase
+    class TestTransformations < Test::Unit::TestCase
       def setup
+        super
         @project = ::Factory.create(:project)
         @resource = ::Factory.create(:resource, :project => @project)
       end

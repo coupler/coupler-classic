@@ -1,8 +1,9 @@
 require File.dirname(__FILE__) + "/../helper"
 
 module Coupler
-  class TestScheduler < ActiveSupport::TestCase
+  class TestScheduler < Test::Unit::TestCase
     def setup
+      super
       @java_scheduler = stub("java scheduler", :start => nil, :shutdown => nil)
       StdSchedulerFactory.stubs(:default_scheduler).returns(@java_scheduler)
       Singleton.__init__(Scheduler)

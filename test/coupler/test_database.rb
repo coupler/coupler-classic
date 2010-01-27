@@ -1,8 +1,9 @@
 require File.dirname(__FILE__) + "/../helper"
 
 module Coupler
-  class TestDatabase < ActiveSupport::TestCase
+  class TestDatabase < Test::Unit::TestCase
     def setup
+      super
       @database = Coupler::Database.instance
     end
 

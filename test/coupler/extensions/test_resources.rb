@@ -2,8 +2,9 @@ require File.dirname(__FILE__) + '/../../helper'
 
 module Coupler
   module Extensions
-    class TestResources < ActiveSupport::TestCase
+    class TestResources < Test::Unit::TestCase
       def setup
+        super
         @project = ::Factory.create(:project)
         @database = mock("sequel database")
         @database.stubs(:test_connection).returns(true)

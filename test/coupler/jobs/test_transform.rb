@@ -2,7 +2,7 @@ require File.dirname(__FILE__) + '/../../helper'
 
 module Coupler
   module Jobs
-    class TestTransform < ActiveSupport::TestCase
+    class TestTransform < Test::Unit::TestCase
       def test_becomes_java
         assert_not_nil Transform.java_class
       end

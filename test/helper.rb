@@ -3,8 +3,6 @@ require 'test/unit'
 require 'pp'
 require 'rubygems'
 require 'mocha'
-require 'active_support'
-require 'active_support/test_case'
 require 'rack/test'
 require 'rack/flash'
 require 'rack/flash/test'
@@ -17,7 +15,7 @@ $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 ENV['COUPLER_ENV'] = 'test'
 require 'coupler'
 
-class ActiveSupport::TestCase < ::Test::Unit::TestCase
+class Test::Unit::TestCase
   include Rack::Test::Methods
 
   def app
@@ -26,24 +24,56 @@ class ActiveSupport::TestCase < ::Test::Unit::TestCase
   end
 
   def teardown
-    nuke_tables
-  end
-
-  def nuke_tables
-    @__database ||= Coupler::Database.instance
-    @__database.tables.each do |name|
-      #puts "DELETE FROM #{name}"
-      @__database[name].delete
+    database ||= Coupler::Database.instance
+    database.tables.each do |name|
+      database[name].delete
     end
   end
-
-  #def run(*args, &block)
-    #Coupler::Database.instance.transaction do
-      #super
-      #raise Sequel::Rollback
-    #end
-  #end
 end
+
+module VerboseConnectionMessages
+  def self.extended(base)
+    com.mysql.jdbc.Driver
+    $conn = java.sql.DriverManager.getConnection("jdbc:mysql://localhost:12345/INFORMATION_SCHEMA?user=coupler&password=cupla");
+  end
+
+  def push(*args)
+    super
+    puts "======================="
+    puts "COUNT: #{self.length}"
+
+    stmt = $conn.createStatement
+    rs = stmt.executeQuery("SHOW PROCESSLIST")
+    count = 0
+    while (rs.next) do
+      count += 1
+    end
+    rs.close
+    stmt.close
+
+    puts "CONNECTIONS: #{count}"
+    puts caller.join("\n")
+  end
+
+  def delete(*args)
+    super
+    puts "======================="
+    puts "COUNT: #{self.length}"
+
+    stmt = $conn.createStatement
+    rs = stmt.executeQuery("SHOW PROCESSLIST")
+    count = 0
+    while (rs.next) do
+      count += 1
+    end
+    rs.close
+    stmt.close
+
+    puts "CONNECTIONS: #{count}"
+    puts caller.join("\n")
+  end
+end
+#Sequel::DATABASES.extend(VerboseConnectionMessages)
 
 require 'factory_girl'
 Factory.definition_file_paths = [ File.dirname(__FILE__) + "/factories" ]

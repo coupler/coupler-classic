@@ -1,7 +1,8 @@
 require File.dirname(__FILE__) + '/../../helper'
 
-class Coupler::Comparators::TestBase < ActiveSupport::TestCase
+class Coupler::Comparators::TestBase < Test::Unit::TestCase
   def setup
+    super
     @comparator = Coupler::Comparators::Base.new({})
   end
 

@@ -1,7 +1,8 @@
 require File.dirname(__FILE__) + '/../../helper'
 
-class Coupler::Transformers::TestBase < ActiveSupport::TestCase
+class Coupler::Transformers::TestBase < Test::Unit::TestCase
   def setup
+    super
     @transformer = Coupler::Transformers::Base.new({})
   end
 

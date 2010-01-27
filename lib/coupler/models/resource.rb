@@ -6,68 +6,51 @@ module Coupler
       one_to_many :transformations
       many_to_many :scenarios
 
-      def source_connection
-        unless @source_connection
-          connection_string = "jdbc:%s://%s:%d/%s?user=%s&password=%s" % [
-            adapter, host, port, database_name, username, password
-          ]
-          @source_connection = Sequel.connect(connection_string, :loggers => [Coupler::Logger.instance], :max_connections => 10)
-        end
-        @source_connection
+      def source_database(&block)
+        Sequel.connect(source_connection_string, {
+          :loggers => [Coupler::Logger.instance],
+        }, &block)
       end
 
       def source_dataset
-        @source_dataset ||= source_connection[table_name.to_sym]
+        source_database do |db|
+          ds = db[table_name.to_sym]
+          yield ds
+        end
       end
 
       def source_schema
-        source_connection.schema(table_name)
+        schema = nil
+        source_database { |db| schema = db.schema(table_name) }
+        schema
       end
 
-      def local_connection
-        unless @local_connection
-          connection_string = Config.connection_string(self.project.slug, :create_database => true)
-          @local_connection = Sequel.connect(connection_string, :loggers => [Coupler::Logger.instance])
-        end
-        @local_connection
+      def local_database(&block)
+        Sequel.connect(local_connection_string, {
+          :loggers => [Coupler::Logger.instance],
+        }, &block)
       end
 
       def local_dataset
-        unless @local_dataset
-          local_schema = self.source_schema
-          transformers.each do |transformer|
-            local_schema = transformer.schema(local_schema)
-          end
-
-          local_connection.create_table!(self.slug) do
-            local_schema.each do |(name, info)|
-              options = info.dup
-              options[:type] = options.delete(:db_type)
-              options[:name] = name
-              if options[:primary_key]
-                options.delete(:default)  unless options[:default]
-              end
-              columns << options
-            end
-          end
-          @local_dataset = local_connection[self.slug.to_sym]
-        end
-        @local_dataset
-      end
-
-      def final_connection
-        if transformations_dataset.count == 0
-          source_connection
-        else
-          local_connection
+        local_database do |database|
+          ds = database[self.slug.to_sym]
+          yield ds
         end
       end
 
-      def final_dataset
+      def final_database(&block)
         if transformations_dataset.count == 0
-          source_dataset
+          source_database(&block)
         else
-          local_dataset
+          local_database
+        end
+      end
+
+      def final_dataset(&block)
+        if transformations_dataset.count == 0
+          source_dataset(&block)
+        else
+          local_dataset(&block)
         end
       end
 
@@ -88,21 +71,59 @@ module Coupler
       end
 
       def transform!
-        do_transform
+        # create transformers and get result schema
+        local_schema = self.source_schema
+        transformers = []
+        transformations.each do |transformation|
+          klass = Transformers[transformation.transformer_name]
+          transformers << klass.new(:field_name => transformation.field_name)
+          local_schema = transformers[-1].schema(local_schema)
+        end
+
+        local_database do |l_db|
+          # create intermediate table
+          l_db.create_table!(self.slug) do
+            local_schema.each do |(name, info)|
+              options = info.dup
+              options[:type] = options.delete(:db_type)
+              options[:name] = name
+              if options[:primary_key]
+                options.delete(:default)  unless options[:default]
+              end
+              columns << options
+            end
+          end
+
+          l_ds = l_db[self.slug.to_sym]
+
+          source_dataset do |s_ds|
+            # for progress bar
+            self.update(:total => s_ds.count, :completed => 0)
+
+            thread_pool = ThreadPool.new(10)
+            s_ds.each do |row|
+              thread_pool.execute(row) do |r|
+                values = transformers.inject(r) { |x, t| t.transform(x) }
+                l_ds.insert(values)
+                self.class.filter(:id => self.id).update("completed = completed + 1")
+              end
+            end
+            thread_pool.join
+
+            self.update(:transformed_at => Time.now)
+          end
+        end
       end
 
       private
-        def transformers
-          @transformers ||= transformations.collect do |transformation|
-            klass = Transformers[transformation.transformer_name]
-            klass.new(:field_name => transformation.field_name)
-          end
+        def source_connection_string
+          "jdbc:%s://%s:%d/%s?user=%s&password=%s" % [
+            adapter, host, port, database_name, username, password
+          ]
         end
 
-        def process_row(row)
-          values = @transformers.inject(row) { |row, t| t.transform(row) }
-          @local_dataset.insert(values)
-          self.class.filter(:id => self.id).update("completed = completed + 1")
+        def local_connection_string
+          Config.connection_string(self.project.slug, :create_database => true)
         end
 
         def before_create
@@ -140,49 +161,16 @@ module Coupler
 
           if try_connect
             begin
-              source_connection.test_connection
-              if !source_connection.tables.include?(self.table_name.to_sym)
-                errors[:table_name] << "is invalid"
+              source_database do |db|
+                db.test_connection
+                if !db.tables.include?(self.table_name.to_sym)
+                  errors[:table_name] << "is invalid"
+                end
               end
             rescue Sequel::DatabaseConnectionError => e
               errors[:base] << "Couldn't connect to the database"
             end
           end
-        end
-
-        def do_transform
-          # create transformers and get result schema
-          local_schema = self.source_schema
-          @transformers = []
-          transformations.each do |transformation|
-            klass = Transformers[transformation.transformer_name]
-            @transformers << klass.new(:field_name => transformation.field_name)
-            local_schema = @transformers[-1].schema(local_schema)
-          end
-
-          local_connection.create_table!(self.slug) do
-            local_schema.each do |(name, info)|
-              options = info.dup
-              options[:type] = options.delete(:db_type)
-              options[:name] = name
-              if options[:primary_key]
-                options.delete(:default)  unless options[:default]
-              end
-              columns << options
-            end
-          end
-          @local_dataset = local_connection[self.slug.to_sym]
-
-          # for progress bar
-          self.update(:total => source_dataset.count, :completed => 0)
-
-          thread_pool = ThreadPool.new(10)
-          source_dataset.each do |row|
-            thread_pool.execute(row) { |r| process_row(r) }
-          end
-          thread_pool.join
-
-          self.update(:transformed_at => Time.now)
         end
     end
   end

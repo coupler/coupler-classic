@@ -2,10 +2,15 @@ require File.dirname(__FILE__) + '/../../helper'
 
 module Coupler
   module Models
-    class TestResource < ActiveSupport::TestCase
+    class TestResource < Test::Unit::TestCase
       def setup
-        @database = Coupler::Database.instance
+        super
         @inf = Sequel.connect(Config.connection_string("information_schema"))
+      end
+
+      def teardown
+        super
+        @inf.disconnect
       end
 
       def test_sequel_model
@@ -93,7 +98,7 @@ module Coupler
         assert !resource_2.valid?
       end
 
-      def test_mysql_source_connection
+      def test_mysql_source_database
         resource = Factory.create(:resource, {
           :name => "testing",
           :adapter => "mysql",
@@ -104,15 +109,18 @@ module Coupler
           :database_name => "fake_data",
           :table_name => "people"
         })
-        assert_kind_of Sequel::JDBC::Database, resource.source_connection
-        assert resource.source_connection.test_connection
+        resource.source_database do |database|
+          assert_kind_of Sequel::JDBC::Database, database
+          assert database.test_connection
+        end
       end
 
       def test_source_dataset
         resource = Factory.create(:resource)
-        dataset = resource.source_dataset
-        assert_kind_of Sequel::Dataset, dataset
-        assert_equal "SELECT * FROM `people`", dataset.select_sql
+        resource.source_dataset do |dataset|
+          assert_kind_of Sequel::Dataset, dataset
+          assert_equal "SELECT * FROM `people`", dataset.select_sql
+        end
       end
 
       def test_source_schema
@@ -121,16 +129,17 @@ module Coupler
         assert_equal expected, resource.source_schema
       end
 
-      def test_local_connection_creates_database
-        databases = @database["SHOW DATABASES"].collect { |x| x[:Database] }
-        @database.run("DROP DATABASE roflsauce")  if databases.include?("rolfsauce")
+      def test_local_database
+        databases = @inf["SHOW DATABASES"].collect { |x| x[:Database] }
+        @inf.run("DROP DATABASE roflsauce")  if databases.include?("rolfsauce")
 
         project = Factory(:project, :name => "roflsauce")
         resource = Factory(:resource, :name => "pants", :project => project)
 
-        connection = resource.local_connection
-        assert_kind_of Sequel::JDBC::Database, connection
-        assert connection.test_connection
+        resource.local_database do |db|
+          assert_kind_of Sequel::JDBC::Database, db
+          assert db.test_connection
+        end
       end
 
       def test_local_dataset
@@ -143,18 +152,16 @@ module Coupler
           :field_name => "first_name"
         })
 
-        local_dataset = resource.local_dataset
-
-        local_connection = Sequel.connect(Config.connection_string("local_dataset_test"))
-        assert local_connection.tables.include?(:resource_1)
-
-        expected_schema = [[:id, {:allow_null=>false, :default=>nil, :primary_key=>true, :db_type=>"int(11)", :type=>:integer, :ruby_default=>nil}], [:first_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}], [:last_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}]]
-        assert_equal expected_schema, local_connection.schema(:resource_1)
-
-        assert_equal local_connection[:resource_1].select_sql, local_dataset.select_sql
+        resource.local_dataset do |dataset|
+          database = dataset.db
+          assert_equal Config.connection_string("local_dataset_test", :create_database => true), database.uri
+          assert_equal database[:resource_1].select_sql, dataset.select_sql
+        end
       end
 
       def test_transform
+        database_count = Sequel::DATABASES.length
+
         project = Factory(:project, :name => "Awesome Test Project")
         resource = Factory(:resource, :name => "pants", :project => project)
         transformation = Factory(:transformation, {
@@ -162,23 +169,26 @@ module Coupler
           :field_name => "first_name"
         })
 
-        original_row = resource.source_dataset.first
+        original_row = nil
+        resource.source_dataset { |ds| original_row = ds.first }
+
         Timecop.freeze(Time.now) do
           resource.transform!
           assert_equal Time.now, resource.transformed_at
         end
 
-        result_db = Sequel.connect(Config.connection_string("awesome_test_project"))
-        assert result_db.tables.include?(:pants)
+        Sequel.connect(Config.connection_string("awesome_test_project")) do |db|
+          assert db.tables.include?(:pants)
 
-        expected = [[:id, {:allow_null=>false, :default=>nil, :primary_key=>true, :db_type=>"int(11)", :type=>:integer, :ruby_default=>nil}], [:first_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}], [:last_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}]]
-        assert_equal expected, result_db.schema(:pants)
+          expected = [[:id, {:allow_null=>false, :default=>nil, :primary_key=>true, :db_type=>"int(11)", :type=>:integer, :ruby_default=>nil}], [:first_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}], [:last_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}]]
+          assert_equal expected, db.schema(:pants)
 
-        result_set = result_db[:pants]
-        changed_row = result_set[:id => original_row[:id]]
-        assert_equal original_row[:first_name].downcase, changed_row[:first_name]
+          changed_row = db[:pants][:id => original_row[:id]]
+          assert_equal original_row[:first_name].downcase, changed_row[:first_name]
+        end
 
         assert_equal "ok", resource.status
+        assert_equal database_count, Sequel::DATABASES.length
       end
 
       def test_initial_status
@@ -214,26 +224,42 @@ module Coupler
         assert_equal "ok", resource.status
       end
 
-      def test_final_connection_is_source_connection_when_no_transformations
+      def test_final_database_is_source_database_without_transformations
         resource = Factory(:resource)
-        assert_equal resource.source_connection, resource.final_connection
+        resource.source_database do |expected|
+          resource.final_database do |actual|
+            assert_equal expected.uri, actual.uri
+          end
+        end
       end
 
-      def test_final_connection_is_local_connection_when_transformations
+      def test_final_database_is_local_database_with_transformations
         resource = Factory(:resource)
         transformation = Factory(:transformation, :resource => resource)
-        assert_equal resource.local_connection, resource.final_connection
+        resource.local_database do |expected|
+          resource.final_database do |actual|
+            assert_equal expected.uri, actual.uri
+          end
+        end
       end
 
-      def test_final_dataset_is_source_dataset_when_no_transformations
+      def test_final_dataset_is_source_dataset_without_transformations
         resource = Factory(:resource)
-        assert_equal resource.source_dataset, resource.final_dataset
+        resource.source_dataset do |expected|
+          resource.final_dataset do |actual|
+            assert_equal expected.select_sql, actual.select_sql
+          end
+        end
       end
 
-      def test_final_dataset_is_local_dataset_when_transformations
+      def test_final_dataset_is_local_dataset_with_transformations
         resource = Factory(:resource)
         transformation = Factory(:transformation, :resource => resource)
-        assert_equal resource.local_dataset, resource.final_dataset
+        resource.local_dataset do |expected|
+          resource.final_dataset do |actual|
+            assert_equal expected.select_sql, actual.select_sql
+          end
+        end
       end
     end
   end

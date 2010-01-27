@@ -2,7 +2,7 @@ require File.dirname(__FILE__) + '/../../helper'
 
 module Coupler
   module Comparators
-    class TestExact < ActiveSupport::TestCase
+    class TestExact < Test::Unit::TestCase
       def test_base_superclass
         assert_equal Base, Exact.superclass
       end

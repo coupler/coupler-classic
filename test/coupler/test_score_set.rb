@@ -1,8 +1,9 @@
 require File.dirname(__FILE__) + "/../helper"
 
 module Coupler
-  class TestScoreSet < ActiveSupport::TestCase
+  class TestScoreSet < Test::Unit::TestCase
     def setup
+      super
       @inf = Sequel.connect(Config.connection_string("information_schema"))
       @inf.execute("DROP DATABASE IF EXISTS score_sets")
     end

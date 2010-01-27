@@ -1,7 +1,7 @@
 require File.dirname(__FILE__) + '/../helper'
 
 module Coupler
-  class TestBase < ActiveSupport::TestCase
+  class TestBase < Test::Unit::TestCase
     def test_subclasses_sinatra_base
       assert_equal Sinatra::Base, Coupler::Base.superclass
     end

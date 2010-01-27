@@ -1,7 +1,7 @@
 require File.dirname(__FILE__) + '/../helper'
 
 module Coupler
-  class TestHelpers < ActiveSupport::TestCase
+  class TestHelpers < Test::Unit::TestCase
     include ::Coupler::Helpers
 
     def test_error_messages_for

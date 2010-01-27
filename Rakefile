@@ -51,6 +51,8 @@ begin
     gem.add_development_dependency "nokogiri"
     gem.add_development_dependency "timecop"
     gem.add_development_dependency "butternut"
+    gem.add_development_dependency "forgery"
+    gem.add_development_dependency "factory_girl"
   end
 rescue LoadError
   puts "Jeweler (or a dependency) not available. Install it with: sudo gem install jeweler"

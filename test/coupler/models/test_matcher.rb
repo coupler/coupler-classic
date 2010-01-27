@@ -2,7 +2,7 @@ require File.dirname(__FILE__) + '/../../helper'
 
 module Coupler
   module Models
-    class TestMatcher < ActiveSupport::TestCase
+    class TestMatcher < Test::Unit::TestCase
       def test_sequel_model
         assert_equal ::Sequel::Model, Matcher.superclass
         assert_equal :matchers, Matcher.table_name

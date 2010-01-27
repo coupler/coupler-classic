@@ -1,7 +1,7 @@
 require File.dirname(__FILE__) + "/../helper"
 
 module Coupler
-  class TestConfig < ActiveSupport::TestCase
+  class TestConfig < Test::Unit::TestCase
     def test_connection_string
       assert_equal(
         "jdbc:mysql://localhost:12345/ponies?user=coupler&password=cupla",

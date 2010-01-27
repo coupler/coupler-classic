@@ -2,11 +2,7 @@ require File.dirname(__FILE__) + '/../../helper'
 
 module Coupler
   module Models
-    class TestProject < ActiveSupport::TestCase
-      def setup
-        Project.delete
-      end
-
+    class TestProject < Test::Unit::TestCase
       def test_sequel_model
         assert_equal ::Sequel::Model, Project.superclass
         assert_equal :projects, Project.table_name

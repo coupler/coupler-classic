@@ -1,6 +1,6 @@
-require 'helper'
+require File.dirname(__FILE__) + '/helper'
 
-class TestCoupler < ActiveSupport::TestCase
+class TestCoupler < Test::Unit::TestCase
   def test_truth
     assert true
   end

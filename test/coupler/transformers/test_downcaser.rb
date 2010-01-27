@@ -2,7 +2,7 @@ require File.dirname(__FILE__) + '/../../helper'
 
 module Coupler
   module Transformers
-    class TestDowncaser < ActiveSupport::TestCase
+    class TestDowncaser < Test::Unit::TestCase
       def test_base_superclass
         assert_equal Coupler::Transformers::Base, Coupler::Transformers::Downcaser.superclass
       end

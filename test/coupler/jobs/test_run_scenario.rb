@@ -2,7 +2,7 @@ require File.dirname(__FILE__) + '/../../helper'
 
 module Coupler
   module Jobs
-    class TestRunScenario < ActiveSupport::TestCase
+    class TestRunScenario < Test::Unit::TestCase
       def test_becomes_java
         assert_not_nil RunScenario.java_class
       end
