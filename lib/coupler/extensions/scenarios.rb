@@ -37,6 +37,11 @@ module Coupler
           Scheduler.instance.schedule_run_scenario_job(@scenario)
           erb 'scenarios/run'.to_sym
         end
+
+        app.get "/projects/:project_id/scenarios/:id/progress" do
+          scenario = Models::Scenario[:id => params[:id], :project_id => params[:project_id]]
+          (scenario[:completed] * 100 / scenario[:total]).to_s
+        end
       end
     end
   end

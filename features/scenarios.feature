@@ -20,6 +20,6 @@ Feature: managing scenarios
     And that I have added a "exact" matcher with these options:
       | field_name | last_name |
     When I go to the scenario page
-    And I click the "Run" button
+    And I click the "Run Now" button
     And I click the "Yes" button
     Then it should start the linkage process

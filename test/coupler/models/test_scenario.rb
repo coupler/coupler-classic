@@ -77,7 +77,10 @@ module Coupler
           :scenario => scenario
         })
 
-        scenario.run!
+        Timecop.freeze(Time.now) do
+          scenario.run!
+          assert_equal Time.now, scenario.run_at
+        end
 
         score_set = ScoreSet.find(1)
         assert_not_nil score_set, "Didn't create score set"

@@ -72,7 +72,7 @@ module Coupler
         Integer :completed
         Integer :project_id
         Integer :score_set_id
-        Time :last_run_at
+        Time :run_at
         Time :created_at
         Time :updated_at
       end
