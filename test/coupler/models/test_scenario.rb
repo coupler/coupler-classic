@@ -61,8 +61,9 @@ module Coupler
       def test_run_self_join_without_transformations
         database_count = Sequel::DATABASES.length
 
-        inf = Sequel.connect(Config.connection_string("information_schema"))
-        inf.execute("DROP DATABASE IF EXISTS score_sets")
+        Sequel.connect(Config.connection_string("information_schema")) do |inf|
+          inf.execute("DROP DATABASE IF EXISTS score_sets")
+        end
 
         project = Factory(:project, :name => "Test without transformations")
         resource = Factory(:resource, :name => "Resource 1", :project => project)
@@ -84,19 +85,18 @@ module Coupler
           assert_equal Time.now, scenario.run_at
         end
 
-        score_set = ScoreSet.find(1)
-        assert_not_nil score_set, "Didn't create score set"
-        assert_equal 1, scenario.score_set_id
+        ScoreSet.find(1) do |score_set|
+          assert_not_nil score_set, "Didn't create score set"
+          assert_equal 1, scenario.score_set_id
 
-        resource.source_dataset do |ds|
-          ds.order("id").each do |row|
-            expected = ds.filter("last_name = ? AND first_name = ? AND id > ?", row[:last_name], row[:first_name], row[:id]).count
-            actual = score_set.filter("first_id = ? AND score = 200", row[:id]).count
-            assert_equal expected, actual, "Expected #{expected} for id #{row[:id]}"
+          resource.source_dataset do |ds|
+            ds.order("id").each do |row|
+              expected = ds.filter("last_name = ? AND first_name = ? AND id > ?", row[:last_name], row[:first_name], row[:id]).count
+              actual = score_set.filter("first_id = ? AND score = 200", row[:id]).count
+              assert_equal expected, actual, "Expected #{expected} for id #{row[:id]}"
+            end
           end
         end
-
-        assert_equal database_count, Sequel::DATABASES.length
       end
 
       def test_status_when_self_join_and_no_resources

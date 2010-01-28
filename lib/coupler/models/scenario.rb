@@ -19,9 +19,6 @@ module Coupler
       end
 
       def run!
-        @score_set = ScoreSet.create
-        self.update(:score_set_id => @score_set.id)
-
         # self-join
         resource = self.resources_dataset.first
         resource.final_dataset do |dataset|
@@ -31,17 +28,20 @@ module Coupler
           self.update(:completed => 0, :total => num * (num - 1) / 2)
 
           thread_pool = ThreadPool.new(10)
-          dataset.each do |record_1|
-            dataset.filter("id > ?", record_1[:id]).each do |record_2|
-              thread_pool.execute(record_1, record_2) do |first, second|
-                result = comparators.inject(0) do |score, comparator|
-                  score + comparator.score(first, second)
+          ScoreSet.create do |score_set|
+            self.update(:score_set_id => score_set.id)
+            dataset.each do |record_1|
+              dataset.filter("id > ?", record_1[:id]).each do |record_2|
+                thread_pool.execute(record_1, record_2) do |first, second|
+                  result = comparators.inject(0) do |score, comparator|
+                    score + comparator.score(first, second)
+                  end
+                  score_set.insert({
+                    :first_id => first[:id], :second_id => second[:id],
+                    :score => result
+                  })
+                  self.class.filter(:id => self.id).update("completed = completed + 1")
                 end
-                @score_set.insert({
-                  :first_id => first[:id], :second_id => second[:id],
-                  :score => result
-                })
-                self.class.filter(:id => self.id).update("completed = completed + 1")
               end
             end
           end

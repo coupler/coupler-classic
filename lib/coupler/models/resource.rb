@@ -42,7 +42,7 @@ module Coupler
         if transformations_dataset.count == 0
           source_database(&block)
         else
-          local_database
+          local_database(&block)
         end
       end
 

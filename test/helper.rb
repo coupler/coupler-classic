@@ -23,11 +23,17 @@ class Test::Unit::TestCase
     Coupler::Base
   end
 
+  def setup
+    @original_database_count = Sequel::DATABASES.length
+  end
+
   def teardown
     database ||= Coupler::Database.instance
     database.tables.each do |name|
       database[name].delete
     end
+
+    assert_equal @original_database_count, Sequel::DATABASES.length
   end
 end
 

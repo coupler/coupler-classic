@@ -3,14 +3,8 @@ require File.dirname(__FILE__) + '/../../helper'
 module Coupler
   module Models
     class TestResource < Test::Unit::TestCase
-      def setup
-        super
-        @inf = Sequel.connect(Config.connection_string("information_schema"))
-      end
-
-      def teardown
-        super
-        @inf.disconnect
+      def db(&block)
+        Sequel.connect(Config.connection_string("information_schema"), &block)
       end
 
       def test_sequel_model
@@ -130,8 +124,10 @@ module Coupler
       end
 
       def test_local_database
-        databases = @inf["SHOW DATABASES"].collect { |x| x[:Database] }
-        @inf.run("DROP DATABASE roflsauce")  if databases.include?("rolfsauce")
+        db do |inf|
+          databases = inf["SHOW DATABASES"].collect { |x| x[:Database] }
+          inf.run("DROP DATABASE roflsauce")  if databases.include?("rolfsauce")
+        end
 
         project = Factory(:project, :name => "roflsauce")
         resource = Factory(:resource, :name => "pants", :project => project)
@@ -143,7 +139,7 @@ module Coupler
       end
 
       def test_local_dataset
-        @inf.execute("DROP DATABASE IF EXISTS local_dataset_test")
+        db { |inf| inf.execute("DROP DATABASE IF EXISTS local_dataset_test") }
 
         project = Factory(:project, :name => "local_dataset test")
         resource = Factory(:resource, :name => "Resource 1", :project => project)
