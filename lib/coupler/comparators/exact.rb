@@ -7,11 +7,25 @@ module Coupler
 
       def initialize(options)
         super
-        @field_name = options['field_name'] ? options['field_name'].to_sym : nil
+
+        case options['field_name']
+        when String
+          @first_field_name = @second_field_name = options['field_name'].to_sym
+        when Array
+          @first_field_name, @second_field_name = options['field_name'][0..1].collect { |x| x.to_sym }
+        else
+          raise "invalid options"
+        end
       end
 
       def score(first, second)
-        first[@field_name] == second[@field_name] ? 100 : 0
+        val_1 = first[@first_field_name]
+        val_2 = second[@second_field_name]
+        if val_1.nil? || val_2.nil? || val_1 != val_2
+          0
+        else
+          100
+        end
       end
     end
     self.register("exact", Exact)

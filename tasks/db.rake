@@ -53,14 +53,28 @@ namespace :db do
         String :first_name
         String :last_name
       end
+      db.create_table :pets do
+        primary_key :id
+        String :name
+        String :owner_first_name
+        String :owner_last_name
+      end
       people = db[:people]
+      pets = db[:pets]
 
       num = ENV.has_key?('NUM') ? ENV['NUM'].to_i : 50
       num.times do |i|
-        people.insert({
+        person = {
           :first_name => Forgery(:name).first_name,
           :last_name  => Forgery(:name).last_name
-        })
+        }
+        pet = {
+          :name => Forgery(:name).first_name,
+          :owner_first_name => person[:first_name],
+          :owner_last_name => person[:last_name]
+        }
+        people.insert(person)
+        pets.insert(pet)
       end
     end
   rescue LoadError

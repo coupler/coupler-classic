@@ -72,11 +72,13 @@ module Coupler
         })
         scenario.add_resource(resource)
         matcher_1 = Factory(:matcher, {
-          :comparator_name => "exact", :comparator_options => { "field_name" => "last_name" },
+          :comparator_name => "exact",
+          :comparator_options => { resource.id.to_s => {"field_name" => "last_name"} },
           :scenario => scenario
         })
         matcher_2 = Factory(:matcher, {
-          :comparator_name => "exact", :comparator_options => { "field_name" => "first_name" },
+          :comparator_name => "exact",
+          :comparator_options => { resource.id.to_s => {"field_name" => "first_name"} },
           :scenario => scenario
         })
 
@@ -133,6 +135,60 @@ module Coupler
         matcher = Factory(:matcher, :scenario => scenario)
 
         assert_equal "resources_out_of_date", scenario.status
+      end
+
+      def test_run_dual_join_without_transformations
+        database_count = Sequel::DATABASES.length
+
+        Sequel.connect(Config.connection_string("information_schema")) do |inf|
+          inf.execute("DROP DATABASE IF EXISTS score_sets")
+        end
+
+        project = Factory(:project, :name => "Test without transformations")
+        resource_1 = Factory(:resource, :name => "People", :project => project)
+        resource_2 = Factory(:resource, :name => "Pets", :project => project, :table_name => 'pets')
+        scenario = Factory(:scenario, {
+          :name => "Scenario 1", :project => project, :type => "dual-join"
+        })
+        scenario.add_resource(resource_1)
+        scenario.add_resource(resource_2)
+
+        matcher_1 = Factory(:matcher, {
+          :comparator_name => "exact",
+          :comparator_options => {
+            resource_1.id.to_s => { "field_name" => "last_name" },
+            resource_2.id.to_s => { "field_name" => "owner_last_name" }
+          },
+          :scenario => scenario
+        })
+        matcher_2 = Factory(:matcher, {
+          :comparator_name => "exact",
+          :comparator_options => {
+            resource_1.id.to_s => { "field_name" => "first_name" },
+            resource_2.id.to_s => { "field_name" => "owner_first_name" }
+          },
+          :scenario => scenario
+        })
+
+        Timecop.freeze(Time.now) do
+          scenario.run!
+          assert_equal Time.now, scenario.run_at
+        end
+
+        ScoreSet.find(1) do |score_set|
+          assert_not_nil score_set, "Didn't create score set"
+          assert_equal 1, scenario.score_set_id
+
+          resource_1.source_dataset do |ds_1|
+            resource_2.source_dataset do |ds_2|
+              ds_1.order("id").each do |row_1|
+                expected = ds_2.filter("owner_last_name = ? AND owner_first_name = ?", row_1[:last_name], row_1[:first_name]).count
+                actual = score_set.filter("first_id = ? AND score = 200", row_1[:id]).count
+                assert_equal expected, actual, "Expected #{expected} for id #{row_1[:id]}"
+              end
+            end
+          end
+        end
       end
     end
   end

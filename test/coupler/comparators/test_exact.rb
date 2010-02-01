@@ -27,6 +27,16 @@ module Coupler
         ]
         assert_equal expected, Exact::OPTIONS
       end
+
+      def test_matching_with_different_field_names
+        comparator = Exact.new('field_name' => ['first_name', 'name_first'])
+        assert_equal 100, comparator.score({:first_name => "Harry"}, {:name_first => "Harry"})
+      end
+
+      def test_null_as_nonmatch
+        comparator = Exact.new('field_name' => 'first_name')
+        assert_equal 0, comparator.score({:first_name => nil}, {:first_name => nil})
+      end
     end
   end
 end

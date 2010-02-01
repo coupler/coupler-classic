@@ -13,7 +13,7 @@ Feature: managing scenarios
     Then it should show me a confirmation page
     And ask me to add matchers
 
-  Scenario: running a scenario
+  Scenario: running a self-join scenario
     Given that I have created a project called "My Project"
     And that I have added a resource called "People"
     And that I have created a scenario called "Link by Last name"
