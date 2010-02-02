@@ -5,22 +5,26 @@
     '<%= name %>': <%= klass.const_get(:OPTIONS).to_json %>
   <% end %>
   };
+  var resources = <%= @scenario.resources_dataset.order(:id).collect { |r| { 'id' => r.id, 'name' => r.name } }.to_json %>
+
   $(function() {
     $('#comparator_name').change(function() {
       div = $('#comparator_options').html('');
       opts = comparator_options[$(this).val()];
       if (opts) {
-        $.each(opts, function() {
-          p = $('<p/>');
-          label = $('<label/>')
-            .attr('for', this.name)
-            .html(this.label);
-          input = $('<input/>')
-            .attr('type', this.type)
-            .attr('id', this.name)
-            .attr('name', 'matcher[comparator_options]['+this.name+']');
-          p.append(label).append('<br/>').append(input);
-          div.append(p);
+        $.each(resources, function(i, resource) {
+          $.each(opts, function(j, option) {
+            p = $('<p/>');
+            label = $('<label/>')
+              .attr('for', option.name+"_"+resource.id)
+              .html(option.label+' for '+resource.name);
+            input = $('<input/>')
+              .attr('type', option.type)
+              .attr('id', option.name+"_"+resource.id)
+              .attr('name', 'matcher[comparator_options]['+resource.id+']['+option.name+']');
+            p.append(label).append('<br/>').append(input);
+            div.append(p);
+          });
         });
       }
     });

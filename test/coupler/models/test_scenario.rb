@@ -14,10 +14,6 @@ module Coupler
 
       def test_many_to_many_resources
         assert_respond_to Scenario.new, :resources
-        resource = Factory(:resource)
-        scenario = Factory(:scenario)
-        resource.add_scenario(scenario)
-        assert_equal [resource], scenario.resources
       end
 
       def test_one_to_many_matchers
@@ -39,7 +35,7 @@ module Coupler
         assert !scenario_2.valid?
       end
 
-      def test_required_unique_name_on_update
+      def test_requires_unique_name_on_update
         project = Factory.create(:project)
         scenario_1 = Factory.create(:scenario, :name => "avast", :project => project)
         scenario_2 = Factory.create(:scenario, :name => "ahoy", :project => project)

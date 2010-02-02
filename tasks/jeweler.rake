@@ -16,7 +16,6 @@ begin
     gem.add_dependency "json-jruby"
     gem.add_development_dependency "mocha"
     gem.add_development_dependency "cucumber"
-    gem.add_development_dependency "activesupport"
     gem.add_development_dependency "rack-test"
     gem.add_development_dependency "nokogiri"
     gem.add_development_dependency "timecop"
