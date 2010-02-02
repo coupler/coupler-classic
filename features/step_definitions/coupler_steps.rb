@@ -3,14 +3,21 @@ Given /^that I have created a project called "(.+?)"$/ do |project_name|
   @project = Factory(:project, :name => project_name)
 end
 
-Given /^that I have added a resource called "(.+?)"$/ do |resource_name|
+Given /^that I have added the "(.+?)" resource$/ do |resource_name|
   @resource_name = resource_name
-  @resource = Factory(:resource, :name => resource_name, :project => @project)
+  options = case resource_name
+            when "People"
+              { :table_name => "people" }
+            when "Pets"
+              { :table_name => "pets" }
+            end
+  @resources ||= []
+  @resources << Factory(:resource, {:name => resource_name, :project => @project}.merge(options))
 end
 
 Given /^that I have added a "([^\"]*)" transformation for "([^\"]*)"$/ do |transformer, field|
   @transformation = Factory(:transformation, {
-    :resource => @resource, :transformer_name => transformer,
+    :resource => @resources.last, :transformer_name => transformer,
     :field_name => field
   })
 end
@@ -20,7 +27,16 @@ Given /^that I have created a scenario called "([^"]*)"$/ do |scenario_name|
     :name => scenario_name, :type => "self-join",
     :project => @project
   })
-  @scenario.add_resource(@resource)
+  @scenario.add_resource(@resources.last)
+end
+
+Given /^that I have created a dual-join scenario called "([^"]*)"$/ do |scenario_name|
+  @scenario = Factory(:scenario, {
+    :name => scenario_name, :type => "dual-join",
+    :project => @project
+  })
+  @scenario.add_resource(@resources[0])
+  @scenario.add_resource(@resources[1])
 end
 
 Given /^that I have added a "([^\"]*)" matcher with these options:$/ do |comparator_name, table|
@@ -43,7 +59,7 @@ When /^I go to the (.+?) page$/ do |page_name|
          when "project"
            "/projects/#{@project.id}"
          when "resource"
-           "/projects/#{@project.id}/resources/#{@resource.id}"
+           "/projects/#{@project.id}/resources/#{@resources.last.id}"
          when "scenario"
            "/projects/#{@project.id}/scenarios/#{@scenario.id}"
          end
@@ -69,7 +85,7 @@ When /^I fill in the form:$/ do |table|
     when Celerity::TextField
       elt.value = value
     when Celerity::SelectList
-      elt.select(value)
+      value.split("/").each { |v| elt.select(v) }
     end
   end
 end
@@ -89,6 +105,6 @@ end
 Then /^it should take me back to the (\w+) page$/ do |page_name|
   case page_name
   when 'resource'
-    assert_match %r{/projects/#{@project.id}/resources/#{@resource.id}$}, current_url
+    assert_match %r{/projects/#{@project.id}/resources/#{@resources.last.id}$}, current_url
   end
 end

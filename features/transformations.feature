@@ -2,7 +2,7 @@ Feature: managing transformations
 
   Scenario: adding transformations
     Given that I have created a project called "My Project"
-    And that I have added a resource called "People"
+    And that I have added the "People" resource
     When I go to the resource page
     And I click the "Add transformation" link
     And I fill in the form:
@@ -13,7 +13,7 @@ Feature: managing transformations
 
   Scenario: deleting a transformation
     Given that I have created a project called "My Project"
-    And that I have added a resource called "People"
+    And that I have added the "People" resource
     And that I have added a "downcaser" transformation for "first_name"
     When I go to the resource page
     And I click the "Delete" link

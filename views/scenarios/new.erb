@@ -1,7 +1,7 @@
 <% @breadcrumbs = [@project, @scenario] %>
 <%= error_messages_for @scenario %>
 <form method="post" action="/projects/<%= @project.id %>/scenarios">
-  <table class="form">
+  <table id="form-table" class="form">
     <tr>
       <td class="left"><label for="name">Name</label></td>
       <td>
@@ -18,19 +18,20 @@
       <td class="left"><label for="type">Type</label></td>
       <td>
         <select id="type" name="scenario[type]">
-          <% [%w{self-join Self-join}].each do |(value, label)| %>
+          <option></option>
+          <% [%w{self-join Self-join}, %w{dual-join Dual-join}].each do |(value, label)| %>
             <option value="<%= value %>"<%= ' selected="selected"' if @scenario[:type] == value %>><%= label %></option>
           <% end %>
         </select>
       </td>
     </tr>
     <tr class="alt">
-      <td class="left"><label for="resource">Resource</label></td>
+      <td class="left"><label for="resource">Resource(s)</label></td>
       <td>
-        <select id="resource" name="resource_ids[]">
-          <% @project.resources.each do |resource| %>
-            <option value="<%= resource.id %>"><%= resource.name %></option>
-          <% end %>
+        <select id="resource" name="resource_ids[]" multiple="multiple">
+        <% @project.resources.each do |resource| %>
+          <option value="<%= resource.id %>"><%= resource.name %></option>
+        <% end %>
         </select>
       </td>
     </tr>

@@ -10,11 +10,6 @@ body {
   -webkit-border-radius: 10px;
   -moz-border-radius: 10px;
   height: 750px;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  margin-top: -375px;
-  margin-left: -480px;
 }
 
 #sidebar {
