@@ -7,8 +7,8 @@ Feature: managing matchers
     When I go to the scenario page
     And I click the "Add matcher" link
     And I fill in the form:
-      | Comparator | exact     |
-      | Field      | last_name |
+      | Comparator        | exact     |
+      | Field for People  | last_name |
     And I click the "Submit" button
     Then it should take me back to the scenario page
 

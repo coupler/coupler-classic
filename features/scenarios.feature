@@ -32,7 +32,7 @@ Feature: managing scenarios
     And that I have added the "People" resource
     And that I have created a scenario called "Link by Last name"
     And that I have added a "exact" matcher with these options:
-      | field_name | last_name |
+      | People | field_name | last_name |
     When I go to the scenario page
     And I click the "Run Now" button
     And I click the "Yes" button

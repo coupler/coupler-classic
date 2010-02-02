@@ -40,9 +40,10 @@ Given /^that I have created a dual-join scenario called "([^"]*)"$/ do |scenario
 end
 
 Given /^that I have added a "([^\"]*)" matcher with these options:$/ do |comparator_name, table|
-  comparator_options = {}
-  table.raw.each do |(key, value)|
-    comparator_options[key] = value
+  comparator_options = Hash.new { |h, k| h[k] = {} }
+  table.raw.each do |(resource_name, key, value)|
+    resource = Coupler::Models::Resource[:name => resource_name, :project_id => @project.id]
+    comparator_options[resource.id][key] = value
   end
   @matcher = Factory(:matcher, {
     :comparator_name => comparator_name,

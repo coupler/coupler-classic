@@ -1,2 +1,6 @@
 - Make layout for coupler github pages the same
 - Add more validations for comparators
+- Use select boxes in exact comparator instead of text box
+
+- Tie score_sets to groups of resources instead of scenarios?
+- Allow score_sets to be used as resources

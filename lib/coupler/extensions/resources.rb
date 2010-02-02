@@ -26,6 +26,7 @@ module Coupler
           @project = Models::Project[:id => params[:project_id]]
           @resource = @project.resources_dataset[:id => params[:id]]
           @transformations = @resource.transformations
+          @scenarios = @resource.scenarios
           erb 'resources/show'.to_sym
         end
 

@@ -17,13 +17,15 @@ module Coupler
         def after_validation
           # This is a workaround; Marshal.dump chokes on Sinatra's params
           # hash for some reason
-          opts = self.comparator_options
-          if opts.is_a?(Hash)
-            self.comparator_options = {}
-            opts.each_pair do |key, value|
-              self.comparator_options[key] = value
-            end
+          self.comparator_options = fix_hash(self.comparator_options)
+        end
+
+        def fix_hash(hash)
+          retval = {}
+          hash.each_pair do |key, value|
+            retval[key] = value.is_a?(Hash) ? fix_hash(value) : value
           end
+          retval
         end
     end
   end

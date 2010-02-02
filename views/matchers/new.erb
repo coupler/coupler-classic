@@ -9,12 +9,18 @@
 
   $(function() {
     $('#comparator_name').change(function() {
-      div = $('#comparator_options').html('');
+      table = $('#form-table')
+      table.find('.comparator-option').remove();
+      count = table.find('tr').length;
       opts = comparator_options[$(this).val()];
       if (opts) {
         $.each(resources, function(i, resource) {
           $.each(opts, function(j, option) {
-            p = $('<p/>');
+            tr = $('<tr/>')
+            tr.addClass('comparator-option');
+            if (count++ % 2 == 1) {
+              tr.addClass('alt');
+            }
             label = $('<label/>')
               .attr('for', option.name+"_"+resource.id)
               .html(option.label+' for '+resource.name);
@@ -22,8 +28,8 @@
               .attr('type', option.type)
               .attr('id', option.name+"_"+resource.id)
               .attr('name', 'matcher[comparator_options]['+resource.id+']['+option.name+']');
-            p.append(label).append('<br/>').append(input);
-            div.append(p);
+            tr.append($("<td/>").append(label)).append($("<td/>").append(input));
+            table.append(tr);
           });
         });
       }
@@ -33,17 +39,19 @@
 
 <%= error_messages_for @matcher %>
 <form method="post" action="/projects/<%= @project.id %>/scenarios/<%= @scenario.id %>/matchers">
-  <p>
-    <label for="comparator_name">Comparator</label><br/>
-    <select id="comparator_name" name="matcher[comparator_name]">
-      <option></option>
-    <% Coupler::Comparators.list.keys.each do |comparator_name| %>
-      <option><%= comparator_name %></option>
-    <% end %>
-    </select>
-  </p>
-  <div id="comparator_options">
-  </div>
+  <table id="form-table" class="form">
+    <tr>
+      <td class="left"><label for="comparator_name">Comparator</label></td>
+      <td>
+        <select id="comparator_name" name="matcher[comparator_name]">
+          <option></option>
+          <% Coupler::Comparators.list.keys.each do |comparator_name| %>
+          <option><%= comparator_name %></option>
+          <% end %>
+        </select>
+      </td>
+    </tr>
+  </table>
   <p>
     <input type="submit" value="Submit" /> or <a href="/projects/<%= @project.id %>/scenarios/<%= @scenario.id %>">Cancel</a>
   </p>

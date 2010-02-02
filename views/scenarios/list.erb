@@ -1,16 +1,18 @@
 <% if @scenarios.empty? %>
-<p>There are currently no scenarios for this project.</p>
+<p>There are currently no scenarios.</p>
 <% else %>
 <table class="list">
   <thead>
     <tr>
       <th>Name</th>
+      <th>Type</th>
     </tr>
   </thead>
   <tbody>
   <% @scenarios.each do |scenario| %>
     <tr>
       <td><a href="/projects/<%= @project.id %>/scenarios/<%= scenario.id %>"><%= scenario[:name] %></a></td>
+      <td><%= scenario[:type] %></td>
     </tr>
   <% end %>
   </tbody>

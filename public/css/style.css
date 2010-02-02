@@ -119,6 +119,10 @@ h2 {
   font-size: 1.5em;
   border-bottom: 1px solid black;
 }
+h3 {
+  font-size: 1.3em;
+  border-bottom: 1px dashed black;
+}
 
 a {
   color: #AE3B3A;

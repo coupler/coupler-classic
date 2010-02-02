@@ -39,19 +39,27 @@
   <p>
     <a href="/projects/<%= @project.id %>/resources/<%= @resource.id %>/transformations/new">Add transformation</a>
   </p>
+
+  <% if !@transformations.empty? %>
+  <h3>Status</h3>
+  <div class="section">
+    <p>
+      Status: <strong><%= humanize(@resource.status) %></strong><br/>
+      Last transformed at: <strong><%= @resource.transformed_at || "Never" %></strong>
+    </p>
+    <p>
+      <input id="transform-button" type="button" value="Transform Now" />
+    </p>
+  </div>
+  <% end %>
 </div>
 
-<% if !@transformations.empty? %>
-<h2>Transform</h2>
+<% if @scenarios %>
+<h2>Related Scenarios</h2>
 <div class="section">
-  <p>
-    Status: <strong><%= humanize(@resource.status) %></strong><br/>
-    Last transformed at: <strong><%= @resource.transformed_at || "Never" %></strong>
-  </p>
-  <p>
-    <input id="transform-button" type="button" value="Transform Now" />
-  </p>
+  <%= erb(:"scenarios/list", :layout => false) %>
 </div>
+<% end %>
 
 <div id="transform-dialog">
   <div id="transform-1">
@@ -101,4 +109,3 @@ $(function() {
   });
 });
 </script>
-<% end %>
