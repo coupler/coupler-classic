@@ -7,3 +7,5 @@ webrat.log
 Session.vim
 vendor/960-grid-system/.hg
 test.rb
+nbproject
+profile

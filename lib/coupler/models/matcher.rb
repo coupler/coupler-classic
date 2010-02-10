@@ -17,7 +17,9 @@ module Coupler
         def after_validation
           # This is a workaround; Marshal.dump chokes on Sinatra's params
           # hash for some reason
-          self.comparator_options = fix_hash(self.comparator_options)
+          if self.comparator_options.is_a?(Hash)
+            self.comparator_options = fix_hash(self.comparator_options)
+          end
         end
 
         def fix_hash(hash)
