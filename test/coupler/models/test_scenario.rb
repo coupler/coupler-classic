@@ -186,6 +186,42 @@ module Coupler
           end
         end
       end
+
+      def test_run_uses_correct_key
+        Sequel.connect(Config.connection_string("information_schema")) do |inf|
+          inf.execute("DROP DATABASE IF EXISTS score_sets")
+        end
+
+        project = Factory(:project, :name => "Test")
+        resource = Factory(:resource, :name => "Resource 1", :project => project, :table_name => "avast_ye")
+        scenario = Factory(:scenario, {
+          :name => "Scenario 1", :project => project, :type => "self-join"
+        })
+        scenario.add_resource(resource)
+        matcher = Factory(:matcher, {
+          :comparator_name => "exact",
+          :comparator_options => { resource.id.to_s => {"field_name" => "scurvy_dog"} },
+          :scenario => scenario
+        })
+
+        Timecop.freeze(Time.now) do
+          scenario.run!
+          assert_equal Time.now, scenario.run_at
+        end
+
+        ScoreSet.find(1) do |score_set|
+          assert_not_nil score_set, "Didn't create score set"
+          assert_equal 1, scenario.score_set_id
+
+          resource.source_dataset do |ds|
+            ds.order("arrr").each do |row|
+              expected = ds.filter("scurvy_dog = ? AND arrr > ?", row[:scurvy_dog], row[:arrr]).count
+              actual = score_set.filter("first_id = ? AND score = 100", row[:id]).count
+              assert_equal expected, actual, "Expected #{expected} for id #{row[:id]}"
+            end
+          end
+        end
+      end
     end
   end
 end

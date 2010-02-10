@@ -59,6 +59,21 @@ namespace :db do
         String :owner_first_name
         String :owner_last_name
       end
+      db.create_table :no_primary_key do
+        String :foo
+        String :bar
+      end
+      db.create_table :two_primary_keys do
+        String :foo
+        String :bar
+        primary_key [:foo, :bar]
+      end
+      db.execute("CREATE TABLE string_primary_key (foo VARCHAR(255), PRIMARY KEY(foo))")
+      db.create_table :avast_ye do
+        primary_key :arrr
+        String :scurvy_dog
+      end
+
       people = db[:people]
       pets = db[:pets]
 
@@ -76,6 +91,10 @@ namespace :db do
         people.insert(person)
         pets.insert(pet)
       end
+
+      pirates = db[:avast_ye]
+      pirates.insert(:scurvy_dog => "Pete")
+      pirates.insert(:scurvy_dog => "Westley")
     end
   rescue LoadError
     task :prepare do

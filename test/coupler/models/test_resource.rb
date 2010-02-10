@@ -92,6 +92,26 @@ module Coupler
         assert !resource_2.valid?
       end
 
+      def test_requires_primary_key
+        resource = Factory.build(:resource, :table_name => "no_primary_key")
+        assert !resource.valid?
+      end
+
+      def test_requires_single_primary_key
+        resource = Factory.build(:resource, :table_name => "two_primary_keys")
+        assert !resource.valid?
+      end
+
+      def test_requires_integer_primary_key
+        resource = Factory.build(:resource, :table_name => "string_primary_key")
+        assert !resource.valid?
+      end
+
+      def test_sets_primary_key_field
+        resource = Factory(:resource, :table_name => "avast_ye")
+        assert_equal "arrr", resource.primary_key_name
+      end
+
       def test_mysql_source_database
         resource = Factory.create(:resource, {
           :name => "testing",

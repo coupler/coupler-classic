@@ -129,6 +129,10 @@ module Coupler
         def before_create
           super
           self.slug ||= self.name.downcase.gsub(/\s+/, "_")
+          source_database do |db|
+            schema = db.schema(self.table_name)
+            self.primary_key_name = schema.detect { |x| x[1][:primary_key] }[0].to_s
+          end
         end
 
         def validate
@@ -163,11 +167,21 @@ module Coupler
             begin
               source_database do |db|
                 db.test_connection
-                if !db.tables.include?(self.table_name.to_sym)
+                sym = self.table_name.to_sym
+                if !db.tables.include?(sym)
                   errors[:table_name] << "is invalid"
                 end
+
+                keys = db.schema(sym).select { |info| info[1][:primary_key] }
+                if keys.empty?
+                  errors[:table_name] << "doesn't have a primary key"
+                elsif keys.length > 1
+                  errors[:table_name] << "has too many primary keys"
+                elsif keys[0][1][:type] != :integer
+                  errors[:table_name] << "has non-integer primary key"
+                end
               end
-            rescue Sequel::DatabaseConnectionError => e
+            rescue Sequel::DatabaseConnectionError, Sequel::DatabaseError => e
               errors[:base] << "Couldn't connect to the database"
             end
           end

@@ -44,7 +44,7 @@ module Coupler
         String :password
         String :database_name
         String :table_name
-        String :primary_key, :default => "id"
+        String :primary_key_name, :default => "id"
         Integer :total
         Integer :completed
         Integer :project_id
