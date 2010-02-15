@@ -13,9 +13,9 @@ require 'json'
 
 # vendored stuff
 vendor_dir = File.join(File.dirname(__FILE__), "..", "vendor")
-require File.join(vendor_dir, 'thread_pool', 'lib', 'thread_pool')
-require File.join(vendor_dir, 'quartz', 'quartz-1.6.6.jar')
-require File.join(vendor_dir, 'quartz', 'lib', 'core', 'commons-logging-1.1.jar')
+require File.join(vendor_dir, 'ruby', 'thread_pool', 'lib', 'thread_pool')
+require File.join(vendor_dir, 'java', 'quartz', 'quartz-1.6.6.jar')
+require File.join(vendor_dir, 'java', 'quartz', 'lib', 'core', 'commons-logging-1.1.jar')
 
 # coupler libs
 require File.dirname(__FILE__) + "/coupler/config"

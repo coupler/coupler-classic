@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jeremy Stephens"]
-  s.date = %q{2010-01-26}
+  s.date = %q{2010-02-11}
   s.default_executable = %q{coupler}
   s.description = %q{Coupler is an application based on Sinatra and JRuby for linking data}
   s.email = %q{jeremy.f.stephens@vanderbilt.edu}
@@ -95,6 +95,13 @@ Gem::Specification.new do |s|
      "public/js/jquery.min.js",
      "public/js/resource.js",
      "script/dbconsole.rb",
+     "tasks/annotations.rake",
+     "tasks/coupler.rake",
+     "tasks/db.rake",
+     "tasks/jeweler.rake",
+     "tasks/rdoc.rake",
+     "tasks/test.rake",
+     "tasks/web.rake",
      "test.watchr",
      "test/coupler/comparators/test_base.rb",
      "test/coupler/comparators/test_exact.rb",
@@ -210,38 +217,44 @@ Gem::Specification.new do |s|
       s.add_runtime_dependency(%q<rack-flash>, [">= 0"])
       s.add_runtime_dependency(%q<jdbc-mysql>, [">= 0"])
       s.add_runtime_dependency(%q<sequel>, [">= 0"])
+      s.add_runtime_dependency(%q<json-jruby>, [">= 0"])
       s.add_development_dependency(%q<mocha>, [">= 0"])
       s.add_development_dependency(%q<cucumber>, [">= 0"])
-      s.add_development_dependency(%q<activesupport>, [">= 0"])
       s.add_development_dependency(%q<rack-test>, [">= 0"])
       s.add_development_dependency(%q<nokogiri>, [">= 0"])
       s.add_development_dependency(%q<timecop>, [">= 0"])
       s.add_development_dependency(%q<butternut>, [">= 0"])
+      s.add_development_dependency(%q<forgery>, [">= 0"])
+      s.add_development_dependency(%q<factory_girl>, [">= 0"])
     else
       s.add_dependency(%q<sinatra>, [">= 0"])
       s.add_dependency(%q<rack-flash>, [">= 0"])
       s.add_dependency(%q<jdbc-mysql>, [">= 0"])
       s.add_dependency(%q<sequel>, [">= 0"])
+      s.add_dependency(%q<json-jruby>, [">= 0"])
       s.add_dependency(%q<mocha>, [">= 0"])
       s.add_dependency(%q<cucumber>, [">= 0"])
-      s.add_dependency(%q<activesupport>, [">= 0"])
       s.add_dependency(%q<rack-test>, [">= 0"])
       s.add_dependency(%q<nokogiri>, [">= 0"])
       s.add_dependency(%q<timecop>, [">= 0"])
       s.add_dependency(%q<butternut>, [">= 0"])
+      s.add_dependency(%q<forgery>, [">= 0"])
+      s.add_dependency(%q<factory_girl>, [">= 0"])
     end
   else
     s.add_dependency(%q<sinatra>, [">= 0"])
     s.add_dependency(%q<rack-flash>, [">= 0"])
     s.add_dependency(%q<jdbc-mysql>, [">= 0"])
     s.add_dependency(%q<sequel>, [">= 0"])
+    s.add_dependency(%q<json-jruby>, [">= 0"])
     s.add_dependency(%q<mocha>, [">= 0"])
     s.add_dependency(%q<cucumber>, [">= 0"])
-    s.add_dependency(%q<activesupport>, [">= 0"])
     s.add_dependency(%q<rack-test>, [">= 0"])
     s.add_dependency(%q<nokogiri>, [">= 0"])
     s.add_dependency(%q<timecop>, [">= 0"])
     s.add_dependency(%q<butternut>, [">= 0"])
+    s.add_dependency(%q<forgery>, [">= 0"])
+    s.add_dependency(%q<factory_girl>, [">= 0"])
   end
 end
 

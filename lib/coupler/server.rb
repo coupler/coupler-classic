@@ -9,7 +9,7 @@ require 'jdbc/mysql'
 require File.join(File.dirname(__FILE__), "config")
 
 # mysql embedded
-dir = File.join(File.dirname(__FILE__), "..", "..", "vendor", "mysql-connector-mxj-gpl-5-0-9")
+dir = File.join(File.dirname(__FILE__), "..", "..", "vendor", "java", "mysql-connector-mxj-gpl-5-0-9")
 require File.join(dir, "mysql-connector-mxj-gpl-5-0-9.jar")
 require File.join(dir, "mysql-connector-mxj-gpl-5-0-9-db-files.jar")
 require File.join(dir, "lib", "aspectjrt.jar")
