@@ -1,0 +1,141 @@
+<project name="coupler" default="dist" basedir=".">
+  <property name="build" location="build"/>
+
+  <path id="jruby-jar">
+    <pathelement location="vendor/java/jruby-complete.jar"/>
+  </path>
+
+  <target name="init">
+    <tstamp/>
+    <mkdir dir="${build}/gems"/>
+    <mkdir dir="${build}/ruby"/>
+    <mkdir dir="${build}/root/main"/>
+    <mkdir dir="${build}/root/lib"/>
+    <mkdir dir="${build}/root/licenses"/>
+  </target>
+
+  <target name="install-gems" depends="init" description="install needed gems">
+    <java classname="org.jruby.Main">
+      <classpath refid="jruby-jar"/>
+      <arg value="${basedir}/tool/install_gems.rb" />
+      <arg value="${build}/gems"/>
+    </java>
+  </target>
+
+  <target name="copy-dependencies" depends="install-gems">
+  <!--<target name="copy-dependencies">-->
+    <copy todir="${build}/ruby">
+      <fileset dir="${build}/gems/gems">
+        <include name="*/lib/**/*" />
+        <exclude name="jdbc-mysql-*/lib/**/*" />
+      </fileset>
+      <mapper type="regexp" from="^[^/]+/lib/(.+)$$" to="\1"/>
+    </copy>
+
+    <!-- stub jdbc/mysql -->
+    <mkdir dir="${build}/ruby/jdbc" />
+    <touch file="${build}/ruby/jdbc/mysql.rb" />
+
+    <!-- thread_pool -->
+    <copy todir="${build}/ruby" file="vendor/ruby/thread_pool/lib/thread_pool.rb" />
+  </target>
+
+  <target name="copy-coupler" depends="init">
+    <copy todir="${build}/ruby">
+      <fileset dir="${basedir}/lib" />
+      <!--<mapper type="regexp" from="^lib/(.+)$$" to="\1"/>-->
+    </copy>
+  </target>
+
+  <target name="compile-ruby-src" depends="copy-dependencies, copy-coupler" description="compile ruby source">
+    <java classname="org.jruby.Main">
+      <classpath refid="jruby-jar"/>
+      <arg line="-S jrubyc -d ${build}/ruby -t ${build}/ruby ${build}/ruby" />
+    </java>
+    <unjar src="${build}/ruby/json/ext/parser.jar" dest="${build}/ruby" />
+    <unjar src="${build}/ruby/json/ext/generator.jar" dest="${build}/ruby" />
+    <delete>
+      <fileset dir="${build}/ruby" includes="**/*.rb" />
+      <fileset dir="${build}/ruby/json/ext" includes="*.jar" />
+    </delete>
+  </target>
+
+  <target name="install-ruby-libs" depends="compile-ruby-src, install-jruby">
+    <copy todir="${build}/root/META-INF/jruby.home/lib/ruby/site_ruby/1.8" verbose="true">
+      <fileset dir="${build}/ruby" />
+    </copy>
+    <copy todir="${build}/root/META-INF/jruby.home/lib/ruby/site_ruby" verbose="true">
+      <fileset dir="${basedir}" includes="webroot/**/*" />
+    </copy>
+  </target>
+
+  <!--<target name="jar-ruby" depends="compile-ruby-src">-->
+    <!--<jar basedir="${build}/root/ruby" destfile="${build}/root/lib/ruby.jar"/>-->
+  <!--</target>-->
+
+  <target name="compile-runner">
+    <javac srcdir="src">
+      <classpath>
+        <path refid="jruby-jar"/>
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="jar-runner" depends="compile-runner">
+    <jar basedir="src" destfile="${build}/root/main/main.jar"/>
+  </target>
+
+  <target name="copy-vendor-jars" depends="init">
+    <copy todir="${build}/root/lib" file="vendor/java/mysql-connector-mxj-gpl-5-0-9/mysql-connector-mxj-gpl-5-0-9.jar"/>
+    <copy todir="${build}/root/lib" file="vendor/java/mysql-connector-mxj-gpl-5-0-9/mysql-connector-mxj-gpl-5-0-9-db-files.jar"/>
+    <copy todir="${build}/root/lib" file="vendor/java/mysql-connector-mxj-gpl-5-0-9/lib/aspectjrt.jar"/>
+    <copy todir="${build}/root/lib" file="vendor/java/quartz/quartz-1.6.6.jar" />
+    <copy todir="${build}/root/lib" file="vendor/java/quartz/lib/core/commons-logging-1.1.jar" />
+  </target>
+
+  <!-- FIXME: this is here because I don't know how to correctly set $LOAD_PATH when jruby is in jar form -->
+  <target name="install-jruby" depends="init">
+    <unjar src="vendor/java/jruby-complete.jar" dest="${build}/root"/>
+  </target>
+
+  <target name="install-one-jar" depends="init">
+    <copy todir="${build}/root/com">
+      <fileset dir="vendor/java/one-jar/com" />
+    </copy>
+  </target>
+
+  <!-- NOTE: this is another fix for load errors -->
+  <target name="install-jdbc-mysql" depends="init">
+    <unjar dest="${build}/root">
+      <fileset dir="${build}/gems/gems" includes="jdbc-mysql*/lib/*.jar" />
+    </unjar>
+  </target>
+
+  <target name="copy-licenses" depends="copy-dependencies">
+    <copy todir="${build}/root/licenses">
+      <fileset dir="${build}/gems/gems">
+        <include name="*/COPYING" />
+        <include name="*/LICENSE*" />
+      </fileset>
+      <mapper type="regexp" from="^(.+?)-\d[^/]+/.+$$" to="\1.license"/>
+    </copy>
+    <copy todir="${build}/root/licenses">
+      <fileset dir="misc" includes="*.license" />
+    </copy>
+    <copy file="LICENSE" tofile="${build}/root/licenses/coupler.license" />
+  </target>
+
+  <target name="jar-complete" depends="install-ruby-libs, jar-runner, copy-vendor-jars, install-jdbc-mysql, install-one-jar, copy-licenses">
+  <!--<target name="jar-complete">-->
+    <jar destfile="${build}/coupler.jar" basedir="${build}/root">
+      <manifest>
+        <attribute name="Main-Class" value="com.simontuffs.onejar.Boot" />
+        <attribute name="One-Jar-Main-Class" value="edu.vanderbilt.coupler.Main" />
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="clean" description="clean up">
+    <delete dir="${build}"/>
+  </target>
+</project>
