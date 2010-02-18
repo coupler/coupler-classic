@@ -86,9 +86,8 @@
   </target>
 
   <target name="copy-vendor-jars" depends="init">
-    <copy todir="${build}/root/lib" file="vendor/java/mysql-connector-mxj-gpl-5-0-9/mysql-connector-mxj-gpl-5-0-9.jar"/>
-    <copy todir="${build}/root/lib" file="vendor/java/mysql-connector-mxj-gpl-5-0-9/mysql-connector-mxj-gpl-5-0-9-db-files.jar"/>
-    <copy todir="${build}/root/lib" file="vendor/java/mysql-connector-mxj-gpl-5-0-9/lib/aspectjrt.jar"/>
+    <copy todir="${build}/root/lib" file="vendor/java/mysql-connector-mxj-gpl-5-0-11/mysql-connector-mxj-gpl-5-0-11.jar"/>
+    <copy todir="${build}/root/lib" file="vendor/java/mysql-connector-mxj-gpl-5-0-11/mysql-connector-mxj-gpl-5-0-11-db-files.jar"/>
     <copy todir="${build}/root/lib" file="vendor/java/quartz/quartz-1.6.6.jar" />
     <copy todir="${build}/root/lib" file="vendor/java/quartz/lib/core/commons-logging-1.1.jar" />
   </target>
@@ -126,7 +125,6 @@
   </target>
 
   <target name="jar-complete" depends="install-ruby-libs, jar-runner, copy-vendor-jars, install-jdbc-mysql, install-one-jar, copy-licenses">
-  <!--<target name="jar-complete">-->
     <jar destfile="${build}/coupler.jar" basedir="${build}/root">
       <manifest>
         <attribute name="Main-Class" value="com.simontuffs.onejar.Boot" />

@@ -7,7 +7,6 @@ public class Main {
   private Main() {
     ScriptingContainer container = new ScriptingContainer();
     String script =
-      "p __FILE__\n" +
       "require 'coupler/runner'\n" +
       "Coupler::Runner.new";
     container.runScriptlet(script);
