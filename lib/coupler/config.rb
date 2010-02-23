@@ -8,6 +8,36 @@ if !defined? Coupler::Config
         :conn_str => 'jdbc:mysql://localhost:%d/%s?user=%s&password=%s'
       }
 
+      VENDOR_LIBS = {
+        'mysql-connector-mxj' => {
+          :type => 'java',
+          :filetype => "tarball",
+          :version => '5-0-11',
+          :dir => "mysql-connector-mxj-gpl-%s",
+          :url => "ftp://mirror.anl.gov/pub/mysql/Downloads/Connector-MXJ/mysql-connector-mxj-gpl-%s.tar.gz"
+        },
+        'one-jar' => {
+          :type => 'java',
+          :filetype => "jar",
+          :version => '0.96',
+          :dir => "one-jar-%s",
+          :url => "http://downloads.sourceforge.net/one-jar/one-jar-sdk-%s.jar?modtime=1190046700&big_mirror=0"
+        },
+        'quartz' => {
+          :type => 'java',
+          :filetype => 'zip',
+          :version => '1.6.6',
+          :dir => "quartz-%s",
+          :url => "http://www.quartz-scheduler.org/download/quartz-%s.zip"
+        }
+      }
+
+      def self.each_vendor_lib
+        VENDOR_LIBS.each_pair do |name, info|
+          yield(name, info[:type], info[:filetype], info[:dir] % info[:version], info[:url] % info[:version])
+        end
+      end
+
       @@config = nil
       def self.[](key)
         if @@config.nil?
