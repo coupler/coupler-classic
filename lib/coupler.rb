@@ -18,9 +18,7 @@ require 'thread_pool'
 begin
   org.quartz.Job
 rescue NameError
-  vendor_dir = File.join(File.dirname(__FILE__), "..", "vendor")
-  require File.join(vendor_dir, 'java', 'quartz', 'quartz-1.6.6.jar')
-  require File.join(vendor_dir, 'java', 'quartz', 'lib', 'core', 'commons-logging-1.1.jar')
+  Coupler::Config.require_vendor_libs('quartz')
 end
 
 # coupler libs

@@ -9,3 +9,4 @@ Session.vim
 test.rb
 nbproject
 profile
+src/edu/vanderbilt/coupler/*.class

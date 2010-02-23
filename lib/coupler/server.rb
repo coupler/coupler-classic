@@ -13,10 +13,7 @@ begin
   com.mysql.management.MysqldResource
 rescue NameError
   # load jar files only if necessary
-  dir = File.join(File.dirname(__FILE__), "..", "..", "vendor", "java", "mysql-connector-mxj-gpl-5-0-11")
-  require File.join(dir, "mysql-connector-mxj-gpl-5-0-11.jar")
-  require File.join(dir, "mysql-connector-mxj-gpl-5-0-11-db-files.jar")
-  #require File.join(dir, "lib", "aspectjrt.jar")
+  Coupler::Config.require_vendor_libs('mysql-connector-mxj')
 end
 
 module Coupler

@@ -14,7 +14,11 @@ if !defined? Coupler::Config
           :filetype => "tarball",
           :version => '5-0-11',
           :dir => "mysql-connector-mxj-gpl-%s",
-          :url => "ftp://mirror.anl.gov/pub/mysql/Downloads/Connector-MXJ/mysql-connector-mxj-gpl-%s.tar.gz"
+          :url => "ftp://mirror.anl.gov/pub/mysql/Downloads/Connector-MXJ/mysql-connector-mxj-gpl-%s.tar.gz",
+          :libs => [
+            "mysql-connector-mxj-gpl-%s.jar",
+            "mysql-connector-mxj-gpl-%s-db-files.jar"
+          ]
         },
         'one-jar' => {
           :type => 'java',
@@ -28,13 +32,27 @@ if !defined? Coupler::Config
           :filetype => 'zip',
           :version => '1.6.6',
           :dir => "quartz-%s",
-          :url => "http://www.quartz-scheduler.org/download/quartz-%s.zip"
+          :url => "http://www.quartz-scheduler.org/download/quartz-%s.zip",
+          :libs => [
+            'quartz-%s.jar',
+            File.join('lib', 'core', 'commons-logging-1.1.jar')
+          ]
         }
       }
 
       def self.each_vendor_lib
         VENDOR_LIBS.each_pair do |name, info|
           yield(name, info[:type], info[:filetype], info[:dir] % info[:version], info[:url] % info[:version])
+        end
+      end
+
+      def self.require_vendor_libs(name)
+        info = VENDOR_LIBS[name]
+        version = info[:version]
+        path = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', 'vendor', info[:type], info[:dir] % version))
+        info[:libs].each do |lib|
+          p File.join(path, lib % version)
+          require File.join(path, lib % version)
         end
       end
 
