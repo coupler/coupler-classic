@@ -1,6 +1,14 @@
 <project name="coupler" default="dist" basedir=".">
   <property name="build" location="build"/>
 
+  <!-- 3rd party gems -->
+  <property name="gems.needed" value="sinatra rack-flash jdbc-mysql sequel json-jruby" />
+
+  <!-- 3rd party java libs -->
+  <property name="one.jar.version" value="0.96"/>
+  <property name="quartz.version" value="1.6.6"/>
+  <property name="mysql.mxj.version" value="5-0-11"/>
+
   <path id="jruby-jar">
     <pathelement location="vendor/java/jruby-complete.jar"/>
   </path>
@@ -17,13 +25,11 @@
   <target name="install-gems" depends="init" description="install needed gems">
     <java classname="org.jruby.Main">
       <classpath refid="jruby-jar"/>
-      <arg value="${basedir}/tool/install_gems.rb" />
-      <arg value="${build}/gems"/>
+      <arg line="-e &quot;ENV['GEM_HOME'] = '${build}/gems'&quot; -S maybe_install_gems ${gems.needed}" />
     </java>
   </target>
 
   <target name="copy-dependencies" depends="install-gems">
-  <!--<target name="copy-dependencies">-->
     <copy todir="${build}/ruby">
       <fileset dir="${build}/gems/gems">
         <include name="*/lib/**/*" />
@@ -43,24 +49,25 @@
   <target name="copy-coupler" depends="init">
     <copy todir="${build}/ruby">
       <fileset dir="${basedir}/lib" />
-      <!--<mapper type="regexp" from="^lib/(.+)$$" to="\1"/>-->
     </copy>
   </target>
 
   <target name="compile-ruby-src" depends="copy-dependencies, copy-coupler" description="compile ruby source">
+    <!--
     <java classname="org.jruby.Main">
       <classpath refid="jruby-jar"/>
       <arg line="-S jrubyc -d ${build}/ruby -t ${build}/ruby ${build}/ruby" />
     </java>
+    -->
     <unjar src="${build}/ruby/json/ext/parser.jar" dest="${build}/ruby" />
     <unjar src="${build}/ruby/json/ext/generator.jar" dest="${build}/ruby" />
     <delete>
-      <fileset dir="${build}/ruby" includes="**/*.rb" />
+      <!-- <fileset dir="${build}/ruby" includes="**/*.rb" /> -->
       <fileset dir="${build}/ruby/json/ext" includes="*.jar" />
     </delete>
   </target>
 
-  <target name="install-ruby-libs" depends="compile-ruby-src, install-jruby">
+  <target name="install-ruby-libs" depends="compile-ruby-src">
     <copy todir="${build}/root/META-INF/jruby.home/lib/ruby/site_ruby/1.8" verbose="true">
       <fileset dir="${build}/ruby" />
     </copy>
@@ -69,45 +76,12 @@
     </copy>
   </target>
 
-  <!--<target name="jar-ruby" depends="compile-ruby-src">-->
-    <!--<jar basedir="${build}/root/ruby" destfile="${build}/root/lib/ruby.jar"/>-->
-  <!--</target>-->
-
   <target name="compile-runner">
-    <javac srcdir="src">
+    <javac srcdir="src" destdir="${build}/root">
       <classpath>
         <path refid="jruby-jar"/>
       </classpath>
     </javac>
-  </target>
-
-  <target name="jar-runner" depends="compile-runner">
-    <jar basedir="src" destfile="${build}/root/main/main.jar"/>
-  </target>
-
-  <target name="copy-vendor-jars" depends="init">
-    <copy todir="${build}/root/lib" file="vendor/java/mysql-connector-mxj-gpl-5-0-11/mysql-connector-mxj-gpl-5-0-11.jar"/>
-    <copy todir="${build}/root/lib" file="vendor/java/mysql-connector-mxj-gpl-5-0-11/mysql-connector-mxj-gpl-5-0-11-db-files.jar"/>
-    <copy todir="${build}/root/lib" file="vendor/java/quartz/quartz-1.6.6.jar" />
-    <copy todir="${build}/root/lib" file="vendor/java/quartz/lib/core/commons-logging-1.1.jar" />
-  </target>
-
-  <!-- FIXME: this is here because I don't know how to correctly set $LOAD_PATH when jruby is in jar form -->
-  <target name="install-jruby" depends="init">
-    <unjar src="vendor/java/jruby-complete.jar" dest="${build}/root"/>
-  </target>
-
-  <target name="install-one-jar" depends="init">
-    <copy todir="${build}/root/com">
-      <fileset dir="vendor/java/one-jar/com" />
-    </copy>
-  </target>
-
-  <!-- NOTE: this is another fix for load errors -->
-  <target name="install-jdbc-mysql" depends="init">
-    <unjar dest="${build}/root">
-      <fileset dir="${build}/gems/gems" includes="jdbc-mysql*/lib/*.jar" />
-    </unjar>
   </target>
 
   <target name="copy-licenses" depends="copy-dependencies">
@@ -124,12 +98,19 @@
     <copy file="LICENSE" tofile="${build}/root/licenses/coupler.license" />
   </target>
 
-  <target name="jar-complete" depends="install-ruby-libs, jar-runner, copy-vendor-jars, install-jdbc-mysql, install-one-jar, copy-licenses">
+  <target name="jar-complete" depends="install-ruby-libs, compile-runner, copy-licenses">
     <jar destfile="${build}/coupler.jar" basedir="${build}/root">
       <manifest>
-        <attribute name="Main-Class" value="com.simontuffs.onejar.Boot" />
-        <attribute name="One-Jar-Main-Class" value="edu.vanderbilt.coupler.Main" />
+        <attribute name="Main-Class" value="edu.vanderbilt.coupler.Main" />
       </manifest>
+      <zipfileset src="vendor/java/jruby-complete.jar" />
+      <zipfileset src="vendor/java/mysql-connector-mxj-gpl-${mysql.mxj.version}/mysql-connector-mxj-gpl-${mysql.mxj.version}.jar" />
+      <zipfileset src="vendor/java/mysql-connector-mxj-gpl-${mysql.mxj.version}/mysql-connector-mxj-gpl-${mysql.mxj.version}-db-files.jar" />
+      <zipfileset src="vendor/java/quartz-${quartz.version}/quartz-${quartz.version}.jar" />
+      <zipfileset src="vendor/java/quartz-${quartz.version}/lib/core/commons-logging-1.1.jar" />
+      <zipfileset>
+        <fileset dir="${build}/gems/gems" includes="jdbc-mysql*/lib/*.jar" />
+      </zipfileset>
     </jar>
   </target>
 
