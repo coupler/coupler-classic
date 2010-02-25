@@ -1,20 +1,20 @@
 body {
   background: #555;
-  font-family: verdana, 'Lucida Grande', arial, helvetica, sans-serif;
+  font-family: verdana, arial, helvetica, sans-serif;
 }
 
 #main {
+  position: relative;
   margin-top: 2em;
   margin-bottom: 2em;
-  background: white url(/images/sidebar.png) top left no-repeat;
+  background: white url(/images/sidebar.png) left repeat-y;
   -webkit-border-radius: 10px;
   -moz-border-radius: 10px;
-  height: 750px;
 }
 
 #sidebar {
   color: white;
-  height: 750px;
+  background-color: #383538;
   position: relative;
 }
 #sidebar h3 {
@@ -44,23 +44,36 @@ body {
   float: left;
   margin-right: 0.5em;
 }
-#sidebar .about {
+#about {
   position: absolute;
-  bottom: 1em;
-  font-size: smaller;
-  text-align: justify;
+  bottom: 0;
+  width: 120px;
+  height: 335px;
+  background: url(/images/sidebar-bottom.png) left bottom no-repeat;
+  z-index: 100;
 }
-#sidebar .about a,
-#sidebar .about a:visited {
+#about .text {
+  position: absolute;
+  bottom: 0;
+  height: 73px;
+  padding: 10px 5px;
+  font-size: smaller;
+  text-align: center;
+  vertical-align: bottom;
+  color: white;
+}
+#about a,
+#about a:visited {
+  color: white;
   text-decoration: underline;
 }
 
 #content {
-  background: transparent url(/images/coupler.png) no-repeat;
+  background: transparent url(/images/coupler.png) repeat-y;
   background-position: 95% 50%;
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
-  height: 750px;
+  min-height: 750px;
 }
 
 #breadcrumbs {
@@ -102,6 +115,7 @@ body {
   color: white;
   margin: 0;
   padding: 0.3em;
+  border: 0;
 }
 .errors ul {
   padding: 0.5em;
@@ -163,5 +177,7 @@ input, select, textarea {
 }
 
 .section {
-  padding: 0 0 1em 1.5em;
+  padding: 0 0 0 1.5em;
+  margin: 1em 0;
+  overflow: auto;
 }

@@ -51,7 +51,6 @@ if !defined? Coupler::Config
         version = info[:version]
         path = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', 'vendor', info[:type], info[:dir] % version))
         info[:libs].each do |lib|
-          p File.join(path, lib % version)
           require File.join(path, lib % version)
         end
       end
