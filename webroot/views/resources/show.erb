@@ -17,8 +17,8 @@
       </tr>
     </thead>
     <tbody>
-      <% @resource.source_schema.each do |(column_name, info)| %>
-        <tr>
+      <% @resource.source_schema.each_with_index do |(column_name, info), i| %>
+        <tr<%= " class='alt'" if i % 2 == 1 %>>
           <td><%= column_name %></td>
           <td><%= info[:db_type] %></td>
         </tr>

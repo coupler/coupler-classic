@@ -67,7 +67,6 @@ module Coupler
         String :name
         String :slug
         String :description
-        String :type
         Integer :total
         Integer :completed
         Integer :project_id

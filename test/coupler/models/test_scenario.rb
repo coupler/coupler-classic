@@ -54,6 +54,13 @@ module Coupler
         assert_equal "foo_bar", scenario.slug
       end
 
+      def test_resource_ids=
+        project = Factory(:project)
+        resource = Factory(:resource, :project => project)
+        scenario = Factory(:scenario, :project => project, :name => 'Foo bar', :resource_ids => [resource.id.to_s])
+        assert_equal resource, scenario.resources_dataset.first
+      end
+
       def test_run_self_join_without_transformations
         database_count = Sequel::DATABASES.length
 
@@ -64,7 +71,7 @@ module Coupler
         project = Factory(:project, :name => "Test without transformations")
         resource = Factory(:resource, :name => "Resource 1", :project => project)
         scenario = Factory(:scenario, {
-          :name => "Scenario 1", :project => project, :type => "self-join"
+          :name => "Scenario 1", :project => project
         })
         scenario.add_resource(resource)
         matcher_1 = Factory(:matcher, {
@@ -97,8 +104,8 @@ module Coupler
         end
       end
 
-      def test_status_when_self_join_and_no_resources
-        scenario = Factory(:scenario, :type => "self-join")
+      def test_status_when_no_resources
+        scenario = Factory(:scenario)
         matcher = Factory(:matcher, :scenario => scenario)
         assert_equal "no_resources", scenario.status
       end
@@ -106,7 +113,7 @@ module Coupler
       def test_status_with_no_matchers
         project = Factory(:project)
         resource = Factory(:resource, :project => project)
-        scenario = Factory(:scenario, :project => project, :type => "self-join")
+        scenario = Factory(:scenario, :project => project)
         scenario.add_resource(resource)
 
         assert_equal "no_matchers", scenario.status
@@ -115,7 +122,7 @@ module Coupler
       def test_status_with_matchers
         project = Factory(:project)
         resource = Factory(:resource, :project => project)
-        scenario = Factory(:scenario, :project => project, :type => "self-join")
+        scenario = Factory(:scenario, :project => project)
         scenario.add_resource(resource)
         matcher = Factory(:matcher, :scenario => scenario)
 
@@ -126,11 +133,35 @@ module Coupler
         project = Factory(:project)
         resource = Factory(:resource, :project => project)
         transformation = Factory(:transformation, :resource => resource)
-        scenario = Factory(:scenario, :project => project, :type => "self-join")
+        scenario = Factory(:scenario, :project => project)
         scenario.add_resource(resource)
         matcher = Factory(:matcher, :scenario => scenario)
 
         assert_equal "resources_out_of_date", scenario.status
+      end
+
+      def test_linkage_type_with_no_resources
+        project = Factory(:project)
+        scenario = Factory(:scenario, :project => project)
+        assert_equal "N/A", scenario.linkage_type
+      end
+
+      def test_linkage_type_with_one_resource
+        project = Factory(:project)
+        scenario = Factory(:scenario, :project => project)
+        resource = Factory(:resource, :project => project)
+        scenario.add_resource(resource)
+        assert_equal "self-linkage", scenario.linkage_type
+      end
+
+      def test_linkage_type_with_two_resources
+        project = Factory(:project)
+        scenario = Factory(:scenario, :project => project)
+        resource_1 = Factory(:resource, :project => project)
+        resource_2 = Factory(:resource, :project => project)
+        scenario.add_resource(resource_1)
+        scenario.add_resource(resource_2)
+        assert_equal "dual-linkage", scenario.linkage_type
       end
 
       def test_run_dual_join_without_transformations
@@ -144,7 +175,7 @@ module Coupler
         resource_1 = Factory(:resource, :name => "People", :project => project)
         resource_2 = Factory(:resource, :name => "Pets", :project => project, :table_name => 'pets')
         scenario = Factory(:scenario, {
-          :name => "Scenario 1", :project => project, :type => "dual-join"
+          :name => "Scenario 1", :project => project
         })
         scenario.add_resource(resource_1)
         scenario.add_resource(resource_2)
@@ -195,7 +226,7 @@ module Coupler
         project = Factory(:project, :name => "Test")
         resource = Factory(:resource, :name => "Resource 1", :project => project, :table_name => "avast_ye")
         scenario = Factory(:scenario, {
-          :name => "Scenario 1", :project => project, :type => "self-join"
+          :name => "Scenario 1", :project => project
         })
         scenario.add_resource(resource)
         matcher = Factory(:matcher, {

@@ -12,7 +12,7 @@
   <% @scenarios.each do |scenario| %>
     <tr>
       <td><a href="/projects/<%= @project.id %>/scenarios/<%= scenario.id %>"><%= scenario[:name] %></a></td>
-      <td><%= scenario[:type] %></td>
+      <td><%= scenario.linkage_type %></td>
     </tr>
   <% end %>
   </tbody>

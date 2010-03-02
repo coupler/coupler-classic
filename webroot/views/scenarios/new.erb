@@ -1,5 +1,30 @@
 <% @breadcrumbs = [@project, @scenario] %>
+<% add_javascript('jquery-ui.min.js') %>
 <%= error_messages_for @scenario %>
+
+<style type="text/css">
+  #resources {
+    list-style-type: none;
+    margin: 1em;
+    padding: 0;
+    width: 20em;
+  }
+  #resources li {
+    padding: 0.3em;
+    margin: 0.5em;
+    border: 1px solid black;
+    background-color: #eee;
+    cursor: pointer;
+  }
+  #resources li.selected {
+    background-color: yellow;
+  }
+  #resources li.disabled {
+    border-style: dashed;
+    text-decoration: line-through;
+  }
+</style>
+
 <form method="post" action="/projects/<%= @project.id %>/scenarios">
   <table id="form-table" class="form">
     <tr>
@@ -14,29 +39,62 @@
         <input id="name" name="scenario[description]" type="text" value="<%= @scenario.description %>" />
       </td>
     </tr>
-    <tr>
-      <td class="left"><label for="type">Type</label></td>
-      <td>
-        <select id="type" name="scenario[type]">
-          <option></option>
-          <% [%w{self-join Self-join}, %w{dual-join Dual-join}].each do |(value, label)| %>
-            <option value="<%= value %>"<%= ' selected="selected"' if @scenario[:type] == value %>><%= label %></option>
-          <% end %>
-        </select>
-      </td>
-    </tr>
-    <tr class="alt">
-      <td class="left"><label for="resource">Resource(s)</label></td>
-      <td>
-        <select id="resource" name="resource_ids[]" multiple="multiple">
-        <% @project.resources.each do |resource| %>
-          <option value="<%= resource.id %>"><%= resource.name %></option>
-        <% end %>
-        </select>
-      </td>
-    </tr>
   </table>
+
+  <h3>Resource(s)</h3>
+  <p>
+    Here you can specify which resource(s) you want to use in this scenario.
+    The number you choose determines the type of linkage that is performed.  If
+    you choose one resource, a <em>self-linkage</em> will be performed.  If
+    two, a <em>dual-linkage</em> will be performed.  You can choose a
+    <strong>maximum of two</strong> resources.
+  </p>
+  <div style="border-bottom: 1px solid #ddd;">
+    Click which resources you want:
+  </div>
+  <ul id="resources">
+  <% @project.resources.each do |resource| %>
+    <li id="resource-<%= resource.id %>" class="resource"><%= resource.name %></li>
+  <% end %>
+  </ul>
+  <div id="linkage-type" style="margin: 1em 0">
+    Linkage type: <strong>N/A</strong>
+  </div>
+
   <p>
     <input type="submit" value="Submit" /> or <a href="/projects/<%= @project.id %>">Cancel</a>
   </p>
 </form>
+
+<script type="text/javascript">
+  $(function() {
+    $('.resource').disableSelection().click(function() {
+      obj = $(this);
+      if (obj.hasClass('disabled')) return;
+
+      id  = obj.attr('id').split('-')[1];
+      if (obj.hasClass('selected')) {
+        obj.removeClass('selected');
+        $('#resource-input-'+id).remove();
+      }
+      else {
+        obj.addClass('selected');
+        $('form').append("<input id='resource-input-"+id+"' type='hidden' name='scenario[resource_ids][]' value='"+id+"' />");
+      }
+
+      switch($('.resource.selected').length) {
+        case 0:
+          $('#linkage-type strong').text("N/A");
+          break;
+        case 1:
+          $('#linkage-type strong').text("self-linkage");
+          $('.resource.disabled').removeClass('disabled');
+          break;
+        case 2:
+          $('#linkage-type strong').text("dual-linkage");
+          $('.resource:not(.selected)').addClass('disabled');
+          break;
+      }
+    });
+  });
+</script>

@@ -2,9 +2,21 @@ module Coupler
   module Models
     class Scenario < Sequel::Model
       include CommonModel
+      attr_writer :resource_ids
       many_to_one :project
       many_to_many :resources
       one_to_many :matchers
+
+      def linkage_type
+        case self.resources_dataset.count
+        when 1
+          "self-linkage"
+        when 2
+          "dual-linkage"
+        else
+          "N/A"
+        end
+      end
 
       def status
         if self.matchers_dataset.count == 0
@@ -19,8 +31,8 @@ module Coupler
       end
 
       def run!
-        case self[:type]
-        when "self-join"
+        case self.resources_dataset.count
+        when 1
           resource = self.resources_dataset.first
           comparators = matchers.collect do |matcher|
             klass = Comparators[matcher.comparator_name]
@@ -53,7 +65,7 @@ module Coupler
               thread_pool.join
             end
           end
-        when "dual-join"
+        when 2
           resource_1, resource_2 = self.resources_dataset.limit(2).order(:id).all
           comparators = matchers.collect do |matcher|
             klass = Comparators[matcher.comparator_name]
@@ -104,6 +116,16 @@ module Coupler
         def before_create
           super
           self.slug ||= self.name.downcase.gsub(/\s+/, "_")
+        end
+
+        def after_create
+          super
+          if @resource_ids.is_a?(Array)
+            @resource_ids.each do |resource_id|
+              resource = self.project.resources_dataset[:id => resource_id]
+              self.add_resource(resource)   if resource
+            end
+          end
         end
 
         def validate
