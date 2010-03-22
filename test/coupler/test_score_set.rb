@@ -77,5 +77,15 @@ module Coupler
         assert_equal 1, set.id
       end
     end
+
+    def test_insert_or_update
+      Coupler::ScoreSet.create do |set|
+        filtered = set.filter(:first_id => 1, :second_id => 2)
+        set.insert_or_update(:first_id => 1, :second_id => 2, :score => 10)
+        assert_equal 10, filtered.first[:score]
+        set.insert_or_update(:first_id => 1, :second_id => 2, :score => 10)
+        assert_equal 20, filtered.first[:score]
+      end
+    end
   end
 end

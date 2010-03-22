@@ -54,5 +54,18 @@ module Coupler
     def __getobj__
       @dataset
     end
+
+    def insert_or_update(options)
+      first_id  = options[:first_id]
+      second_id = options[:second_id]
+      score     = options[:score]
+
+      filtered = @dataset.filter(:first_id => first_id, :second_id => second_id)
+      if filtered.count == 0
+        @dataset.insert(:first_id => first_id, :second_id => second_id, :score => score)
+      else
+        filtered.update("score = score + #{score.to_i}")
+      end
+    end
   end
 end
