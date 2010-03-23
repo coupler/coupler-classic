@@ -24,6 +24,10 @@ module Coupler
         assert_respond_to Resource.new, :scenarios
       end
 
+      def test_one_to_many_jobs
+        assert_respond_to Resource.new, :jobs
+      end
+
       def test_requires_name
         resource = Factory.build(:resource, :name => nil)
         assert !resource.valid?

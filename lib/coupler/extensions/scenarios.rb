@@ -36,13 +36,13 @@ module Coupler
           @project = Models::Project[:id => params[:project_id]]
           @scenario = @project.scenarios_dataset[:id => params[:id]]
           Scheduler.instance.schedule_run_scenario_job(@scenario)
-          erb 'scenarios/run'.to_sym
+          redirect "/projects/#{@project.id}/scenarios/#{@scenario.id}"
         end
 
-        app.get "/projects/:project_id/scenarios/:id/progress" do
-          scenario = Models::Scenario[:id => params[:id], :project_id => params[:project_id]]
-          (scenario[:completed] * 100 / scenario[:total]).to_s
-        end
+        #app.get "/projects/:project_id/scenarios/:id/progress" do
+          #scenario = Models::Scenario[:id => params[:id], :project_id => params[:project_id]]
+          #(scenario[:completed] * 100 / scenario[:total]).to_s
+        #end
       end
     end
   end

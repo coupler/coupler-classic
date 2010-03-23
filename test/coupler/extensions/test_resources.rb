@@ -79,15 +79,15 @@ module Coupler
         Models::Project.stubs(:[]).returns(@project)
         @project.stubs(:resources_dataset).returns(stub("resources dataset", :[] => resource))
         get "/projects/#{@project.id}/resources/123/transform"
-        assert last_response.ok?
+        assert last_response.redirect?, "Wasn't redirected"
       end
 
-      def test_progress
-        resource = Factory(:resource, :project => @project, :completed => 100, :total => 1000)
-        get "/projects/#{@project.id}/resources/#{resource.id}/progress"
-        assert last_response.ok?
-        assert_equal "10", last_response.body
-      end
+      #def test_progress
+        #resource = Factory(:resource, :project => @project, :completed => 100, :total => 1000)
+        #get "/projects/#{@project.id}/resources/#{resource.id}/progress"
+        #assert last_response.ok?
+        #assert_equal "10", last_response.body
+      #end
     end
   end
 end

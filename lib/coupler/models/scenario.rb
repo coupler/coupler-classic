@@ -6,6 +6,7 @@ module Coupler
       many_to_one :project
       many_to_many :resources
       one_to_many :matchers
+      one_to_many :jobs
 
       def linkage_type
         case self.resources_dataset.count

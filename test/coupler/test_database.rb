@@ -15,7 +15,7 @@ module Coupler
     end
 
     def test_create_schema
-      [:projects, :resources, :transformations, :scenarios, :resources_scenarios, :matchers].each do |name|
+      [:projects, :resources, :transformations, :scenarios, :resources_scenarios, :matchers, :jobs].each do |name|
         @database.expects(:create_table).with(name)
       end
       @database.create_schema

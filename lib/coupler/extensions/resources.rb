@@ -34,13 +34,13 @@ module Coupler
           @project = Models::Project[:id => params[:project_id]]
           @resource = @project.resources_dataset[:id => params[:id]]
           Scheduler.instance.schedule_transform_job(@resource)
-          erb 'resources/transform'.to_sym
+          redirect "/projects/#{@project.id}/resources/#{@resource.id}"
         end
 
-        app.get "/projects/:project_id/resources/:id/progress" do
-          resource = Models::Resource[:project_id => params[:project_id], :id => params[:id]]
-          (resource[:completed] * 100 / resource[:total]).to_s
-        end
+        #app.get "/projects/:project_id/resources/:id/progress" do
+          #resource = Models::Resource[:project_id => params[:project_id], :id => params[:id]]
+          #(resource[:completed] * 100 / resource[:total]).to_s
+        #end
       end
     end
   end

@@ -20,6 +20,10 @@ module Coupler
         assert_respond_to Scenario.new, :matchers
       end
 
+      def test_one_to_many_jobs
+        assert_respond_to Scenario.new, :jobs
+      end
+
       def test_requires_name
         scenario = Factory.build(:scenario, :name => nil)
         assert !scenario.valid?

@@ -45,8 +45,6 @@ module Coupler
         String :database_name
         String :table_name
         String :primary_key_name, :default => "id"
-        Integer :total
-        Integer :completed
         Integer :project_id
         Time :transformed_at
         Time :created_at
@@ -67,8 +65,6 @@ module Coupler
         String :name
         String :slug
         String :description
-        Integer :total
-        Integer :completed
         Integer :project_id
         Integer :score_set_id
         Time :run_at
@@ -91,6 +87,19 @@ module Coupler
         Integer :scenario_id
         Time :created_at
         Time :updated_at
+      end
+
+      @database.create_table :jobs do
+        primary_key :id
+        String :name
+        String :status
+        Integer :resource_id
+        Integer :scenario_id
+        Integer :total, :default => 0
+        Integer :completed, :default => 0
+        Time :created_at
+        Time :started_at
+        Time :completed_at
       end
     end
   end

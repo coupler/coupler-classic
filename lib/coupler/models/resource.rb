@@ -5,6 +5,7 @@ module Coupler
       many_to_one :project
       one_to_many :transformations
       many_to_many :scenarios
+      one_to_many :jobs
 
       def source_database(&block)
         Sequel.connect(source_connection_string, {
@@ -98,14 +99,14 @@ module Coupler
 
           source_dataset do |s_ds|
             # for progress bar
-            self.update(:total => s_ds.count, :completed => 0)
+            #self.update(:total => s_ds.count, :completed => 0)
 
             thread_pool = ThreadPool.new(10)
             s_ds.each do |row|
               thread_pool.execute(row) do |r|
                 values = transformers.inject(r) { |x, t| t.transform(x) }
                 l_ds.insert(values)
-                self.class.filter(:id => self.id).update("completed = completed + 1")
+                #self.class.filter(:id => self.id).update("completed = completed + 1")
               end
             end
             thread_pool.join

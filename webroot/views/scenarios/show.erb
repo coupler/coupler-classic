@@ -1,6 +1,4 @@
 <% @breadcrumbs = [@project, @scenario] %>
-<% add_javascript("jquery-ui.min.js") %>
-<% add_stylesheet("jquery-ui.css") %>
 <% if flash[:newly_created] %>
 <div id="notice">
   Scenario successfully created!  Next you'll need to add matchers.
@@ -26,56 +24,9 @@
     Status: <strong><%= humanize(@scenario.status) %></strong><br/>
     Last run at: <strong><%= @scenario.run_at || "Never" %></strong>
   </p>
-  <p>
-    <input id="run-button" type="button" value="Run Now" />
-  </p>
+  <form method="get" action="/projects/<%= @project.id %>/scenarios/<%= @scenario.id %>/run" class="button-to">
+    <p>
+      <input onclick="return confirm('Are you sure?');" value="Run now" type="submit" />
+    </p>
+  </form>
 </div>
-
-<div id="run-dialog">
-  <div id="run-1">
-    <form method="get" action="/projects/<%= @project.id %>/scenarios/<%= @scenario.id %>">
-      <p>
-        This may take a while.  Make sure you have your matchers set up
-        correctly.  Do you want to proceed?
-      </p>
-      <div style="text-align: center">
-        <input id="run-ok-button" type="button" value="Yes" />
-        <input id="run-cancel-button" type="button" value="No" />
-      </div>
-    </form>
-  </div>
-  <div id="run-2" style="display: none;">
-    Running...
-    <div id="progressbar"></div>
-  </div>
-</div>
-
-<script type="text/javascript">
-$(function() {
-  dialog = $('#run-dialog');
-  dialog.dialog({
-    autoOpen: false, title: "Transform", modal: true
-  });
-  $('#run-button').click(function() { dialog.dialog('open'); });
-  $('#run-cancel-button').click(function() { dialog.dialog('close'); });
-
-  urlPrefix = "/projects/<%= @project.id %>/scenarios/<%= @scenario.id %>";
-  $('#run-ok-button').click(function() {
-    $.get(urlPrefix+"/run", function() {
-      bar = $('#progressbar');
-      bar.progressbar();
-      $('#run-1').hide();
-      $('#run-2').show();
-
-      setInterval(function() {
-        $.get(urlPrefix+"/progress", function(percent) {
-          bar.progressbar('option', 'value', percent);
-          if (percent == 100) {
-            window.location.href = urlPrefix;
-          }
-        }, "json");
-      }, 1000);
-    });
-  });
-});
-</script>
