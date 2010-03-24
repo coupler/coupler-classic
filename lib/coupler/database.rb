@@ -84,7 +84,7 @@ module Coupler
           Integer :score_set_id
           Integer :version, :default => 0
           Integer :current_id   if name.to_s =~ /_versions$/
-          Time :run_at
+          Time :last_run_at
           Time :created_at
           Time :updated_at
         end
@@ -112,12 +112,18 @@ module Coupler
         Integer :total, :default => 0
         Integer :completed, :default => 0
         Time :created_at
+        Time :updated_at
         Time :started_at
         Time :completed_at
       end
 
       @database.create_table :results do
         primary_key :id
+        Integer :scenario_id
+        Integer :scenario_version
+        Integer :score_set_id
+        Time :created_at
+        Time :updated_at
       end
     end
   end

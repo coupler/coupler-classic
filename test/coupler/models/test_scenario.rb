@@ -42,6 +42,10 @@ module Coupler
         assert_respond_to Scenario.new, :jobs
       end
 
+      def test_one_to_many_results
+        assert_respond_to Scenario.new, :results
+      end
+
       def test_requires_name
         scenario = Factory.build(:scenario, :name => nil)
         assert !scenario.valid?
@@ -118,18 +122,20 @@ module Coupler
 
         Timecop.freeze(Time.now) do
           scenario.run!
-          assert_equal Time.now, scenario.run_at
+          assert_equal Time.now, scenario.last_run_at
         end
 
-        ScoreSet.find(1) do |score_set|
+        result = scenario.results_dataset.first
+        assert_not_nil result, "Didn't create result"
+
+        ScoreSet.find(result.score_set_id) do |score_set|
           assert_not_nil score_set, "Didn't create score set"
-          assert_equal 1, scenario.score_set_id
 
           resource.source_dataset do |ds|
             ds.order("id").each do |row|
               expected = ds.filter("last_name = ? AND first_name = ? AND id > ?", row[:last_name], row[:first_name], row[:id]).count
               actual = score_set.filter("first_id = ? AND score = 200", row[:id]).count
-              assert_equal expected, actual, "Expected #{expected} for id #{row[:id]}"
+              assert_equal expected, actual, "Expected #{expected} match for id #{row[:id]}"
             end
           end
         end
@@ -223,12 +229,14 @@ module Coupler
 
         Timecop.freeze(Time.now) do
           scenario.run!
-          assert_equal Time.now, scenario.run_at
+          assert_equal Time.now, scenario.last_run_at
         end
 
-        ScoreSet.find(1) do |score_set|
+        result = scenario.results_dataset.first
+        assert_not_nil result, "Didn't create result"
+
+        ScoreSet.find(result.score_set_id) do |score_set|
           assert_not_nil score_set, "Didn't create score set"
-          assert_equal 1, scenario.score_set_id
 
           resource_1.source_dataset do |ds_1|
             resource_2.source_dataset do |ds_2|
@@ -261,12 +269,14 @@ module Coupler
 
         Timecop.freeze(Time.now) do
           scenario.run!
-          assert_equal Time.now, scenario.run_at
+          assert_equal Time.now, scenario.last_run_at
         end
 
-        ScoreSet.find(1) do |score_set|
+        result = scenario.results_dataset.first
+        assert_not_nil result, "Didn't create result"
+
+        ScoreSet.find(result.score_set_id) do |score_set|
           assert_not_nil score_set, "Didn't create score set"
-          assert_equal 1, scenario.score_set_id
 
           resource.source_dataset do |ds|
             ds.order("arrr").each do |row|

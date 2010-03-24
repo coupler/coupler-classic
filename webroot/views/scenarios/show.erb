@@ -22,7 +22,7 @@
 <div class="section">
   <p>
     Status: <strong><%= humanize(@scenario.status) %></strong><br/>
-    Last run at: <strong><%= @scenario.run_at || "Never" %></strong>
+    Last run at: <strong><%= @scenario.last_run_at || "Never" %></strong>
   </p>
   <form method="get" action="/projects/<%= @project.id %>/scenarios/<%= @scenario.id %>/run" class="button-to">
     <p>

@@ -16,19 +16,21 @@ module Coupler
       def before_create
         super
         now = Time.now
-        self.created_at = now
-        self.updated_at = now
+        self[:created_at] = now
+        self[:updated_at] = now
       end
 
       def before_update
         super
         now = Time.now
-        self.updated_at = now
+        self[:updated_at] = now
       end
 
       def before_save
         super
-        self.version = version.nil? ? 1 : version + 1
+        if @@versioned[self.class]
+          self[:version] = self[:version].nil? ? 1 : self[:version] + 1
+        end
       end
 
       def after_save

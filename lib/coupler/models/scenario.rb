@@ -8,6 +8,7 @@ module Coupler
       many_to_one :resource_2, :class => Models::Resource
       one_to_many :matchers
       one_to_many :jobs
+      one_to_many :results
 
       def linkage_type
         if self.resource_1
@@ -45,11 +46,15 @@ module Coupler
                  when "dual-linkage"
                    DualRunner.new(self)
                  end
+
+        result = Result.new(:scenario => self)
         ScoreSet.create do |score_set|
-          self.update(:score_set_id => score_set.id)
+          result[:score_set_id] = score_set.id
           runner.run(score_set)
         end
-        self.update(:run_at => Time.now)
+        result.save
+
+        self.update(:last_run_at => Time.now)
       end
 
       private
