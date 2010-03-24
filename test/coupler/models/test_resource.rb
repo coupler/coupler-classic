@@ -20,10 +20,6 @@ module Coupler
         assert_respond_to Resource.new, :transformations
       end
 
-      def test_many_to_many_scenarios
-        assert_respond_to Resource.new, :scenarios
-      end
-
       def test_one_to_many_jobs
         assert_respond_to Resource.new, :jobs
       end
@@ -280,6 +276,13 @@ module Coupler
             assert_equal expected.select_sql, actual.select_sql
           end
         end
+      end
+
+      def test_scenarios
+        project = Factory(:project)
+        resource = Factory(:resource, :project => project)
+        scenario = Factory(:scenario, :project => project, :resource_1 => resource)
+        assert_equal [scenario], resource.scenarios
       end
     end
   end

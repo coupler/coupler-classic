@@ -14,9 +14,6 @@ module Coupler
           @scenario.project = @project
 
           if @scenario.save
-            resources = @project.resources_dataset.filter(:id => params[:resource_ids])
-            resources.each { |resource| @scenario.add_resource(resource) }
-
             flash[:newly_created] = true
             redirect "/projects/#{@project.id}/scenarios/#{@scenario.id}"
           else

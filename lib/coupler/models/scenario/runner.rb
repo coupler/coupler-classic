@@ -37,7 +37,7 @@ module Coupler
 
       class SingleRunner < Runner
         def setup_resources
-          @resources = [@parent.resources_dataset.first]
+          @resources = [@parent.resource_1]
         end
         protected(:setup_resources)
 
@@ -79,7 +79,7 @@ module Coupler
 
       class DualRunner < Runner
         def setup_resources
-          @resources = @parent.resources_dataset.limit(2).order(:id).all
+          @resources = [@parent.resource_1, @parent.resource_2]
         end
 
         def run(score_set)

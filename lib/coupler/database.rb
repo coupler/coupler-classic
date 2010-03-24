@@ -24,69 +24,83 @@ module Coupler
         Sequel::MySQL.default_engine = "InnoDB"
       end
 
-      @database.create_table :projects do
-        primary_key :id
-        String :name
-        String :slug
-        String :description
-        Time :created_at
-        Time :updated_at
+      [:projects, :projects_versions].each do |name|
+        @database.create_table(name) do
+          primary_key :id
+          String :name
+          String :slug
+          String :description
+          Integer :version, :default => 0
+          Integer :current_id   if name.to_s =~ /_versions$/
+          Time :created_at
+          Time :updated_at
+        end
       end
 
-      @database.create_table :resources do
-        primary_key :id
-        String :name
-        String :slug
-        String :adapter
-        String :host
-        Integer :port
-        String :username
-        String :password
-        String :database_name
-        String :table_name
-        String :primary_key_name, :default => "id"
-        Integer :project_id
-        Time :transformed_at
-        Time :created_at
-        Time :updated_at
+      [:resources, :resources_versions].each do |name|
+        @database.create_table(name) do
+          primary_key :id
+          String :name
+          String :slug
+          String :adapter
+          String :host
+          Integer :port
+          String :username
+          String :password
+          String :database_name
+          String :table_name
+          String :primary_key_name, :default => "id"
+          Integer :project_id
+          Integer :version, :default => 0
+          Integer :current_id   if name.to_s =~ /_versions$/
+          Time :transformed_at
+          Time :created_at
+          Time :updated_at
+        end
       end
 
-      @database.create_table :transformations do
-        primary_key :id
-        String :field_name
-        String :transformer_name
-        Integer :resource_id
-        Time :created_at
-        Time :updated_at
+      [:transformations, :transformations_versions].each do |name|
+        @database.create_table(name) do
+          primary_key :id
+          String :field_name
+          String :transformer_name
+          Integer :resource_id
+          Integer :version, :default => 0
+          Integer :current_id   if name.to_s =~ /_versions$/
+          Time :created_at
+          Time :updated_at
+        end
       end
 
-      @database.create_table :scenarios do
-        primary_key :id
-        String :name
-        String :slug
-        String :description
-        Integer :project_id
-        Integer :score_set_id
-        Time :run_at
-        Time :created_at
-        Time :updated_at
+      [:scenarios, :scenarios_versions].each do |name|
+        @database.create_table(name) do
+          primary_key :id
+          String :name
+          String :slug
+          String :description
+          Integer :project_id
+          Integer :resource_1_id
+          Integer :resource_2_id
+          Integer :score_set_id
+          Integer :version, :default => 0
+          Integer :current_id   if name.to_s =~ /_versions$/
+          Time :run_at
+          Time :created_at
+          Time :updated_at
+        end
       end
 
-      @database.create_table :resources_scenarios do
-        primary_key :id
-        Integer :resource_id
-        Integer :scenario_id
-        Time :created_at
-        Time :updated_at
-      end
-
-      @database.create_table :matchers do
-        primary_key :id
-        String :comparator_name
-        Text :comparator_options
-        Integer :scenario_id
-        Time :created_at
-        Time :updated_at
+      [:matchers, :matchers_versions].each do |name|
+        @database.create_table(name) do
+          primary_key :id
+          String :comparator_name
+          Text :comparator_options
+          Integer :scenario_id
+          Integer :version, :default => 0
+          Integer :current_id   if name.to_s =~ /_versions$/
+          Time :created_at
+          Time :updated_at
+        end
       end
 
       @database.create_table :jobs do
@@ -100,6 +114,10 @@ module Coupler
         Time :created_at
         Time :started_at
         Time :completed_at
+      end
+
+      @database.create_table :results do
+        primary_key :id
       end
     end
   end

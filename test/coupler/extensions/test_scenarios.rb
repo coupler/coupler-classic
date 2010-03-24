@@ -22,7 +22,7 @@ module Coupler
       def test_successfully_creating_scenario
         resource = Factory(:resource, :project => @project)
         attribs = Factory.attributes_for(:scenario)
-        post "/projects/#{@project.id}/scenarios", { 'scenario' => attribs, 'resource_ids' => [resource.id] }
+        post "/projects/#{@project.id}/scenarios", { 'scenario' => attribs.merge('resource_ids' => [resource.id]) }
         scenario = Models::Scenario[:name => attribs[:name], :project_id => @project.id]
         assert scenario
         assert_equal [resource], scenario.resources

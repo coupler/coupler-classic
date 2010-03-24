@@ -5,7 +5,7 @@
     '<%= name %>': <%= klass.const_get(:OPTIONS).to_json %>
   <% end %>
   };
-  var resources = <%= @scenario.resources_dataset.order(:id).collect { |r| { 'id' => r.id, 'name' => r.name } }.to_json %>
+  var resources = <%= @scenario.resources.collect { |r| { 'id' => r.id, 'name' => r.name } }.to_json %>
 
   $(function() {
     $('#comparator_name').change(function() {

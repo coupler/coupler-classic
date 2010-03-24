@@ -4,16 +4,14 @@ module Coupler
       include CommonModel
       attr_writer :resource_ids
       many_to_one :project
-      many_to_many :resources
+      many_to_one :resource_1, :class => Models::Resource
+      many_to_one :resource_2, :class => Models::Resource
       one_to_many :matchers
       one_to_many :jobs
 
       def linkage_type
-        case self.resources_dataset.count
-        when 1
-          "self-linkage"
-        when 2
-          "dual-linkage"
+        if self.resource_1
+          self.resource_2 ? "dual-linkage" : "self-linkage"
         else
           "N/A"
         end
@@ -22,20 +20,29 @@ module Coupler
       def status
         if self.matchers_dataset.count == 0
           "no_matchers"
-        elsif self.resources_dataset.count == 0
+        elsif self.linkage_type == "N/A"
           "no_resources"
-        elsif self.resources.any? { |r| r.status == "out_of_date" }
+        elsif self.resource_1.status == "out_of_date" ||
+            (self.resource_2 && self.resource_2.status == "out_of_date")
           "resources_out_of_date"
         else
           "ok"
         end
       end
 
+      def resources
+        if resource_1
+          resource_2 ? [resource_1, resource_2] : [resource_1]
+        else
+          []
+        end
+      end
+
       def run!
-        runner = case self.resources_dataset.count
-                 when 1
+        runner = case self.linkage_type
+                 when "self-linkage"
                    SingleRunner.new(self)
-                 when 2
+                 when "dual-linkage"
                    DualRunner.new(self)
                  end
         ScoreSet.create do |score_set|
@@ -49,15 +56,11 @@ module Coupler
         def before_create
           super
           self.slug ||= self.name.downcase.gsub(/\s+/, "_")
-        end
 
-        def after_create
-          super
           if @resource_ids.is_a?(Array)
-            @resource_ids.each do |resource_id|
-              resource = self.project.resources_dataset[:id => resource_id]
-              self.add_resource(resource)   if resource
-            end
+            objects = self.project.resources_dataset.filter(:id => @resource_ids[0..1].compact).all
+            self.resource_1 = objects[0]
+            self.resource_2 = objects[1]
           end
         end
 

@@ -4,7 +4,6 @@ module Coupler
       include CommonModel
       many_to_one :project
       one_to_many :transformations
-      many_to_many :scenarios
       one_to_many :jobs
 
       def source_database(&block)
@@ -69,6 +68,10 @@ module Coupler
             "ok"
           end
         end
+      end
+
+      def scenarios
+        Scenario.filter(["resource_1_id = ? OR resource_2_id = ?", id, id]).all
       end
 
       def transform!

@@ -65,6 +65,39 @@ module Coupler
           assert_equal Time.now.to_i, project.updated_at.to_i
         end
       end
+
+      def test_versioning_new_record
+        project = Factory(:project)
+        assert_equal 1, project.version
+
+        versions = Database.instance[:projects_versions].filter(:current_id => project.id)
+        assert_equal 1, versions.count
+
+        data = versions.first
+        project.values.each_pair do |key, value|
+          next  if key == :id
+          assert_equal value, data[key], "#{key} didn't match"
+        end
+      end
+
+      def test_versioning_existing_record
+        project = Factory(:project)
+        project.update(:name => "blah blah blah")
+        assert_equal 2, project.version
+
+        versions = Database.instance[:projects_versions].filter(:current_id => project.id, :version => 2)
+        assert_equal 1, versions.count
+
+        data = versions.first
+        project.values.each_pair do |key, value|
+          next  if key == :id
+          if value.is_a?(Time)
+            assert_equal value.to_i, data[key].to_i, "#{key} didn't match"
+          else
+            assert_equal value, data[key], "#{key} didn't match"
+          end
+        end
+      end
     end
   end
 end

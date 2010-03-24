@@ -2,8 +2,12 @@
 - Use select boxes in exact comparator instead of text box
 
 - Tie score_sets to groups of resources instead of scenarios?
-- Allow score_sets to be used as resources
 
 - Make the exact matcher threaded!
 
 - Add jobs extension
+
+Fancy features for the future:
+- Do authorization on projects
+- Allow user to enter resource password whenever needed; don't store it
+- Allow score_sets to be used as resources
