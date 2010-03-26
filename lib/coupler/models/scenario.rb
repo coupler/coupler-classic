@@ -59,10 +59,15 @@ module Coupler
             self.resource_1 = objects[0]
             self.resource_2 = objects[1]
           end
+          set_linkage_type
         end
 
-        def before_save
+        def before_update
           super
+          set_linkage_type
+        end
+
+        def set_linkage_type
           self.linkage_type = if resource_1
                                 resource_2 ? "dual-linkage" : "self-linkage"
                               else

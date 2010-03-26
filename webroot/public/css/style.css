@@ -51,8 +51,8 @@ body {
   height: 335px;
   background: url(/images/sidebar-bottom.png) left bottom no-repeat;
   z-index: 100;
-  -webkit-border-bottom-right-radius: 5px;
-  -moz-border-radius-bottomright: 5px;
+  -webkit-border-bottom-left-radius: 5px;
+  -moz-border-radius-bottomleft: 5px;
 }
 #about .text {
   position: absolute;
