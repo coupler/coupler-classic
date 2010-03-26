@@ -10,7 +10,7 @@ require 'sinatra/base'
 require 'rack/flash'
 require 'sequel'
 require 'json'
-
+require 'fastercsv'
 
 # vendored stuff
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'vendor', 'ruby', 'thread_pool', 'lib')) # this won't hurt anything if we're inside a jar

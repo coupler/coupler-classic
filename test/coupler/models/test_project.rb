@@ -98,6 +98,26 @@ module Coupler
           end
         end
       end
+
+      def test_as_of_version
+        project = Factory(:project, :name => "Foo Project")
+        project.update(:name => "Bar Project")
+
+        hash = Project.as_of_version(project.id, 1)
+        assert_equal "Foo Project", hash[:name]
+      end
+
+      def test_as_of_time
+        time = Time.now - 3600
+        project = nil
+        Timecop.freeze(time) do
+          project = Factory(:project, :name => "Foo Project")
+        end
+        project.update(:name => "Bar Project")
+
+        hash = Project.as_of_time(project.id, time + 1200)
+        assert_equal "Foo Project", hash[:name]
+      end
     end
   end
 end

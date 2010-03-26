@@ -10,14 +10,6 @@ module Coupler
       one_to_many :jobs
       one_to_many :results
 
-      def linkage_type
-        if self.resource_1
-          self.resource_2 ? "dual-linkage" : "self-linkage"
-        else
-          "N/A"
-        end
-      end
-
       def status
         if self.matchers_dataset.count == 0
           "no_matchers"
@@ -69,15 +61,25 @@ module Coupler
           end
         end
 
+        def before_save
+          super
+          self.linkage_type = if resource_1
+                                resource_2 ? "dual-linkage" : "self-linkage"
+                              else
+                                "N/A"
+                              end
+        end
+
         def validate
           if self.name.nil? || self.name == ""
             errors[:name] << "is required"
           else
-            obj = self.class[:name => name]
             if self.new?
-              errors[:name] << "is already taken"   if obj
+              count = self.class.filter(:name => self.name).count
+              errors[:name] << "is already taken"   if count > 0
             else
-              errors[:name] << "is already taken"   if obj.id != self.id
+              count = self.class.filter(["name = ? AND id != ?", self.name, self.id]).count
+              errors[:name] << "is already taken"   if count > 0
             end
           end
         end

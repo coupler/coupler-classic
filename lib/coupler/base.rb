@@ -23,6 +23,7 @@ module Coupler
     register Extensions::Transformations
     register Extensions::Scenarios
     register Extensions::Matchers
+    register Extensions::Results
     helpers do
       include Coupler::Helpers
       include Rack::Utils

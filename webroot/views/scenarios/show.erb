@@ -29,4 +29,10 @@
       <input onclick="return confirm('Are you sure?');" value="Run now" type="submit" />
     </p>
   </form>
+
+  <% if @scenario.results_dataset.count > 0 %>
+  <p>
+    <a href="/projects/<%= @project.id %>/scenarios/<%= @scenario.id %>/results">View Results &raquo;</a>
+  </p>
+  <% end %>
 </div>

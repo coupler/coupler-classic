@@ -81,6 +81,7 @@ module Coupler
           Integer :project_id
           Integer :resource_1_id
           Integer :resource_2_id
+          String :linkage_type
           Integer :score_set_id
           Integer :version, :default => 0
           Integer :current_id   if name.to_s =~ /_versions$/

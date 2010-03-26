@@ -143,19 +143,21 @@ module Coupler
           if self.name.nil? || self.name == ""
             errors[:name] << "is required"
           else
-            obj = self.class[:name => name]
             if self.new?
-              errors[:name] << "is already taken"   if obj
+              count = self.class.filter(:name => self.name).count
+              errors[:name] << "is already taken"   if count > 0
             else
-              errors[:name] << "is already taken"   if obj.id != self.id
+              count = self.class.filter(["name = ? AND id != ?", self.name, self.id]).count
+              errors[:name] << "is already taken"   if count > 0
             end
           end
 
-          obj = self.class[:slug => self.slug]
           if self.new?
-            errors[:slug] << "is already taken"   if obj
+            count = self.class.filter(:slug => self.slug).count
+            errors[:slug] << "is already taken"   if count > 0
           else
-            errors[:slug] << "is already taken"   if obj.id != self.id
+            count = self.class.filter(["slug = ? AND id != ?", self.slug, self.id]).count
+            errors[:slug] << "is already taken"   if count > 0
           end
 
           try_connect = true

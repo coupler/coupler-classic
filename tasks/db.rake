@@ -13,6 +13,7 @@ namespace :db do
 
   desc "Bootstrap the server schema"
   task :bootstrap => [:start, 'coupler:environment'] do
+    require 'test/factories'
     confirm("This will delete any existing configuration data.") if ENV['COUPLER_ENV'] != "test"
 
     server = Coupler::Server.instance
@@ -21,6 +22,11 @@ namespace :db do
     database = Coupler::Database.instance
     database.tables.each { |t| database.drop_table(t) }
     database.create_schema
+
+    project = Factory(:project)
+    resource = Factory(:resource, :project => project)
+    scenario = Factory(:scenario, :project => project, :resource_1 => resource)
+    matcher = Factory(:matcher, :scenario => scenario)
   end
 
   desc "Start server daemon"

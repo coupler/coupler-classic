@@ -1,3 +1,5 @@
+require 'factory_girl'
+
 Factory.define :resource, :class => Coupler::Models::Resource do |r|
   r.sequence(:name) { |n| "Resource #{n}" }
   r.adapter "mysql"
@@ -26,6 +28,16 @@ Factory.define :scenario, :class => Coupler::Models::Scenario do |s|
 end
 
 Factory.define :matcher, :class => Coupler::Models::Matcher do |m|
+  m.association :scenario
   m.comparator_name 'exact'
-  m.comparator_options('field_name' => 'first_name')
+  m.comparator_options do |matcher|
+    matcher.scenario.resources.inject({}) do |hash, resource|
+      hash[resource.id.to_s] = {'field_name' => 'last_name'}
+      hash
+    end
+  end
+end
+
+Factory.define :result, :class => Coupler::Models::Result do |r|
+  r.association :scenario
 end
