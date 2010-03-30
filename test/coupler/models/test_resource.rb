@@ -284,6 +284,18 @@ module Coupler
         scenario = Factory(:scenario, :project => project, :resource_1 => resource)
         assert_equal [scenario], resource.scenarios
       end
+
+      def test_running_jobs
+        resource = Factory(:resource)
+        job = Factory(:resource_job, :resource => resource, :status => 'running')
+        assert_equal [job], resource.running_jobs
+      end
+
+      def test_scheduled_jobs
+        resource = Factory(:resource)
+        job = Factory(:resource_job, :resource => resource)
+        assert_equal [job], resource.scheduled_jobs
+      end
     end
   end
 end

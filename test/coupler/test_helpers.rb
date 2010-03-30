@@ -26,5 +26,12 @@ module Coupler
       expected = %^<a href="/foo/bar" onclick="if (confirm('Are you sure?')) { var f = document.createElement('form'); f.style.display = 'none'; this.parentNode.appendChild(f); f.method = 'POST'; f.action = this.href; var m = document.createElement('input'); m.setAttribute('type', 'hidden'); m.setAttribute('name', '_method'); m.setAttribute('value', 'delete'); f.appendChild(m); f.submit(); }; return false;">Foo bar</a>^
       assert_equal expected, delete_link("Foo bar", "/foo/bar")
     end
+
+    def test_timeago
+      now = Time.now
+      dt  = now.send(:to_datetime)
+      expected = %{<div class="timeago" title="#{dt.to_s}">#{now.to_s}</div>}
+      assert_equal expected, timeago(now)
+    end
   end
 end

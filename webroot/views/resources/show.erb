@@ -38,9 +38,16 @@
     <a href="/projects/<%= @project.id %>/resources/<%= @resource.id %>/transformations/new">Add transformation</a>
   </p>
 
-  <% if !@transformations.empty? %>
+<% if !@transformations.empty? %>
   <h3>Status</h3>
   <div class="section">
+  <% if !@running_jobs.empty? %>
+    <p>This resource is currently being transformed:</p>
+    <%= erb(:'jobs/list', {:layout => false}, {:jobs => @running_jobs}) %>
+  <% elsif !@scheduled_jobs.empty? %>
+    <p>This scenario is currently scheduled to be transformed:</p>
+    <%= erb(:'jobs/list', {:layout => false}, {:jobs => @scheduled_jobs}) %>
+  <% else %>
     <p>
       Status: <strong><%= humanize(@resource.status) %></strong><br/>
       Last transformed at: <strong><%= @resource.transformed_at || "Never" %></strong>
@@ -50,8 +57,9 @@
         <input onclick="return confirm('Are you sure?');" value="Transform now" type="submit" />
       </p>
     </form>
-  </div>
   <% end %>
+  </div>
+<% end %>
 </div>
 
 <% if @scenarios %>

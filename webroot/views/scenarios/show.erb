@@ -20,13 +20,20 @@
 
 <h2>Run</h2>
 <div class="section">
+<% if !@running_jobs.empty? %>
+  <p>This scenario is currently being run:</p>
+  <%= erb(:'jobs/list', {:layout => false}, {:jobs => @running_jobs}) %>
+<% elsif !@scheduled_jobs.empty? %>
+  <p>This scenario is currently scheduled to run:</p>
+  <%= erb(:'jobs/list', {:layout => false}, {:jobs => @scheduled_jobs}) %>
+<% else %>
   <p>
     Status: <strong><%= humanize(@scenario.status) %></strong><br/>
     Last run at: <strong><%= @scenario.last_run_at || "Never" %></strong>
   </p>
   <form method="get" action="/projects/<%= @project.id %>/scenarios/<%= @scenario.id %>/run" class="button-to">
     <p>
-      <input onclick="return confirm('Are you sure?');" value="Run now" type="submit" />
+      <input onclick="return confirm('Are you sure you want to run this scenario?');" value="Run now" type="submit" />
     </p>
   </form>
 
@@ -35,4 +42,5 @@
     <a href="/projects/<%= @project.id %>/scenarios/<%= @scenario.id %>/results">View Results &raquo;</a>
   </p>
   <% end %>
+<% end %>
 </div>

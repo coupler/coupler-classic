@@ -2,21 +2,20 @@ module Coupler
   module Models
     class Scenario < Sequel::Model
       include CommonModel
+      include Jobify
+
       attr_writer :resource_ids
       many_to_one :project
-      many_to_one :resource_1, :class => Models::Resource
-      many_to_one :resource_2, :class => Models::Resource
+      many_to_one :resource_1, :class => "Coupler::Models::Resource"
+      many_to_one :resource_2, :class => "Coupler::Models::Resource"
       one_to_many :matchers
-      one_to_many :jobs
       one_to_many :results
 
       def status
-        if self.matchers_dataset.count == 0
+        if matchers_dataset.count == 0
           "no_matchers"
-        elsif self.linkage_type == "N/A"
-          "no_resources"
-        elsif self.resource_1.status == "out_of_date" ||
-            (self.resource_2 && self.resource_2.status == "out_of_date")
+        elsif resource_1.status == "out_of_date" ||
+            (resource_2 && resource_2.status == "out_of_date")
           "resources_out_of_date"
         else
           "ok"
@@ -32,7 +31,7 @@ module Coupler
       end
 
       def run!
-        runner = case self.linkage_type
+        runner = case linkage_type
                  when "self-linkage"
                    SingleRunner.new(self)
                  when "dual-linkage"
@@ -46,19 +45,22 @@ module Coupler
         end
         result.save
 
-        self.update(:last_run_at => Time.now)
+        update(:last_run_at => Time.now)
       end
 
       private
+        def before_validation
+          super
+          if @resource_ids.is_a?(Array)
+            objects = project.resources_dataset.filter(:id => @resource_ids[0..1].compact).all
+            self.resource_1_id = objects[0].nil? ? nil : objects[0].id
+            self.resource_2_id = objects[1].nil? ? nil : objects[1].id
+          end
+        end
+
         def before_create
           super
-          self.slug ||= self.name.downcase.gsub(/\s+/, "_")
-
-          if @resource_ids.is_a?(Array)
-            objects = self.project.resources_dataset.filter(:id => @resource_ids[0..1].compact).all
-            self.resource_1 = objects[0]
-            self.resource_2 = objects[1]
-          end
+          self.slug ||= name.downcase.gsub(/\s+/, "_")
           set_linkage_type
         end
 
@@ -76,16 +78,20 @@ module Coupler
         end
 
         def validate
-          if self.name.nil? || self.name == ""
+          if name.nil? || name == ""
             errors[:name] << "is required"
           else
-            if self.new?
-              count = self.class.filter(:name => self.name).count
+            if new?
+              count = self.class.filter(:name => name).count
               errors[:name] << "is already taken"   if count > 0
             else
-              count = self.class.filter(["name = ? AND id != ?", self.name, self.id]).count
+              count = self.class.filter(["name = ? AND id != ?", name, id]).count
               errors[:name] << "is already taken"   if count > 0
             end
+          end
+
+          if resource_1_id.nil?
+            errors[:base] << "At least one resource is required"
           end
         end
     end

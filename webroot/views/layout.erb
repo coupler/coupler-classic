@@ -14,6 +14,14 @@
 <div id="sidebar" class="grid_2">
   <ul>
     <li><a href="/"><img src="/images/home.gif" />Home</a></li>
+    <li>
+      <a href="/jobs"><img src="/images/jobs.gif" />Jobs</a>
+      <div id="job-count">
+      <% if (num = Coupler::Models::Job.filter(:completed_at => nil).count) > 0 %>
+        (<%= num %>)
+      <% end %>
+      </div>
+    </li>
   </ul>
 </div>
 
@@ -33,5 +41,20 @@
 </div>
 
 </div>
+
+<script type="text/javascript">
+  function updateJobCount() {
+    $.get("/jobs/count", function(data) {
+      if (data == "0") {
+        $('#job-count').html("")
+      } else {
+        $('#job-count').html("("+data+")")
+      }
+    });
+  }
+  $(function() {
+    setInterval(updateJobCount, 30000);
+  });
+</script>
 </body>
 </html>

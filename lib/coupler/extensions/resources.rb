@@ -27,6 +27,8 @@ module Coupler
           @resource = @project.resources_dataset[:id => params[:id]]
           @transformations = @resource.transformations
           @scenarios = @resource.scenarios
+          @running_jobs = @resource.running_jobs
+          @scheduled_jobs = @resource.scheduled_jobs
           erb 'resources/show'.to_sym
         end
 

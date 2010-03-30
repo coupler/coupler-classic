@@ -22,13 +22,14 @@ body {
 }
 #sidebar ul {
   list-style-type: none;
-  margin: 0;
+  margin: 1em 0 0 0.5em;
+  display: block;
+  float: left;
   padding: 0;
 }
 #sidebar li {
-  margin: 0;
-  padding: 0.5em;
-  text-align: center;
+  margin: 0.5em 0 0 0;
+  padding: 0.5em 0;
 }
 #sidebar a,
 #sidebar a:visited {
@@ -42,7 +43,11 @@ body {
   display: block;
   vertical-align: middle;
   float: left;
-  margin-right: 0.5em;
+  margin-right: 0.7em;
+}
+#sidebar #job-count {
+  display: inline;
+  color: #ccc;
 }
 #about {
   position: absolute;
@@ -168,6 +173,13 @@ table.list th {
 }
 table.list td {
   padding: 0.5em;
+}
+
+table.show td {
+  padding: 0.5em;
+}
+table.show td.col1 {
+  border-right: 2px solid gray;
 }
 
 tr.alt td {

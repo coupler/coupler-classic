@@ -69,6 +69,11 @@ module Coupler
         assert !scenario_1.valid?, "Resource wasn't invalid"
       end
 
+      def test_requires_at_least_one_resource
+        scenario = Factory.build(:scenario, :resource_ids => [])
+        assert !scenario.valid?
+      end
+
       def test_updating
         project = Factory.create(:project)
         scenario = Factory.create(:scenario, :name => "avast", :project => project)
@@ -141,12 +146,6 @@ module Coupler
         end
       end
 
-      def test_status_when_no_resources
-        scenario = Factory(:scenario)
-        matcher = Factory(:matcher, :scenario => scenario)
-        assert_equal "no_resources", scenario.status
-      end
-
       def test_status_with_no_matchers
         project = Factory(:project)
         resource = Factory(:resource, :project => project)
@@ -172,12 +171,6 @@ module Coupler
         matcher = Factory(:matcher, :scenario => scenario)
 
         assert_equal "resources_out_of_date", scenario.status
-      end
-
-      def test_linkage_type_with_no_resources
-        project = Factory(:project)
-        scenario = Factory(:scenario, :project => project)
-        assert_equal "N/A", scenario.linkage_type
       end
 
       def test_linkage_type_with_one_resource
@@ -286,6 +279,18 @@ module Coupler
             end
           end
         end
+      end
+
+      def test_running_jobs
+        scenario = Factory(:scenario)
+        job = Factory(:scenario_job, :scenario => scenario, :status => 'running')
+        assert_equal [job], scenario.running_jobs
+      end
+
+      def test_scheduled_jobs
+        scenario = Factory(:scenario)
+        job = Factory(:scenario_job, :scenario => scenario)
+        assert_equal [job], scenario.scheduled_jobs
       end
     end
   end

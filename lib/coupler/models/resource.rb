@@ -2,9 +2,10 @@ module Coupler
   module Models
     class Resource < Sequel::Model
       include CommonModel
+      include Jobify
+
       many_to_one :project
       one_to_many :transformations
-      one_to_many :jobs
 
       def source_database(&block)
         Sequel.connect(source_connection_string, {

@@ -77,5 +77,10 @@ module Coupler
     def humanize(string)
       string.gsub(/_+/, " ").capitalize
     end
+
+    def timeago(time)
+      dt = time.send(:to_datetime)
+      %{<div class="timeago" title="#{dt.to_s}">#{time.to_s}</div>}
+    end
   end
 end

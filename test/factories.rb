@@ -25,6 +25,9 @@ end
 Factory.define :scenario, :class => Coupler::Models::Scenario do |s|
   s.sequence(:name) { |n| "Scenario #{n}" }
   s.association :project
+
+  # FIXME: this is kind of crappy
+  s.resource_1_id { |x| Factory(:resource, :project => x.project).id }
 end
 
 Factory.define :matcher, :class => Coupler::Models::Matcher do |m|
@@ -40,4 +43,16 @@ end
 
 Factory.define :result, :class => Coupler::Models::Result do |r|
   r.association :scenario
+end
+
+Factory.define :resource_job, :class => Coupler::Models::Job do |j|
+  j.name 'transform'
+  j.status 'scheduled'
+  j.association :resource
+end
+
+Factory.define :scenario_job, :class => Coupler::Models::Job do |j|
+  j.name 'run_scenario'
+  j.status 'scheduled'
+  j.association :scenario
 end
