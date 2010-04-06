@@ -9,4 +9,5 @@ module Coupler
     self.register("downcaser", Downcaser)
   end
 end
+__END__
 

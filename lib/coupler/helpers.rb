@@ -17,7 +17,7 @@ module Coupler
     end
 
     def javascripts
-      @javascripts ||= %w{jquery.min.js}
+      @javascripts ||= %w{jquery.min.js jquery.timeago.js}
     end
 
     def javascript_includes
@@ -31,7 +31,7 @@ module Coupler
     end
 
     def stylesheets
-      @stylesheets ||= %w{reset.css text.css 960.css style.css}
+      @stylesheets ||= %w{reset.css text.css 960.css jquery-ui.css style.css}
     end
 
     def stylesheet_links
@@ -78,9 +78,14 @@ module Coupler
       string.gsub(/_+/, " ").capitalize
     end
 
-    def timeago(time)
-      dt = time.send(:to_datetime)
-      %{<div class="timeago" title="#{dt.to_s}">#{time.to_s}</div>}
+    def timeago(time, klass = nil)
+      if time.nil?
+        "Never"
+      else
+        dt = time.send(:to_datetime)
+        klass = "timeago" + (klass.nil? ? "" : " #{klass}")
+        %{<div class="#{klass}" title="#{dt.to_s}">#{time.to_s}</div>}
+      end
     end
   end
 end

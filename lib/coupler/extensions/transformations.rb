@@ -29,6 +29,20 @@ module Coupler
           @transformation.destroy
           redirect "/projects/#{@project.id}/resources/#{@resource.id}"
         end
+
+        app.get "/projects/:project_id/resources/:resource_id/transformations/for/:field_name" do
+          @project = Models::Project[:id => params[:project_id]]
+          @resource = @project.resources_dataset[:id => params[:resource_id]]
+          @transformations = @resource.transformations_dataset.filter(:field_name => params[:field_name]).all
+          erb('transformations/for'.to_sym, :layout => false)
+        end
+
+        app.get "/projects/:project_id/resources/:resource_id/transformations" do
+          @project = Models::Project[:id => params[:project_id]]
+          @resource = @project.resources_dataset[:id => params[:resource_id]]
+          @transformations = @resource.transformations
+          erb('transformations/index'.to_sym)
+        end
       end
     end
   end

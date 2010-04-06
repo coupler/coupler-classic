@@ -27,10 +27,10 @@
   <p>This scenario is currently scheduled to run:</p>
   <%= erb(:'jobs/list', {:layout => false}, {:jobs => @scheduled_jobs}) %>
 <% else %>
-  <p>
+  <div class="p">
     Status: <strong><%= humanize(@scenario.status) %></strong><br/>
-    Last run at: <strong><%= @scenario.last_run_at || "Never" %></strong>
-  </p>
+    Last run: <%= timeago(@scenario.last_run_at, "inline strong") %>
+  </div>
   <form method="get" action="/projects/<%= @project.id %>/scenarios/<%= @scenario.id %>/run" class="button-to">
     <p>
       <input onclick="return confirm('Are you sure you want to run this scenario?');" value="Run now" type="submit" />

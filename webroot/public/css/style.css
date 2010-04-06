@@ -108,6 +108,27 @@ body {
   color: white;
 }
 
+#tooltip {
+  position: absolute;
+  z-index: 3000;
+  border: 1px solid #111;
+  background-color: #eee;
+  padding: 5px;
+  font-size: smaller;
+  text-align: center;
+  opacity: 0.85;
+}
+#tooltip h3, #tooltip div { margin: 0; }
+#tooltip h3 {
+  font-size: 1em;
+  font-weight: bold;
+  border-bottom: 0;
+}
+#tooltip ul {
+  margin-bottom: 0;
+  list-style-type: square;
+}
+
 .errors {
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
@@ -174,16 +195,26 @@ table.list th {
 table.list td {
   padding: 0.5em;
 }
+table.list img {
+  vertical-align: middle;
+}
 
 table.show td {
-  padding: 0.5em;
+  padding: 3px;
 }
 table.show td.col1 {
-  border-right: 2px solid gray;
+  text-align: right;
+  padding-right: 6px;
 }
 
 tr.alt td {
   background-color: #eee;
+}
+tr.yellow td {
+  background-color: #FFFF66;
+}
+tr.green td {
+  background-color: green;
 }
 
 input, select, textarea {
@@ -195,3 +226,14 @@ input, select, textarea {
   margin: 1em 0;
   overflow: auto;
 }
+
+.ui-dialog-content p,
+.ui-dialog-content table {
+  margin-bottom: 0;
+}
+
+.t12n-count { display: inline; }
+.pointer { cursor: pointer; }
+.inline { display: inline; }
+.strong { font-weight: bold; }
+div.p { margin-bottom: 20px; }

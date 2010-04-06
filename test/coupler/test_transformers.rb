@@ -14,4 +14,7 @@ class Coupler::TestTransformers < Test::Unit::TestCase
 
     assert_equal klass, Coupler::Transformers["_bar_"]
   end
+
+  def test_require_transformer
+  end
 end

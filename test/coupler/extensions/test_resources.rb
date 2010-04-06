@@ -62,12 +62,6 @@ module Coupler
           cells = row.css('td')
           assert_equal %w{id first_name last_name}[i], cells[0].inner_html
         end
-
-        # transformations table
-        rows = tables[1].css('tbody tr')
-        assert_equal 1, rows.length
-        cells = rows[0].css('td')
-        assert_equal %w{first_name downcaser}, cells[0..1].collect(&:inner_html)
       end
 
       def test_transform_resource

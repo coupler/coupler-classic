@@ -1,11 +1,8 @@
+Major features/bugs:
 - Add more validations for comparators
 - Use select boxes in exact comparator instead of text box
-
-- Tie score_sets to groups of resources instead of scenarios?
-
 - Make the exact matcher threaded!
-
-- Add jobs extension
+- Some transformers aren't appropriate for certain data types
 
 Fancy features for the future:
 - Do authorization on projects

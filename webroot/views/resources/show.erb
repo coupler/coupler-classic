@@ -1,64 +1,72 @@
 <% @breadcrumbs = [@project, @resource] %>
+<% add_javascript("jquery.tooltip.min.js", "jquery-ui.min.js") %>
 <% if flash[:newly_created] %>
 <div id="notice">
   Resource successfully created!  Next, if you want to change this resource's fields, you'll need to add transformations.
 </div>
 <% end %>
 
-<h2>Source Fields</h2>
+<h2>Fields</h2>
 <div class="section" style="max-height: 20em">
   <table class="list">
     <thead>
       <tr>
         <th>Field</th>
         <th>Type</th>
+        <% if @t12n_count > 0 %><td></td><% end %>
+        <td></td>
       </tr>
     </thead>
     <tbody>
       <% @resource.source_schema.each_with_index do |(column_name, info), i| %>
+        <% t13s = @transformations[column_name] %>
         <tr<%= " class='alt'" if i % 2 == 1 %>>
           <td><%= column_name %></td>
           <td><%= info[:db_type] %></td>
+          <% if @t12n_count > 0 %>
+            <% if t13s.length > 0 %>
+              <% list = "<ul>" + t13s.inject("") { |s, t| s + "<li>#{t.transformer_name}</li>" } + "</ul>" %>
+              <td>
+                <a href="#" onclick="transformationsFor('<%= column_name %>');"><img class="tooltip" src="/images/cog.png" title="Transformations - <%= list %>" /></a>
+              </td>
+            <% else %>
+            <td></td>
+            <% end %>
+          <% end %>
+          <td>
+            <a href="#" onclick="newTransformation('<%= column_name %>');"><img class="tooltip" src="/images/hammer.png" title="New Transformation - <%= column_name %>" /></a>
+          </td>
         </tr>
       <% end %>
     </tbody>
   </table>
+  <% if @t12n_count > 0 %>
+  <p><a href="/projects/<%= @project.id %>/resources/<%= @resource.id %>/transformations">All Transformations</a></p>
+  <% end %>
 </div>
 
-<h2>Transformations</h2>
+<h2>Status</h2>
 <div class="section">
-  <% if @transformations.empty? %>
+<% if !@running_jobs.empty? %>
+  <p>This resource is currently being transformed:</p>
+  <%= erb(:'jobs/list', {:layout => false}, {:jobs => @running_jobs}) %>
+<% elsif !@scheduled_jobs.empty? %>
+  <p>This scenario is currently scheduled to be transformed:</p>
+  <%= erb(:'jobs/list', {:layout => false}, {:jobs => @scheduled_jobs}) %>
+<% else %>
   <p>
-    There are currently no transformations for this resource.
+    Status: <strong><%= humanize(@resource.status) %></strong><br/>
+    <% if @t12n_count > 0 %>
+    Last transformed at: <strong><%= @resource.transformed_at || "Never" %></strong>
+    <% end %>
   </p>
-  <% else %>
-  <%= erb(:"transformations/list", :layout => false) %>
-  <% end %>
-  <p>
-    <a href="/projects/<%= @project.id %>/resources/<%= @resource.id %>/transformations/new">Add transformation</a>
-  </p>
-
-<% if !@transformations.empty? %>
-  <h3>Status</h3>
-  <div class="section">
-  <% if !@running_jobs.empty? %>
-    <p>This resource is currently being transformed:</p>
-    <%= erb(:'jobs/list', {:layout => false}, {:jobs => @running_jobs}) %>
-  <% elsif !@scheduled_jobs.empty? %>
-    <p>This scenario is currently scheduled to be transformed:</p>
-    <%= erb(:'jobs/list', {:layout => false}, {:jobs => @scheduled_jobs}) %>
-  <% else %>
+  <% if @t12n_count > 0 %>
+  <form method="get" action="/projects/<%= @project.id %>/resources/<%= @resource.id %>/transform">
     <p>
-      Status: <strong><%= humanize(@resource.status) %></strong><br/>
-      Last transformed at: <strong><%= @resource.transformed_at || "Never" %></strong>
+      <input onclick="return confirm('Are you sure you want to transform this resource?');" value="Transform now" type="submit" />
     </p>
-    <form method="get" action="/projects/<%= @project.id %>/resources/<%= @resource.id %>/transform">
-      <p>
-        <input onclick="return confirm('Are you sure?');" value="Transform now" type="submit" />
-      </p>
-    </form>
+  </form>
   <% end %>
-  </div>
 <% end %>
 </div>
 
@@ -68,3 +76,55 @@
   <%= erb(:"scenarios/list", :layout => false) %>
 </div>
 <% end %>
+
+<div id="new_transformation" style="display: none">
+  <form method="post" action="/projects/<%= @project.id %>/resources/<%= @resource.id %>/transformations">
+    <table class="show">
+      <tr>
+        <td class="col1"><strong>Field:</strong></td>
+        <td id="field_name_label" class="col2"></td>
+      </tr>
+      <tr>
+        <td class="col1"><label for="transformer_name">Transformer:</label></td>
+        <td class="col2">
+          <select id="transformer_name" name="transformation[transformer_name]">
+            <% Coupler::Transformers.list.keys.each do |transformer_name| %>
+              <option><%= transformer_name %></option>
+            <% end %>
+          </select>
+        </td>
+      </tr>
+    </table>
+    <input id="field_name_input" name="transformation[field_name]" type="hidden" value="" />
+  </form>
+</div>
+
+<div id="transformations_for" style="display: none">
+</div>
+
+<script type="text/javascript">
+  function newTransformation(field) {
+    $('#field_name_input').val(field);
+    $('#field_name_label').html(field);
+    $('#new_transformation').dialog('option', 'title', 'New Transformation').dialog('open');
+    return false;
+  }
+  function transformationsFor(field) {
+    $('#transformations_for').load("/projects/<%= @project.id %>/resources/<%= @resource.id %>/transformations/for/" + field, function() {
+      $(this).dialog('option', 'title', 'Transformations for '+field).dialog('open');
+    });
+  }
+  $(function() {
+    $('.tooltip').tooltip({ delay: 0, track: true, showURL: false, showBody: " - " });
+    $('#new_transformation').dialog({
+      autoOpen: false,
+      buttons: {
+        'Create': function() { $('#new_transformation form').submit(); },
+        'Cancel': function() { $('#new_transformation').dialog('close'); }
+      },
+      modal: true,
+      width: 'auto',
+    });
+    $('#transformations_for').dialog({ autoOpen: false, width: 'auto' });
+  });
+</script>

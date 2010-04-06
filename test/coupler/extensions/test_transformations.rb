@@ -42,6 +42,19 @@ module Coupler
         follow_redirect!
         assert_equal "http://example.org/projects/#{@project.id}/resources/#{@resource.id}", last_request.url
       end
+
+      def test_for
+        t12n = Factory(:transformation, :resource => @resource, :field_name => "first_name")
+
+        get "/projects/#{@project.id}/resources/#{@resource.id}/transformations/for/first_name"
+        assert_match /downcaser/, last_response.body
+      end
+
+      def test_index
+        t12n = Factory(:transformation, :resource => @resource, :field_name => "first_name")
+        get "/projects/#{@project.id}/resources/#{@resource.id}/transformations"
+        assert last_response.ok?
+      end
     end
   end
 end

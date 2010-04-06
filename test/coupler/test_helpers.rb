@@ -33,5 +33,16 @@ module Coupler
       expected = %{<div class="timeago" title="#{dt.to_s}">#{now.to_s}</div>}
       assert_equal expected, timeago(now)
     end
+
+    def test_timeago_with_nil_time
+      assert_equal "Never", timeago(nil)
+    end
+
+    def test_timeago_with_additional_classes
+      now = Time.now
+      dt  = now.send(:to_datetime)
+      expected = %{<div class="timeago leet" title="#{dt.to_s}">#{now.to_s}</div>}
+      assert_equal expected, timeago(now, "leet")
+    end
   end
 end

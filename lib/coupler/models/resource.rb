@@ -75,6 +75,14 @@ module Coupler
         Scenario.filter(["resource_1_id = ? OR resource_2_id = ?", id, id]).all
       end
 
+      def transformations_per_field
+        retval = source_schema.inject({}) { |h, f| h[f[0]] = []; h }
+        transformations.each do |t12n|
+          retval[t12n.field_name.to_sym] << t12n
+        end
+        retval
+      end
+
       def transform!
         # create transformers and get result schema
         local_schema = self.source_schema

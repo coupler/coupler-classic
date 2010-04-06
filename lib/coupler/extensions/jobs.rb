@@ -3,7 +3,7 @@ module Coupler
     module Jobs
       def self.registered(app)
         app.get "/jobs" do
-          @jobs = Models::Job.order(:id)
+          @jobs = Models::Job.order("id DESC")
           erb 'jobs/index'.to_sym
         end
 

@@ -25,7 +25,8 @@ module Coupler
         app.get "/projects/:project_id/resources/:id" do
           @project = Models::Project[:id => params[:project_id]]
           @resource = @project.resources_dataset[:id => params[:id]]
-          @transformations = @resource.transformations
+          @transformations = @resource.transformations_per_field
+          @t12n_count = @resource.transformations_dataset.count
           @scenarios = @resource.scenarios
           @running_jobs = @resource.running_jobs
           @scheduled_jobs = @resource.scheduled_jobs

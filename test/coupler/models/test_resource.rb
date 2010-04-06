@@ -296,6 +296,23 @@ module Coupler
         job = Factory(:resource_job, :resource => resource)
         assert_equal [job], resource.scheduled_jobs
       end
+
+      def test_preview_transformation
+        # PENDING
+        resource = Factory(:resource)
+      end
+
+      def test_transformations_per_field
+        resource = Factory(:resource)
+        transformation_1 = Factory(:transformation, :resource => resource, :transformer_name => "downcaser", :field_name => "first_name")
+        transformation_2 = Factory(:transformation, :resource => resource, :transformer_name => "downcaser", :field_name => "last_name")
+        expected = {
+          :id => [],
+          :first_name => [transformation_1],
+          :last_name => [transformation_2]
+        }
+        assert_equal expected, resource.transformations_per_field
+      end
     end
   end
 end
