@@ -1,0 +1,58 @@
+<table class="form">
+  <tr>
+    <td class="left"><label for="name">Name</label></td>
+    <td>
+      <input id="name" name="transformer[name]" type="text" value="<%= @transformer[:name] %>" />
+    </td>
+  </tr>
+  <tr>
+    <td class="left"><label for="allowed_types">Allowed Field Types</label></td>
+    <td>
+      <select id="allowed_types" name="transformer[allowed_types][]" multiple="multiple">
+      <% [%w{integer Integer}, %w{string String}, %w{datetime Date/Time}].each do |(value, label)| %>
+        <option value="<%= value %>"<%= " selected='selected'" if @transformer.allowed_types && @transformer.allowed_types.include?(value) %>><%= label %></option>
+      <% end %>
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <td class="left"><label for="result_type">Result Type</label></td>
+    <td>
+      <select id="result_type" name="transformer[result_type]">
+      <% [['same', 'Same as original field type'], %w{integer Integer}, %w{string String}, %w{datetime Date/Time}].each do |(value, label)| %>
+        <option value="<%= value %>"<%= " selected='selected'" if @transformer.result_type == value %>><%= label %></option>
+      <% end %>
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <td class="left"><label for="code">Code</label></td>
+    <td>
+      <textarea id="code" name="transformer[code]" rows="10" cols="25"><%= @transformer.code %></textarea>
+    </td>
+  </tr>
+</table>
+<h3>Preview <img id='spinner' src="/images/ajax-loader.gif" style="display:none;"/></h3>
+<div id="preview">
+  <%= erb(:'transformers/preview', :layout => false) %>
+</div>
+<p>
+  <input id='preview-button' type="button" value="Preview" /> or
+  <input type="submit" value="Submit" /> or
+  <a href="/transformers">Cancel</a>
+</p>
+
+<script type="text/javascript">
+  $(function() {
+    $('#preview-button').click(function() {
+      $('#spinner').show();
+      data = $.grep($('form').serializeArray(), function(v) { 
+        return v.name != '_method'
+      });
+      $.post('/transformers/preview', data, function(data) {
+        $('#preview').html(data);
+        $('#spinner').hide();
+      }, 'html');
+    });
+  });
+</script>

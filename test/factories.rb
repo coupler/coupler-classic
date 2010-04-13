@@ -56,3 +56,10 @@ Factory.define :scenario_job, :class => Coupler::Models::Job do |j|
   j.status 'scheduled'
   j.association :scenario
 end
+
+Factory.define :transformer, :class => Coupler::Models::Transformer do |t|
+  t.sequence(:name) { |n| "Transformer #{n}" }
+  t.code "value"
+  t.allowed_types { |x| %w{string} }
+  t.result_type "string"
+end

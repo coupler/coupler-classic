@@ -20,6 +20,8 @@ module Coupler
         :projects_versions,
         :resources,
         :resources_versions,
+        :transformers,
+        :transformers_versions,
         :transformations,
         :transformations_versions,
         :scenarios,

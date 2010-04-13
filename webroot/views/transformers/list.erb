@@ -1,0 +1,25 @@
+<table class="list">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Input</th>
+      <th>Output</th>
+      <td></td>
+      <td></td>
+    </tr>
+  </thead>
+  <tbody>
+  <% @transformers.each do |transformer| %>
+    <tr>
+      <td><%= transformer[:name] %></td>
+      <td><%= transformer.allowed_types.join(", ") %></td>
+      <td><%= transformer[:result_type] %></td>
+      <td><a href="/transformers/<%= transformer.id %>/edit">Edit</a></td>
+      <td><%= delete_link("Delete", "/transformers/#{transformer.id}") %></td>
+    </tr>
+  <% end %>
+  </tbody>
+</table>
+<p>
+  <a href="/transformers/new">New transformer</a>
+</p>

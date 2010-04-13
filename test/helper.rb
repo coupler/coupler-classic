@@ -74,5 +74,28 @@ module VerboseConnectionMessages
 end
 #Sequel::DATABASES.extend(VerboseConnectionMessages)
 
+# deep case equality
+class Hash
+  def ===(other)
+    if other.is_a?(Hash)
+      return false  if keys.length != other.keys.length
+      all? { |(key, value)| value === other[key] }
+    else
+      super
+    end
+  end
+end
+
+class Array
+  def ===(other)
+    if other.is_a?(Array)
+      return false  if length != other.length
+      enum_for(:each_with_index).all? { |value, index| value === other[index] }
+    else
+      super
+    end
+  end
+end
+
 require 'factory_girl'
 Factory.definition_file_paths = [ File.dirname(__FILE__) + "/factories" ]

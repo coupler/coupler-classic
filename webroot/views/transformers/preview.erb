@@ -1,0 +1,23 @@
+<% preview = @transformer ? @transformer.preview : nil %>
+<% if preview %>
+<table class='list'>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Before</th>
+      <th>After</th>
+    </tr>
+  </thead>
+  <tbody>
+  <% preview.each_pair do |key, hash| %>
+    <% next if key == 'success' %>
+    <tr>
+      <td><%= key %></td>
+      <td><%= hash[:in] %></td>
+      <td><%= hash[:out] %></td>
+    </tr>
+  <% end %>
+</table>
+<% else %>
+<p>No preview available yet.</p>
+<% end %>

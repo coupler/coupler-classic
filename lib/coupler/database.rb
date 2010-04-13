@@ -59,6 +59,20 @@ module Coupler
         end
       end
 
+      [:transformers, :transformers_versions].each do |name|
+        @database.create_table(name) do
+          primary_key :id
+          String :name
+          Text :code
+          String :allowed_types
+          String :result_type
+          Integer :version, :default => 0
+          Integer :current_id   if name.to_s =~ /_versions$/
+          Time :created_at
+          Time :updated_at
+        end
+      end
+
       [:transformations, :transformations_versions].each do |name|
         @database.create_table(name) do
           primary_key :id

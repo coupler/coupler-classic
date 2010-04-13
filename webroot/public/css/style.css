@@ -150,6 +150,9 @@ body {
   margin-bottom: 0;
   list-style-type: square;
 }
+.errors li {
+  margin-left: 1.5em;
+}
 
 h1, h2, h3 {
   font-weight: normal;
@@ -186,6 +189,7 @@ table.form td {
 }
 table.form td.left {
   padding-right: 1em;
+  vertical-align: top;
 }
 
 table.list th {
