@@ -64,7 +64,11 @@ module Coupler
           advance = previous_advance = nil
           matching_second_ids = []
           while completed[0] < counts[0] && completed[1] < counts[1]
-            if values[0] < values[1]
+            if values[0].nil?
+              advance = 0
+            elsif values[1].nil?
+              advance = 1
+            elsif values[0] < values[1]
               # if the value for the previous dataset 1 row is the same as
               # this one, record matching scores for all the matching ids
               # from the previous row

@@ -130,8 +130,9 @@ module Coupler
 
       private
         def source_connection_string
-          "jdbc:%s://%s:%d/%s?user=%s&password=%s" % [
-            adapter, host, port, database_name, username, password
+          misc = adapter == 'mysql' ? '&zeroDateTimeBehavior=convertToNull' : ''
+          "jdbc:%s://%s:%d/%s?user=%s&password=%s%s" % [
+            adapter, host, port, database_name, username, password, misc
           ]
         end
 

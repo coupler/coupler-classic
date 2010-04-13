@@ -70,7 +70,33 @@ module Coupler
         end
       end
 
-      # FIXME: add nil values
+      def test_scores_null_values_as_non_match
+        dataset_1 = stub("Dataset 1", :count => 4)
+        dataset_1.stubs(:order).returns(dataset_1)
+        dataset_1.stubs(:limit).returns(dataset_1)
+        dataset_1.stubs(:all).returns([
+          {:id => 1, :first_name => nil}, {:id => 2, :first_name => nil},
+          {:id => 3, :first_name => 'Bob'}, {:id => 4, :first_name => 'George'},
+        ])
+
+        dataset_2 = stub("Dataset 2", :count => 4)
+        dataset_2.stubs(:order).returns(dataset_1)
+        dataset_2.stubs(:limit).returns(dataset_1)
+        dataset_2.stubs(:all).returns([
+          {:id => 1, :first_name => nil}, {:id => 2, :first_name => 'Bob'},
+          {:id => 3, :first_name => 'Fred'}, {:id => 4, :first_name => 'George'},
+        ])
+
+        results = Hash.new { |h, k| h[k] = [] }
+        score_set = stub("ScoreSet")
+        score_set.expects(:insert_or_update).times(2).with do |hash|
+          assert_equal 100, hash[:score]
+          results[hash[:first_id]] << hash[:second_id]
+        end
+
+        comparator = Exact.new('field_name' => ['first_name', 'first_name'], 'key' => ['id', 'id'])
+        comparator.score(score_set, dataset_1, dataset_2)
+      end
 
       def test_options
         expected = [
