@@ -125,6 +125,7 @@ module Coupler
         })
         resource.source_database do |database|
           assert_kind_of Sequel::JDBC::Database, database
+          assert_match /zeroDateTimeBehavior=convertToNull/, database.uri
           assert database.test_connection
         end
       end

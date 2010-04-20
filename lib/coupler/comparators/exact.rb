@@ -4,6 +4,7 @@ module Coupler
       OPTIONS = [
         {:label => "Field", :name => "field_name", :type => "text"}
       ]
+      LIMIT = 1000
 
       def initialize(options)
         super
@@ -53,9 +54,9 @@ module Coupler
           counts, records, values, previous_values, keys = [], [], [], [], []
           offsets, indices, completed = [0, 0], [0, 0], [0, 0]
           datasets.each_with_index do |ds, i|
-            datasets[i] = ds.order(@field_names[i])
+            datasets[i] = ds.select(@keys[i], @field_names[i]).order(@field_names[i])
             counts << datasets[i].count
-            records << datasets[i].limit(100, 0).all
+            records << datasets[i].limit(LIMIT, 0).all
             values << records[i][0][@field_names[i]]
             previous_values << nil
             keys << records[i][0][@keys[i]]
@@ -64,7 +65,11 @@ module Coupler
           advance = previous_advance = nil
           matching_second_ids = []
           while completed[0] < counts[0] && completed[1] < counts[1]
-            if values[0] < values[1]
+            if values[0].nil?
+              advance = 0
+            elsif values[1].nil?
+              advance = 1
+            elsif values[0] < values[1]
               # if the value for the previous dataset 1 row is the same as
               # this one, record matching scores for all the matching ids
               # from the previous row
@@ -99,12 +104,12 @@ module Coupler
 
             completed[advance] += 1
             indices[advance] += 1
-            if indices[advance] == 100
+            if indices[advance] == LIMIT
               # fetch more records
-              offsets[advance] += 100
+              offsets[advance] += LIMIT
               indices[advance] = 0
               if offsets[advance] < counts[advance]
-                records[advance] = datasets[advance].limit(100, offsets[advance]).all
+                records[advance] = datasets[advance].limit(LIMIT, offsets[advance]).all
               end
             end
 
