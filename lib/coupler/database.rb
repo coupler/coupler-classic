@@ -50,6 +50,7 @@ module Coupler
           String :database_name
           String :table_name
           String :primary_key_name, :default => "id"
+          Text :select
           Integer :project_id
           Integer :version, :default => 0
           Integer :current_id   if name.to_s =~ /_versions$/

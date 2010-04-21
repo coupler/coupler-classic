@@ -317,6 +317,12 @@ module Coupler
         }
         assert_equal expected, resource.transformations_per_field
       end
+
+      def test_serializes_select
+        id = Factory(:resource, :select => %w{first_name}).id
+        resource = Resource[:id => id]
+        assert_equal %w{first_name}, resource.select
+      end
     end
   end
 end

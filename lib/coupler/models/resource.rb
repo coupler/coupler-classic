@@ -4,6 +4,8 @@ module Coupler
       include CommonModel
       include Jobify
 
+      plugin :serialization, :marshal, :select
+
       many_to_one :project
       one_to_many :transformations
 
