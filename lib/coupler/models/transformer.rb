@@ -30,10 +30,36 @@ module Coupler
           result[type] = { :in => obj }
           begin
             transform(result[type], {:in => :in, :out => :out})
+
+            expected_type = result_type == 'same' ? type : result_type
+            actual_type = case result[type][:out]
+                          when String then "string"
+                          when Fixnum then "integer"
+                          when Time, Date, DateTime then "datetime"
+                          end
+
+            if expected_type != actual_type
+              raise TypeError, "expected #{expected_type}, got #{actual_type}"
+            end
+
           rescue Exception => e
             result[type][:out] = e
             result['success'] = false
           end
+        end
+        result
+      end
+
+      def new_schema(schema, field_name)
+        result = Marshal.load(Marshal.dump(schema))  # bleh?
+        field_name = field_name.to_sym
+        index = result.index { |info| info[0] == field_name }
+        if index
+          return result   if result_type == 'same'
+          result[index][1][:type] = result_type.to_sym
+          result[index][1].delete(:db_type)  # TODO: add ability to set field length
+        else
+          # TODO: add support for creating new columns
         end
         result
       end

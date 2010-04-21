@@ -3,12 +3,13 @@
 
   <!-- 3rd party gems -->
   <property name="sinatra.version" value="0.9.4"/>
-  <property name="gems.needed" value="rack-flash jdbc-mysql sequel json-jruby fastercsv" />
+  <property name="gems.needed" value="rack-flash sequel json-jruby fastercsv" />
 
   <!-- 3rd party java libs -->
   <property name="one.jar.version" value="0.96"/>
   <property name="quartz.version" value="1.6.6"/>
   <property name="mysql.mxj.version" value="5-0-11"/>
+  <property name="mysql.java.version" value="5.1.12"/>
 
   <path id="jruby-jar">
     <pathelement location="vendor/java/jruby-complete.jar"/>
@@ -40,14 +41,9 @@
     <copy todir="${build}/ruby">
       <fileset dir="${build}/gems/gems">
         <include name="*/lib/**/*" />
-        <exclude name="jdbc-mysql-*/lib/**/*" />
       </fileset>
       <mapper type="regexp" from="^[^/]+/lib/(.+)$$" to="\1"/>
     </copy>
-
-    <!-- stub jdbc/mysql -->
-    <mkdir dir="${build}/ruby/jdbc" />
-    <touch file="${build}/ruby/jdbc/mysql.rb" />
 
     <!-- thread_pool -->
     <copy todir="${build}/ruby" file="vendor/ruby/thread_pool/lib/thread_pool.rb" />
@@ -111,13 +107,11 @@
         <attribute name="Main-Class" value="edu.vanderbilt.coupler.Main" />
       </manifest>
       <zipfileset src="vendor/java/jruby-complete.jar" />
+      <zipfileset src="vendor/java/mysql-connector-java-${mysql.java.version}/mysql-connector-java-${mysql.java.version}-bin.jar" />
       <zipfileset src="vendor/java/mysql-connector-mxj-gpl-${mysql.mxj.version}/mysql-connector-mxj-gpl-${mysql.mxj.version}.jar" />
       <zipfileset src="vendor/java/mysql-connector-mxj-gpl-${mysql.mxj.version}/mysql-connector-mxj-gpl-${mysql.mxj.version}-db-files.jar" />
       <zipfileset src="vendor/java/quartz-${quartz.version}/quartz-${quartz.version}.jar" />
       <zipfileset src="vendor/java/quartz-${quartz.version}/lib/core/commons-logging-1.1.jar" />
-      <zipfileset>
-        <fileset dir="${build}/gems/gems" includes="jdbc-mysql*/lib/*.jar" />
-      </zipfileset>
     </jar>
   </target>
 

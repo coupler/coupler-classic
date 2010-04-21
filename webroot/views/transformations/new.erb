@@ -12,8 +12,8 @@
   <p>
     <label for="transformer_name">Transformer</label><br/>
     <select id="transformer_name" name="transformation[transformer_name]">
-    <% Coupler::Transformers.list.keys.each do |transformer_name| %>
-      <option><%= transformer_name %></option>
+    <% @transformers.each do |transformer| %>
+      <option value="<%= transformer.id %>"><%= transformer.name %></option>
     <% end %>
     </select>
   </p>

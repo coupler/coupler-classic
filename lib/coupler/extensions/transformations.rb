@@ -5,6 +5,7 @@ module Coupler
         app.get "/projects/:project_id/resources/:resource_id/transformations/new" do
           @project = Models::Project[:id => params[:project_id]]
           @resource = @project.resources_dataset[:id => params[:resource_id]]
+          @transformers = Models::Transformer.all
           @transformation = Models::Transformation.new
           erb 'transformations/new'.to_sym
         end
@@ -18,6 +19,7 @@ module Coupler
           if @transformation.save
             redirect "/projects/#{@project.id}/resources/#{@resource.id}"
           else
+            @transformers = Models::Transformer.all
             erb 'transformations/new'.to_sym
           end
         end

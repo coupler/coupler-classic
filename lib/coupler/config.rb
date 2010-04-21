@@ -20,6 +20,16 @@ if !defined? Coupler::Config
             "mysql-connector-mxj-gpl-%s-db-files.jar"
           ]
         },
+        'mysql-connector-java' => {
+          :type => 'java',
+          :filetype => "tarball",
+          :version => '5.1.12',
+          :dir => "mysql-connector-java-%s",
+          :url => "ftp://mirror.anl.gov/pub/mysql/Downloads/Connector-J/mysql-connector-java-%s.tar.gz",
+          :libs => [
+            "mysql-connector-java-%s-bin.jar",
+          ]
+        },
         'one-jar' => {
           :type => 'java',
           :filetype => "jar",

@@ -164,8 +164,9 @@ module Coupler
 
         project = Factory(:project, :name => "local_dataset test")
         resource = Factory(:resource, :name => "Resource 1", :project => project)
+        transformer = Factory(:transformer)
         transformation = Factory(:transformation, {
-          :resource => resource, :transformer_name => "downcaser",
+          :resource => resource, :transformer => transformer,
           :field_name => "first_name"
         })
 
@@ -181,8 +182,9 @@ module Coupler
 
         project = Factory(:project, :name => "Awesome Test Project")
         resource = Factory(:resource, :name => "pants", :project => project)
+        transformer = Factory(:transformer)
         transformation = Factory(:transformation, {
-          :resource => resource, :transformer_name => "downcaser",
+          :resource => resource, :transformer => transformer,
           :field_name => "first_name"
         })
 
@@ -229,7 +231,6 @@ module Coupler
         now = Time.now
         resource = Factory(:resource, :transformed_at => now - 1)
         transformation = Factory(:transformation, :resource => resource, :created_at => now - 2, :updated_at => now - 2)
-        transformation.update(:field_name => "blahblah")
         assert_equal "out_of_date", resource.status
       end
 
@@ -305,8 +306,10 @@ module Coupler
 
       def test_transformations_per_field
         resource = Factory(:resource)
-        transformation_1 = Factory(:transformation, :resource => resource, :transformer_name => "downcaser", :field_name => "first_name")
-        transformation_2 = Factory(:transformation, :resource => resource, :transformer_name => "downcaser", :field_name => "last_name")
+        transformer_1 = Factory(:transformer)
+        transformer_2 = Factory(:transformer)
+        transformation_1 = Factory(:transformation, :resource => resource, :transformer => transformer_1, :field_name => "first_name")
+        transformation_2 = Factory(:transformation, :resource => resource, :transformer => transformer_2, :field_name => "last_name")
         expected = {
           :id => [],
           :first_name => [transformation_1],

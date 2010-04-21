@@ -25,7 +25,7 @@
           <td><%= info[:db_type] %></td>
           <% if @t12n_count > 0 %>
             <% if t13s.length > 0 %>
-              <% list = "<ul>" + t13s.inject("") { |s, t| s + "<li>#{t.transformer_name}</li>" } + "</ul>" %>
+              <% list = "<ul>" + t13s.inject("") { |s, t| s + "<li>#{t.transformer.name}</li>" } + "</ul>" %>
               <td>
                 <a href="#" onclick="transformationsFor('<%= column_name %>');"><img class="tooltip" src="/images/cog.png" title="Transformations - <%= list %>" /></a>
               </td>
@@ -85,11 +85,11 @@
         <td id="field_name_label" class="col2"></td>
       </tr>
       <tr>
-        <td class="col1"><label for="transformer_name">Transformer:</label></td>
+        <td class="col1"><label for="transformer_id">Transformer:</label></td>
         <td class="col2">
-          <select id="transformer_name" name="transformation[transformer_name]">
-            <% Coupler::Transformers.list.keys.each do |transformer_name| %>
-              <option><%= transformer_name %></option>
+          <select id="transformer_id" name="transformation[transformer_id]">
+            <% @transformers.each do |transformer| %>
+              <option value="<%= transformer.id %>"><%= transformer.name %></option>
             <% end %>
           </select>
         </td>

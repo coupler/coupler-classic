@@ -5,7 +5,6 @@
 
 require 'java'
 require 'singleton'
-require 'jdbc/mysql'
 require File.join(File.dirname(__FILE__), "config")
 
 # mysql embedded
@@ -14,6 +13,13 @@ begin
 rescue NameError
   # load jar files only if necessary
   Coupler::Config.require_vendor_libs('mysql-connector-mxj')
+end
+
+# jdbc/mysql
+begin
+  com.mysql.jdbc.Driver
+rescue NameError
+  Coupler::Config.require_vendor_libs('mysql-connector-java')
 end
 
 module Coupler

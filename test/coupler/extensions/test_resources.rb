@@ -46,7 +46,8 @@ module Coupler
 
       def test_show_resource
         resource = Factory(:resource, :project => @project)
-        transformation = Factory(:transformation, :transformer_name => 'downcaser', :resource => resource)
+        transformer = Factory(:transformer, :name => 'foo', :code => "value.downcase")
+        transformation = Factory(:transformation, :transformer => transformer, :resource => resource)
         get "/projects/#{@project[:id]}/resources/#{resource.id}"
         assert last_response.ok?
         assert_match /#{resource.name.capitalize}/, last_response.body

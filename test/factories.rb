@@ -18,7 +18,7 @@ end
 
 Factory.define :transformation, :class => Coupler::Models::Transformation do |t|
   t.field_name 'first_name'
-  t.transformer_name 'downcaser'
+  t.association :transformer
   t.association :resource
 end
 
@@ -61,5 +61,5 @@ Factory.define :transformer, :class => Coupler::Models::Transformer do |t|
   t.sequence(:name) { |n| "Transformer #{n}" }
   t.code "value"
   t.allowed_types { |x| %w{string} }
-  t.result_type "string"
+  t.result_type "same"
 end

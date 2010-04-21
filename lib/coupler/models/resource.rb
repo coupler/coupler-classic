@@ -85,12 +85,8 @@ module Coupler
 
       def transform!
         # create transformers and get result schema
-        local_schema = self.source_schema
-        transformers = []
-        transformations.each do |transformation|
-          klass = Transformers[transformation.transformer_name]
-          transformers << klass.new(:field_name => transformation.field_name)
-          local_schema = transformers[-1].schema(local_schema)
+        local_schema = transformations.inject(source_schema) do |schema, t12n|
+          t12n.new_schema(schema)
         end
 
         local_database do |l_db|
@@ -98,7 +94,10 @@ module Coupler
           l_db.create_table!(self.slug) do
             local_schema.each do |(name, info)|
               options = info.dup
-              options[:type] = options.delete(:db_type)
+              if options.has_key?(:db_type)
+                db_type = options.delete(:db_type)
+                options[:type] = db_type    unless db_type.nil?
+              end
               options[:name] = name
               if options[:primary_key]
                 options.delete(:default)  unless options[:default]
@@ -116,7 +115,7 @@ module Coupler
             thread_pool = ThreadPool.new(10)
             s_ds.each do |row|
               thread_pool.execute(row) do |r|
-                values = transformers.inject(r) { |x, t| t.transform(x) }
+                values = transformations.inject(r) { |x, t| t.transform(x) }
                 l_ds.insert(values)
                 #self.class.filter(:id => self.id).update("completed = completed + 1")
               end

@@ -124,6 +124,47 @@ module Coupler
         })
         assert !xformer.valid?
       end
+
+      def test_requires_correct_result_type
+        xformer = Factory.build(:transformer, {
+          :name => "stringify", :code => "value.to_i",
+          :allowed_types => %w{integer string datetime},
+          :result_type => "string"
+        })
+        assert !xformer.valid?
+      end
+
+      def test_requres_same_result_type
+        xformer = Factory.build(:transformer, {
+          :name => "stringify", :code => "value.to_i",
+          :allowed_types => %w{integer string datetime},
+          :result_type => "same"
+        })
+        assert !xformer.valid?
+      end
+
+      def test_new_schema_with_no_type_changes
+        transformer = Factory(:transformer, {
+          :allowed_types => %w{integer datetime string},
+          :result_type => 'same', :code => 'value'
+        })
+        schema = [[:id, {:allow_null=>false, :default=>nil, :primary_key=>true, :db_type=>"int(11)", :type=>:integer, :ruby_default=>nil}], [:first_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}], [:last_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}]]
+        assert_equal schema, transformer.new_schema(schema, 'last_name')
+        assert_equal schema, transformer.new_schema(schema, :last_name)
+        assert_equal schema, transformer.new_schema(schema, 'first_name')
+      end
+
+      def test_new_schema_to_integer
+        transformer = Factory(:transformer, {
+          :allowed_types => %w{integer datetime string},
+          :result_type => 'integer', :code => 'value.to_i'
+        })
+        schema = [[:id, {:allow_null=>false, :default=>nil, :primary_key=>true, :db_type=>"int(11)", :type=>:integer, :ruby_default=>nil}], [:first_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}], [:last_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}]]
+        result = transformer.new_schema(schema, 'last_name')
+        assert_equal :string, schema.assoc(:last_name)[1][:type], "Original schema was changed!"
+        assert_equal :integer, result.assoc(:last_name)[1][:type]
+        assert_nil result.assoc(:last_name)[1][:db_type]
+      end
     end
   end
 end

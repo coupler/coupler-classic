@@ -5,8 +5,9 @@ module Coupler
     class TestTransformations < Test::Unit::TestCase
       def setup
         super
-        @project = ::Factory.create(:project)
-        @resource = ::Factory.create(:resource, :project => @project)
+        @project = Factory(:project)
+        @resource = Factory(:resource, :project => @project)
+        @transformer = Factory(:transformer)
       end
 
       def test_new
@@ -18,12 +19,14 @@ module Coupler
         assert_equal %w{id first_name last_name}, fields.css('option').collect(&:inner_html)
 
         transformers = doc.at('select[name="transformation[transformer_name]"]')
-        assert_equal Transformers.list.keys.collect(&:to_s),
+        assert_equal [@transformer.name],
           transformers.css('option').collect(&:inner_html)
       end
 
       def test_successfully_creating_transformation
+        xformer = Factory(:transformer)
         attribs = Factory.attributes_for(:transformation)
+        attribs[:transformer_id] = xformer.id
         post("/projects/#{@project.id}/resources/#{@resource.id}/transformations", { 'transformation' => attribs })
         transformation = @resource.transformations_dataset.first
         assert transformation
@@ -44,7 +47,8 @@ module Coupler
       end
 
       def test_for
-        t12n = Factory(:transformation, :resource => @resource, :field_name => "first_name")
+        xformer = Factory(:transformer, :name => "downcaser")
+        t12n = Factory(:transformation, :resource => @resource, :field_name => "first_name", :transformer => xformer)
 
         get "/projects/#{@project.id}/resources/#{@resource.id}/transformations/for/first_name"
         assert_match /downcaser/, last_response.body
