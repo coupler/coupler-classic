@@ -3,7 +3,7 @@
 
   <!-- 3rd party gems -->
   <property name="sinatra.version" value="0.9.4"/>
-  <property name="gems.needed" value="rack-flash sequel json-jruby fastercsv" />
+  <property name="gems.needed" value="rack-flash viking-sequel json-jruby fastercsv" />
 
   <!-- 3rd party java libs -->
   <property name="one.jar.version" value="0.96"/>
