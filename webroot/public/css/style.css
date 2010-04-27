@@ -176,9 +176,9 @@ a:visited {
   color: #AE3B3A;
 }
 
-label {
-  font-weight: bold;
-}
+/*label {*/
+  /*font-weight: bold;*/
+/*}*/
 
 .inner {
   padding: 1em;

@@ -16,13 +16,12 @@
   <% @schema.each_with_index do |(field, info), i| %>
     <tr>
       <td style="text-align: center;"><input id="field_checkbox_<%= i %>" title="<%= field %>" class="field_checkbox" type="checkbox" onclick="toggleField('<%= i %>', this);" <%= " checked='checked'" if @select.include?(field.to_s) %> /></td>
-      <td><%= field %></td>
+      <td><label for="field_checkbox_<%= i %>"><%= field %></label></td>
       <td><%= info[:db_type] %></td>
     </tr>
   <% end %>
   </tbody>
 </table>
-<br/>
 <div id="selection_count"><strong>Fields currently selected</strong>: <span><%= @select.length %></span> (out of <%= @schema.length %>)</div>
 
 <form method="post" action="/projects/<%= @project.id %>/resources/<%= @resource.id %>">
@@ -35,7 +34,7 @@
   <div class="clear"></div>
   <br/>
   <p>
-    <input type="submit" value="Submit" /> or <a href="/projects/<%= @project.id %>">Cancel</a>
+    <input type="submit" value="Submit" /> or <a href="/projects/<%= @project.id %>/resources/<%= @resource.id %>">Cancel</a>
   </p>
 </form>
 

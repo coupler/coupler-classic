@@ -1,45 +1,44 @@
 <% @breadcrumbs = [@project, @resource] %>
-<% add_javascript("jquery.tooltip.min.js", "jquery-ui.min.js") %>
+<% add_javascript("jquery.tooltip.min.js", "jquery-ui.min.js", 'jquery.dataTables.min.js') %>
+<% add_stylesheet('jquery-ui.css', 'dataTables.css') %>
 
 <h2>Fields</h2>
-<div class="section" style="max-height: 20em">
-  <table class="list">
-    <thead>
-      <tr>
-        <th>Field</th>
-        <th>Type</th>
-        <% if @t12n_count > 0 %><td></td><% end %>
-        <td></td>
-      </tr>
-    </thead>
-    <tbody>
-      <% @schema.each_with_index do |(column_name, info), i| %>
-        <% t13s = @transformations[column_name] %>
-        <tr<%= " class='alt'" if i % 2 == 1 %>>
-          <td><%= column_name %></td>
-          <td><%= info[:db_type] %></td>
-          <% if @t12n_count > 0 %>
-            <% if t13s.length > 0 %>
-              <% list = "<ul>" + t13s.inject("") { |s, t| s + "<li>#{t.transformer.name}</li>" } + "</ul>" %>
-              <td>
-                <a href="#" onclick="transformationsFor('<%= column_name %>');"><img class="tooltip" src="/images/cog.png" title="Transformations - <%= list %>" alt="Cog" /></a>
-              </td>
-            <% else %>
-            <td></td>
-            <% end %>
-          <% end %>
+<table id="fields" class="dataTable" style="clear: both;">
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Type</th>
+      <% if @t12n_count > 0 %><th></th><% end %>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+  <% @schema.each do |column_name, info| %>
+    <% t13s = @transformations[column_name] %>
+    <tr>
+      <td><%= column_name %></td>
+      <td><%= info[:db_type] %></td>
+      <% if @t12n_count > 0 %>
+        <% if t13s.length > 0 %>
+          <% list = "<ul>" + t13s.inject("") { |s, t| s + "<li>#{t.transformer.name}</li>" } + "</ul>" %>
           <td>
-            <a href="#" onclick="newTransformation('<%= column_name %>');"><img class="tooltip" src="/images/hammer.png" title="New Transformation - <%= column_name %>" alt="Hammer" /></a>
+            <a href="#" onclick="transformationsFor('<%= column_name %>');"><img class="tooltip" src="/images/cog.png" title="Transformations - <%= list %>" alt="Cog" /></a>
           </td>
-        </tr>
+        <% else %>
+        <td></td>
+        <% end %>
       <% end %>
-    </tbody>
-  </table>
-</div>
+      <td>
+        <a href="#" onclick="newTransformation('<%= column_name %>');"><img class="tooltip" src="/images/hammer.png" title="New Transformation - <%= column_name %>" alt="Hammer" /></a>
+      </td>
+    </tr>
+  <% end %>
+  </tbody>
+</table>
 <p>
   <a href="/projects/<%= @project.id %>/resources/<%= @resource.id %>/edit">Select Fields</a>
   <% if @t12n_count > 0 %>
-  ][ <a href="/projects/<%= @project.id %>/resources/<%= @resource.id %>/transformations">All Transformations</a>
+  | <a href="/projects/<%= @project.id %>/resources/<%= @resource.id %>/transformations">All Transformations</a>
   <% end %>
 </p>
 
@@ -114,7 +113,17 @@
       $(this).dialog('option', 'title', 'Transformations for '+field).dialog('open');
     });
   }
+
+  var oTable;
   $(function() {
+    oTable = $('#fields').dataTable({
+      bJQueryUI: true, aaSorting: [],
+      aoColumns: [
+        null, null,
+        <%= "{ bSortable: false, bSearchable: false, sWidth: '20px' }," if @t12n_count > 0 %>
+        { bSortable: false, bSearchable: false, sWidth: '20px' }
+      ],
+    });
     $('.tooltip').tooltip({ delay: 0, track: true, showURL: false, showBody: " - " });
     $('#new_transformation').dialog({
       autoOpen: false,

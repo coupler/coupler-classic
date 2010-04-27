@@ -40,10 +40,9 @@ table.dataTable td {
 
 .dataTables_wrapper {
 	position: relative;
-	min-height: 302px;
 	clear: both;
-	_height: 302px;
 	zoom: 1; /* Feeling sorry for IE */
+        margin-bottom: 1em;
 }
 
 .dataTables_processing {
@@ -194,11 +193,11 @@ table.display td.center {
  * DataTables row classes
  */
 
-tr.odd {
+tr.even {
 	background-color: #eee;
 }
 
-tr.even {
+tr.odd {
 	background-color: white;
 }
 
