@@ -4,6 +4,8 @@ module Coupler
       include CommonModel
       include Jobify
 
+      plugin :serialization, :marshal, :select
+
       many_to_one :project
       one_to_many :transformations
 
@@ -16,14 +18,19 @@ module Coupler
       def source_dataset
         source_database do |db|
           ds = db[table_name.to_sym]
+          ds = ds.select(*select.collect(&:to_sym)) if select.is_a?(Array)
           yield ds
         end
       end
 
-      def source_schema
+      def source_schema(only_selected = false)
         schema = nil
         source_database { |db| schema = db.schema(table_name) }
-        schema
+        if only_selected && select.is_a?(Array)
+          schema.select { |x| select.include?(x[0].to_s) }
+        else
+          schema
+        end
       end
 
       def local_database(&block)
@@ -85,7 +92,7 @@ module Coupler
 
       def transform!
         # create transformers and get result schema
-        local_schema = transformations.inject(source_schema) do |schema, t12n|
+        local_schema = transformations.inject(source_schema(true)) do |schema, t12n|
           t12n.new_schema(schema)
         end
 
@@ -115,8 +122,8 @@ module Coupler
             thread_pool = ThreadPool.new(10)
             s_ds.each do |row|
               thread_pool.execute(row) do |r|
-                values = transformations.inject(r) { |x, t| t.transform(x) }
-                l_ds.insert(values)
+                hash = transformations.inject(r) { |x, t| t.transform(x) }
+                l_ds.insert(hash)
                 #self.class.filter(:id => self.id).update("completed = completed + 1")
               end
             end
@@ -137,15 +144,6 @@ module Coupler
 
         def local_connection_string
           Config.connection_string(self.project.slug, :create_database => true)
-        end
-
-        def before_create
-          super
-          self.slug ||= self.name.downcase.gsub(/\s+/, "_")
-          source_database do |db|
-            schema = db.schema(self.table_name)
-            self.primary_key_name = schema.detect { |x| x[1][:primary_key] }[0].to_s
-          end
         end
 
         def validate
@@ -200,6 +198,23 @@ module Coupler
               errors[:base] << "Couldn't connect to the database"
             end
           end
+        end
+
+        def before_save
+          if new?
+            # NOTE: I'm doing this instead of using before_create because
+            # serialization happens in before_save, which gets called before
+            # the before_create hook
+            self.slug ||= self.name.downcase.gsub(/\s+/, "_")
+            source_database do |db|
+              schema = db.schema(self.table_name)
+              self.primary_key_name = schema.detect { |x| x[1][:primary_key] }[0].to_s
+            end
+          end
+          if select.is_a?(Array) && !select.include?(primary_key_name)
+            self.select = [primary_key_name] + select
+          end
+          super
         end
     end
   end

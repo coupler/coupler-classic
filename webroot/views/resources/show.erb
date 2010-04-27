@@ -1,10 +1,5 @@
 <% @breadcrumbs = [@project, @resource] %>
 <% add_javascript("jquery.tooltip.min.js", "jquery-ui.min.js") %>
-<% if flash[:newly_created] %>
-<div id="notice">
-  Resource successfully created!  Next, if you want to change this resource's fields, you'll need to add transformations.
-</div>
-<% end %>
 
 <h2>Fields</h2>
 <div class="section" style="max-height: 20em">
@@ -18,7 +13,7 @@
       </tr>
     </thead>
     <tbody>
-      <% @resource.source_schema.each_with_index do |(column_name, info), i| %>
+      <% @schema.each_with_index do |(column_name, info), i| %>
         <% t13s = @transformations[column_name] %>
         <tr<%= " class='alt'" if i % 2 == 1 %>>
           <td><%= column_name %></td>
@@ -27,23 +22,26 @@
             <% if t13s.length > 0 %>
               <% list = "<ul>" + t13s.inject("") { |s, t| s + "<li>#{t.transformer.name}</li>" } + "</ul>" %>
               <td>
-                <a href="#" onclick="transformationsFor('<%= column_name %>');"><img class="tooltip" src="/images/cog.png" title="Transformations - <%= list %>" /></a>
+                <a href="#" onclick="transformationsFor('<%= column_name %>');"><img class="tooltip" src="/images/cog.png" title="Transformations - <%= list %>" alt="Cog" /></a>
               </td>
             <% else %>
             <td></td>
             <% end %>
           <% end %>
           <td>
-            <a href="#" onclick="newTransformation('<%= column_name %>');"><img class="tooltip" src="/images/hammer.png" title="New Transformation - <%= column_name %>" /></a>
+            <a href="#" onclick="newTransformation('<%= column_name %>');"><img class="tooltip" src="/images/hammer.png" title="New Transformation - <%= column_name %>" alt="Hammer" /></a>
           </td>
         </tr>
       <% end %>
     </tbody>
   </table>
-  <% if @t12n_count > 0 %>
-  <p><a href="/projects/<%= @project.id %>/resources/<%= @resource.id %>/transformations">All Transformations</a></p>
-  <% end %>
 </div>
+<p>
+  <a href="/projects/<%= @project.id %>/resources/<%= @resource.id %>/edit">Select Fields</a>
+  <% if @t12n_count > 0 %>
+  ][ <a href="/projects/<%= @project.id %>/resources/<%= @resource.id %>/transformations">All Transformations</a>
+  <% end %>
+</p>
 
 <h2>Status</h2>
 <div class="section">
@@ -95,7 +93,9 @@
         </td>
       </tr>
     </table>
-    <input id="field_name_input" name="transformation[field_name]" type="hidden" value="" />
+    <div style="display: none;">
+      <input id="field_name_input" name="transformation[field_name]" type="hidden" value="" />
+    </div>
   </form>
 </div>
 
@@ -123,8 +123,7 @@
         'Cancel': function() { $('#new_transformation').dialog('close'); }
       },
       modal: true,
-      width: 'auto',
     });
-    $('#transformations_for').dialog({ autoOpen: false, width: 'auto' });
+    $('#transformations_for').dialog({ autoOpen: false });
   });
 </script>

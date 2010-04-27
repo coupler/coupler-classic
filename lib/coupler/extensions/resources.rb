@@ -1,7 +1,11 @@
 module Coupler
   module Extensions
     module Resources
+      module Helpers
+      end
+
       def self.registered(app)
+        app.helpers Helpers
         app.get "/projects/:project_id/resources/new" do
           @project = Models::Project[:id => params[:project_id]]
           @resource = Models::Resource.new
@@ -15,8 +19,8 @@ module Coupler
           @resource.project = @project
 
           if @resource.save
-            flash[:newly_created] = true
-            redirect "/projects/#{@project.id}/resources/#{@resource.id}"
+            flash[:notice] = "Resource was created successfully!  Now you can choose which fields you wish to select."
+            redirect "/projects/#{@project.id}/resources/#{@resource.id}/edit"
           else
             erb 'resources/new'.to_sym
           end
@@ -25,6 +29,7 @@ module Coupler
         app.get "/projects/:project_id/resources/:id" do
           @project = Models::Project[:id => params[:project_id]]
           @resource = @project.resources_dataset[:id => params[:id]]
+          @schema = @resource.source_schema(true)
           @transformers = Models::Transformer.all
           @transformations = @resource.transformations_per_field
           @t12n_count = @resource.transformations_dataset.count
@@ -39,6 +44,33 @@ module Coupler
           @resource = @project.resources_dataset[:id => params[:id]]
           Scheduler.instance.schedule_transform_job(@resource)
           redirect "/projects/#{@project.id}/resources/#{@resource.id}"
+        end
+
+        app.get "/projects/:project_id/resources/:id/edit" do
+          @project = Models::Project[:id => params[:project_id]]
+          @resource = @project.resources_dataset[:id => params[:id]]
+          @schema = @resource.source_schema
+          @select = @resource.select || @schema.collect { |x| x[0].to_s }
+          erb 'resources/edit'.to_sym
+        end
+
+        app.put "/projects/:project_id/resources/:id" do
+          @project = Models::Project[:id => params[:project_id]]
+          @resource = @project.resources_dataset[:id => params[:id]]
+
+          attribs = params[:resource] || {:select => nil}
+          @resource.set(attribs)
+          if @resource.valid?
+            # FIXME
+            #flash[:notice] = "Resource successfully created!  Next, if you want to change this resource's fields, you'll need to add transformations."
+
+            @resource.save
+            redirect "/projects/#{@project.id}/resources/#{@resource.id}"
+          else
+            @schema = @resource.source_schema
+            @select = @resource.select || @schema.collect(&:first)
+            erb 'resources/edit'.to_sym
+          end
         end
 
         #app.get "/projects/:project_id/resources/:id/progress" do

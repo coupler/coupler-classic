@@ -182,7 +182,7 @@ module Coupler
 
         project = Factory(:project, :name => "Awesome Test Project")
         resource = Factory(:resource, :name => "pants", :project => project)
-        transformer = Factory(:transformer)
+        transformer = Factory(:transformer, :code => 'value.downcase')
         transformation = Factory(:transformation, {
           :resource => resource, :transformer => transformer,
           :field_name => "first_name"
@@ -299,11 +299,6 @@ module Coupler
         assert_equal [job], resource.scheduled_jobs
       end
 
-      def test_preview_transformation
-        # PENDING
-        resource = Factory(:resource)
-      end
-
       def test_transformations_per_field
         resource = Factory(:resource)
         transformer_1 = Factory(:transformer)
@@ -316,6 +311,50 @@ module Coupler
           :last_name => [transformation_2]
         }
         assert_equal expected, resource.transformations_per_field
+      end
+
+      def test_serializes_select
+        id = Factory(:resource, :select => %w{id first_name}).id
+        resource = Resource[:id => id]
+        assert_equal %w{id first_name}, resource.select
+      end
+
+      def test_prepends_primary_key_to_select
+        id = (r = Factory(:resource, :select => %w{first_name})).id
+        resource = Resource[:id => id]
+        assert_equal %w{id first_name}, resource.select
+      end
+
+      def test_source_dataset_selects_specified_columns
+        resource = Factory(:resource, :select => %w{first_name})
+        resource.source_dataset do |ds|
+          assert_equal [:id, :first_name], ds.columns
+
+          # NOTE: in MySQL, when selecting strings (ex: SELECT 'foo'),
+          # the name of the column in sequel is :foo instead of :"'foo'",
+          # because of the way MySQL names columns
+          assert_equal "SELECT `id`, `first_name` FROM `people`", ds.select_sql
+        end
+      end
+
+      def test_source_schema_with_true_returns_only_specified_columns
+        resource = Factory(:resource, :select => %w{first_name})
+        schema = resource.source_schema(true)
+        assert_equal [:id, :first_name], schema.collect(&:first)
+      end
+
+      def test_transforming_only_gets_specified_columns
+        resource = Factory(:resource, :select => %w{first_name})
+        transformer = Factory(:transformer)
+        transformation = Factory(:transformation, {
+          :resource => resource, :transformer => transformer,
+          :field_name => "first_name"
+        })
+        resource.transform!
+        resource.local_database do |db|
+          schema = db.schema(resource.slug.to_sym)
+          assert_equal [:id, :first_name], schema.collect(&:first)
+        end
       end
     end
   end
