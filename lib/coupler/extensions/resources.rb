@@ -6,6 +6,13 @@ module Coupler
 
       def self.registered(app)
         app.helpers Helpers
+
+        app.get "/projects/:project_id/resources" do
+          @project = Models::Project[:id => params[:project_id]]
+          @resources = @project.resources
+          erb 'resources/index'.to_sym
+        end
+
         app.get "/projects/:project_id/resources/new" do
           @project = Models::Project[:id => params[:project_id]]
           @resource = Models::Resource.new

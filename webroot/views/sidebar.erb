@@ -1,0 +1,25 @@
+<ul>
+  <li>
+    <a href="/">Projects</a>
+    <ul>
+    <%- Coupler::Models::Project.each do |project| -%>
+      <li>
+        <a href="/projects/<%= project.id %>"><%= project.name %></a>
+        <ul style="display: <%= @project == project ? "block" : "none" %>;">
+          <li><a href="/projects/<%= project.id %>/resources">Resources</a></li>
+          <li class="last"><a href="/projects/<%= project.id %>/scenarios">Scenarios</a></li>
+        </ul>
+      </li>
+    <%- end -%>
+    </ul>
+  </li>
+  <li>
+    <a href="/jobs">Jobs</a>
+    <div id="job-count">
+    <%- if (num = Coupler::Models::Job.filter(:completed_at => nil).count) > 0 -%>
+      (<%= num %>)
+    <%- end -%>
+    </div>
+  </li>
+  <li><a href="/transformers">Transformers</a></li>
+</ul>

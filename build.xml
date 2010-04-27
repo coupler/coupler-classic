@@ -2,8 +2,7 @@
   <property name="build" location="build"/>
 
   <!-- 3rd party gems -->
-  <property name="sinatra.version" value="0.9.4"/>
-  <property name="gems.needed" value="rack-flash viking-sequel json-jruby fastercsv" />
+  <property name="gems.needed" value="sinatra rack-flash viking-sequel json-jruby fastercsv" />
 
   <!-- 3rd party java libs -->
   <property name="one.jar.version" value="0.96"/>
@@ -40,12 +39,6 @@
   </target>
 
   <target name="install-gems" depends="init" description="install needed gems">
-    <!-- install sinatra first with specific version -->
-    <java classname="org.jruby.Main">
-      <classpath refid="jruby-jar"/>
-      <arg line="-e &quot;ENV['GEM_HOME'] = '${build}/gems'&quot; -S maybe_install_gems --version ${sinatra.version} sinatra" />
-    </java>
-
     <java classname="org.jruby.Main">
       <classpath refid="jruby-jar"/>
       <arg line="-e &quot;ENV['GEM_HOME'] = '${build}/gems'&quot; -S maybe_install_gems ${gems.needed}" />

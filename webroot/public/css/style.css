@@ -19,17 +19,20 @@ body {
 }
 #sidebar h3 {
   font-size: 1.1em;
+  background-color: #6E3B3A;
+  text-align: center;
+  margin: 5px -10px;
+  border-bottom: 0;
 }
 #sidebar ul {
   list-style-type: none;
-  margin: 1em 0 0 0.5em;
+  margin: 0;
   display: block;
-  float: left;
   padding: 0;
 }
 #sidebar li {
-  margin: 0.5em 0 0 0;
-  padding: 0.5em 0;
+  /*margin: 0.3em 0;*/
+  /*padding-top: 0px;*/
 }
 #sidebar a,
 #sidebar a:visited {
@@ -52,7 +55,7 @@ body {
 #about {
   position: absolute;
   bottom: 0;
-  width: 120px;
+  width: 170px;
   height: 335px;
   background: url(/images/sidebar-bottom.png) left bottom no-repeat;
   z-index: 100;
@@ -62,7 +65,7 @@ body {
 #about .text {
   position: absolute;
   bottom: 0;
-  height: 73px;
+  height: 53px;
   padding: 10px 5px;
   font-size: smaller;
   text-align: center;

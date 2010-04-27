@@ -8,6 +8,12 @@ module Coupler
         @project = Factory(:project)
       end
 
+      def test_index
+        scenario = Factory(:scenario, :project => @project)
+        get "/projects/#{@project.id}/scenarios"
+        assert last_response.ok?
+      end
+
       def test_show
         scenario = Factory(:scenario, :project => @project)
         get "/projects/#{@project.id}/scenarios/#{scenario.id}"

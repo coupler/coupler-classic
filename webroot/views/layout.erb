@@ -11,27 +11,16 @@
 <body>
 <div id="main" class="container_16">
 
-<div id="sidebar" class="grid_2">
-  <ul>
-    <li><a href="/"><img src="/images/home.gif" alt="Home" />Home</a></li>
-    <li>
-      <a href="/jobs"><img src="/images/jobs.gif" alt="Jobs" />Jobs</a>
-      <div id="job-count">
-      <% if (num = Coupler::Models::Job.filter(:completed_at => nil).count) > 0 %>
-        (<%= num %>)
-      <% end %>
-      </div>
-    </li>
-    <li><a href="/transformers">Transformers</a></li>
-  </ul>
+<div id="sidebar" class="grid_3">
+<%= erb(:sidebar, :layout => false) %>
 </div>
 
-<div id="content" class="grid_14">
+<div id="content" class="grid_13">
 <%= breadcrumbs %>
 <div class="inner">
-  <% if flash[:notice] %>
+  <%- if flash[:notice] -%>
   <div id="notice"><%= flash[:notice] %></div>
-  <% end %>
+  <%- end -%>
   <%= yield %>
 </div>
 </div>
@@ -58,6 +47,7 @@
   }
   $(function() {
     $('.timeago').timeago();
+    $('#sidebar ul').treeview({ unique: true, persist: "location" });
     setInterval(updateJobCount, 30000);
   });
 </script>

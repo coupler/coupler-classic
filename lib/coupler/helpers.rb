@@ -17,7 +17,7 @@ module Coupler
     end
 
     def javascripts
-      @javascripts ||= %w{jquery.min.js jquery.timeago.js}
+      @javascripts ||= %w{jquery.min.js jquery.timeago.js jquery.treeview.min.js}
     end
 
     def javascript_includes
@@ -31,7 +31,7 @@ module Coupler
     end
 
     def stylesheets
-      @stylesheets ||= %w{reset.css text.css 960.css jquery-ui.css style.css}
+      @stylesheets ||= %w{reset.css text.css 960.css jquery-ui.css jquery.treeview.css style.css}
     end
 
     def stylesheet_links

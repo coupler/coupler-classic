@@ -10,6 +10,7 @@ module Coupler
     set :root, File.expand_path(File.join(File.dirname(__FILE__), "..", "..", "webroot"))
     set :static, true
     #set :port, 37222
+    set :erb, :trim => '-'
     set :raise_errors, Proc.new { test? }
     set :show_exceptions, Proc.new { development? }
     set :dump_errors, true
@@ -39,30 +40,5 @@ module Coupler
         erb :index
       end
     end
-
-    # Use the contents of the file at +path+ as the response body.
-    # NOTE: this is a workaround for:
-    #   http://jira.codehaus.org/browse/JRUBY-4594
-    #def send_file(path, opts={})
-      #data = open(path).read
-      #last_modified File.stat(path).mtime
-
-      #content_type media_type(opts[:type]) ||
-        #media_type(File.extname(path)) ||
-        #response['Content-Type'] ||
-        #'application/octet-stream'
-
-      #response['Content-Length'] ||= (opts[:length] || data.length).to_s
-
-      #if opts[:disposition] == 'attachment' || opts[:filename]
-        #attachment opts[:filename] || path
-      #elsif opts[:disposition] == 'inline'
-        #response['Content-Disposition'] = 'inline'
-      #end
-
-      #halt data
-    #rescue Errno::ENOENT
-      #not_found
-    #end
   end
 end

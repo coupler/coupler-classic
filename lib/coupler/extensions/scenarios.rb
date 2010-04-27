@@ -2,6 +2,12 @@ module Coupler
   module Extensions
     module Scenarios
       def self.registered(app)
+        app.get '/projects/:project_id/scenarios' do
+          @project = Models::Project[:id => params[:project_id]]
+          @scenarios = @project.scenarios
+          erb :'scenarios/index'
+        end
+
         app.get '/projects/:project_id/scenarios/new' do
           @project = Models::Project[:id => params[:project_id]]
           @scenario = Models::Scenario.new
