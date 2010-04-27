@@ -1,0 +1,98 @@
+<% @breadcrumbs = [@project, @resource, "Edit"] %>
+<% add_javascript('jquery.dataTables.min.js') %>
+<% add_stylesheet('jquery-ui.css', 'dataTables.css') %>
+<%= error_messages_for @resource %>
+
+<h2>Fields To Select</h2>
+<table id="fields" class="dataTable" style="clear: both;">
+  <thead>
+    <tr>
+      <th><input id="toggle_all" type="checkbox" /></th>
+      <th>Field</th>
+      <th>Type</th>
+    </tr>
+  </thead>
+  <tbody>
+  <% @schema.each_with_index do |(field, info), i| %>
+    <tr>
+      <td style="text-align: center;"><input id="field_checkbox_<%= i %>" title="<%= field %>" class="field_checkbox" type="checkbox" onclick="toggleField('<%= i %>', this);" <%= " checked='checked'" if @select.include?(field.to_s) %> /></td>
+      <td><%= field %></td>
+      <td><%= info[:db_type] %></td>
+    </tr>
+  <% end %>
+  </tbody>
+</table>
+<br/>
+<div id="selection_count"><strong>Fields currently selected</strong>: <span><%= @select.length %></span> (out of <%= @schema.length %>)</div>
+
+<form method="post" action="/projects/<%= @project.id %>/resources/<%= @resource.id %>">
+  <div style="display: none;"><input name="_method" type="hidden" value="put" /></div>
+  <div style="display: none;">
+    <% @schema.each_with_index do |(field, info), i| %>
+      <input id="field_<%= i %>" title="<%= field %>" class='field' type="hidden" name="resource[select][]"<%= %{ value="#{field}"} if @select.include?(field.to_s) %> />
+    <% end %>
+  </div>
+  <div class="clear"></div>
+  <br/>
+  <p>
+    <input type="submit" value="Submit" /> or <a href="/projects/<%= @project.id %>">Cancel</a>
+  </p>
+</form>
+
+<script type="text/javascript">
+  var selection_count = <%= @select.length %>;
+
+  // called when an actual click happens
+  function toggleField(i, checkbox) {
+    input = $('#field_'+i);
+    if ($(checkbox).is(':checked')) {
+      input.val(checkbox.title);
+      selection_count++;
+    }
+    else {
+      input.val(null);
+      selection_count--;
+    }
+    updateCount();
+  }
+  function updateCheckboxes() {
+    $('#fields .field_checkbox').each(function() {
+      id = this.id.replace("_checkbox", "");
+      $(this).attr('checked', $('#'+id).val() != "");
+    });
+  }
+  function updateCount() {
+    $('#selection_count span').html(selection_count);
+  }
+
+  var oTable;
+  $(function() {
+    oTable = $('#fields').dataTable({
+      bJQueryUI: true, aaSorting: [],
+      aoColumns: [ { bSortable: false, bSearchable: false }, null, null ],
+      fnDrawCallback: updateCheckboxes
+    });
+    $('#toggle_all').click(function() {
+      if ($(this).is(':checked')) {
+        $('.field:hidden').each(function() {
+          $(this).val(this.id.replace(/^field_/, ""));
+        });
+        selection_count = <%= @select.count %>;
+      }
+      else {
+        $('.field:hidden').val(null);
+        selection_count = 0;
+      }
+      updateCheckboxes();
+      updateCount();
+    });
+    $('form').submit(function() {
+      $('.field:hidden').each(function() {
+        obj = $(this);
+        if (obj.val() == "")
+          obj.remove();
+        return true;
+      });
+    });
+  });
+</script>

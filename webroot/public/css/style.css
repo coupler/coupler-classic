@@ -194,7 +194,7 @@ table.form td.left {
 
 table.list th {
   border-bottom: 2px solid gray;
-  padding: 0 0.5em;
+  padding: 0.5em;
 }
 table.list td {
   padding: 0.5em;
@@ -216,6 +216,9 @@ tr.alt td {
 }
 tr.yellow td {
   background-color: #FFFF66;
+}
+tr.yellow.alt td {
+  background-color: #eeee55;
 }
 tr.green td {
   background-color: green;

@@ -13,9 +13,9 @@
 
 <div id="sidebar" class="grid_2">
   <ul>
-    <li><a href="/"><img src="/images/home.gif" />Home</a></li>
+    <li><a href="/"><img src="/images/home.gif" alt="Home" />Home</a></li>
     <li>
-      <a href="/jobs"><img src="/images/jobs.gif" />Jobs</a>
+      <a href="/jobs"><img src="/images/jobs.gif" alt="Jobs" />Jobs</a>
       <div id="job-count">
       <% if (num = Coupler::Models::Job.filter(:completed_at => nil).count) > 0 %>
         (<%= num %>)
@@ -29,6 +29,9 @@
 <div id="content" class="grid_14">
 <%= breadcrumbs %>
 <div class="inner">
+  <% if flash[:notice] %>
+  <div id="notice"><%= flash[:notice] %></div>
+  <% end %>
   <%= yield %>
 </div>
 </div>

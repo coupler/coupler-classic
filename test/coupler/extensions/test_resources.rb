@@ -33,7 +33,7 @@ module Coupler
 
         assert last_response.redirect?, "Wasn't redirected"
         follow_redirect!
-        assert_equal "http://example.org/projects/#{@project.id}/resources/#{resource.id}", last_request.url
+        assert_equal "http://example.org/projects/#{@project.id}/resources/#{resource.id}/edit", last_request.url
       end
 
       def test_failing_to_create_resource
@@ -83,6 +83,24 @@ module Coupler
         #assert last_response.ok?
         #assert_equal "10", last_response.body
       #end
+
+      def test_edit
+        resource = Factory(:resource, :project => @project)
+        get "/projects/#{@project[:id]}/resources/#{resource.id}/edit"
+        assert last_response.ok?
+      end
+
+      def test_update
+        resource = Factory(:resource, :project => @project)
+        put "/projects/#{@project[:id]}/resources/#{resource.id}", :resource => { :select => %w{first_name} }
+        assert last_response.redirect?
+      end
+
+      def test_update_with_no_attributes
+        resource = Factory(:resource, :project => @project)
+        put "/projects/#{@project[:id]}/resources/#{resource.id}"
+        assert last_response.redirect?
+      end
     end
   end
 end

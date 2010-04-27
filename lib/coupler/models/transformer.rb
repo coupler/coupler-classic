@@ -36,9 +36,10 @@ module Coupler
                           when String then "string"
                           when Fixnum then "integer"
                           when Time, Date, DateTime then "datetime"
+                          when NilClass then "null"
                           end
 
-            if expected_type != actual_type
+            if actual_type != "null" && expected_type != actual_type
               raise TypeError, "expected #{expected_type}, got #{actual_type}"
             end
 

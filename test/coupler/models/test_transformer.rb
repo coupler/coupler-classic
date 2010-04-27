@@ -134,13 +134,22 @@ module Coupler
         assert !xformer.valid?
       end
 
-      def test_requres_same_result_type
+      def test_requires_same_result_type
         xformer = Factory.build(:transformer, {
           :name => "stringify", :code => "value.to_i",
           :allowed_types => %w{integer string datetime},
           :result_type => "same"
         })
         assert !xformer.valid?
+      end
+
+      def test_allows_nil_return_value
+        xformer = Factory.build(:transformer, {
+          :name => "nullify", :code => "nil",
+          :allowed_types => %w{integer string datetime},
+          :result_type => "same"
+        })
+        assert xformer.valid?
       end
 
       def test_new_schema_with_no_type_changes
