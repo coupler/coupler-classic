@@ -2,7 +2,8 @@ Major features/bugs:
 - Add more validations for comparators
 - Use select boxes in exact comparator instead of text box
 - Make the exact matcher threaded!
-- Some transformers aren't appropriate for certain data types
+- JRuby/Java multi-processor use
+- Database timeout issues (autoReconnect=true for MySQL)
 
 Fancy features for the future:
 - Do authorization on projects

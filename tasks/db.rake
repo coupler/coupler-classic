@@ -8,10 +8,16 @@ namespace :db do
     confirm("This will completely obliterate the local database.")
 
     require 'fileutils'
-    FileUtils.rm_rf(Dir.glob(File.join(Coupler::Config[:data_path], "db", "*")), :verbose => true)
+    dirs = Dir.glob(File.join(Coupler::Config[:data_path], "db", "*"))
+    FileUtils.rm_rf(dirs.reject { |d| d =~ /migrate$/ }, :verbose => true)
   end
 
-  desc "Bootstrap the server schema"
+  desc "Run migrations"
+  task :migrate => [:start, 'coupler:environment'] do
+    Coupler::Database.instance.migrate!
+  end
+
+  desc "Recreate and bootstrap the database"
   task :bootstrap => [:start, 'coupler:environment'] do
     require 'test/factories'
     confirm("This will delete any existing configuration data.") if ENV['COUPLER_ENV'] != "test"
@@ -21,7 +27,7 @@ namespace :db do
 
     database = Coupler::Database.instance
     database.tables.each { |t| database.drop_table(t) }
-    database.create_schema
+    database.migrate!
 
     project = Factory(:project)
     resource = Factory(:resource, :project => project)

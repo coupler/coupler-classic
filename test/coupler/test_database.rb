@@ -14,26 +14,10 @@ module Coupler
       assert_equal expected, @database.uri
     end
 
-    def test_create_schema
-      [
-        :projects,
-        :projects_versions,
-        :resources,
-        :resources_versions,
-        :transformers,
-        :transformers_versions,
-        :transformations,
-        :transformations_versions,
-        :scenarios,
-        :scenarios_versions,
-        :matchers,
-        :matchers_versions,
-        :jobs,
-        :results,
-      ].each do |name|
-        @database.expects(:create_table).with(name.to_sym)
-      end
-      @database.create_schema
+    def test_migrate
+      dir = File.expand_path(File.join(File.dirname(__FILE__), "..", "..", "db", "migrate"))
+      Sequel::Migrator.expects(:apply).with(@database.__getobj__, dir)
+      @database.migrate!
     end
   end
 end

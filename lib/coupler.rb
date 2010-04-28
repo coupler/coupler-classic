@@ -9,6 +9,7 @@ require 'singleton'
 require 'sinatra/base'
 require 'rack/flash'
 require 'sequel'
+require 'sequel/extensions/migration'
 require 'json'
 require 'fastercsv'
 
