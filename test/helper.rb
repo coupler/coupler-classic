@@ -30,6 +30,7 @@ class Test::Unit::TestCase
   def teardown
     database ||= Coupler::Database.instance
     database.tables.each do |name|
+      next  if name == :schema_info
       database[name].delete
     end
 

@@ -5,7 +5,7 @@ Rake::TestTask.new(:test) do |test|
   test.verbose = true
   test.ruby_opts = %w{--debug}
 end
-task :test => ['coupler:test_env', :check_dependencies, 'db:bootstrap', 'db:fake']
+task :test => ['coupler:test_env', :check_dependencies, 'db:migrate:reset', 'db:fake']
 
 begin
   require 'rcov/rcovtask'

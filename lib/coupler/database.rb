@@ -8,22 +8,25 @@ module Coupler
       connection_string = Config.connection_string(database_name, :create_database => true)
       @database = Sequel.connect(connection_string, :loggers => [Coupler::Logger.instance], :max_connections => 12)
       super(@database)
-
-      migrate!
     end
 
     def __getobj__
       @database
     end
 
-    def migrate!
+    def migrate!(to = nil, from = nil)
       if @env == "test"
         # FIXME: this isn't really the best solution
         Sequel::MySQL.default_engine = "InnoDB"
       end
 
       dir = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', 'db', 'migrate'))
-      Sequel::Migrator.apply(@database, dir)
+      args = [@database, dir]
+      if to
+        args << to
+        args << from  if from
+      end
+      Sequel::Migrator.apply(*args)
     end
   end
 end

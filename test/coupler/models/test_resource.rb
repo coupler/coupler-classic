@@ -24,6 +24,10 @@ module Coupler
         assert_respond_to Resource.new, :jobs
       end
 
+      def test_one_to_many_fields
+        assert_respond_to Resource.new, :fields
+      end
+
       def test_requires_name
         resource = Factory.build(:resource, :name => nil)
         assert !resource.valid?
@@ -110,6 +114,19 @@ module Coupler
       def test_sets_primary_key_field
         resource = Factory(:resource, :table_name => "avast_ye")
         assert_equal "arrr", resource.primary_key_name
+      end
+
+      def test_creates_fields
+        resource = Factory.build(:resource)
+        schema = [
+          [:id, {:allow_null=>false, :default=>nil, :primary_key=>true, :db_type=>"int(11)", :type=>:integer, :ruby_default=>nil}],
+          [:first_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}],
+          [:last_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}]
+        ]
+        resource.stubs(:source_schema).returns(schema)
+
+        resource.save
+        assert_equal 3, resource.fields_dataset.count
       end
 
       def test_mysql_source_database

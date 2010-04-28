@@ -12,22 +12,29 @@ namespace :db do
     FileUtils.rm_rf(dirs.reject { |d| d =~ /migrate$/ }, :verbose => true)
   end
 
-  desc "Run migrations"
-  task :migrate => [:start, 'coupler:environment'] do
-    Coupler::Database.instance.migrate!
+  desc "Purge the database"
+  task :purge => [:start, 'coupler:environment'] do
+    database = Coupler::Database.instance
+    database.tables.each { |t| database.drop_table(t) }
   end
 
-  desc "Recreate and bootstrap the database"
+  desc "Run migrations"
+  task :migrate => [:start, 'coupler:environment'] do
+    version = ENV['VERSION']
+    Coupler::Database.instance.migrate!(version ? version.to_i : nil)
+  end
+
+  namespace :migrate do
+    desc "Reset the database"
+    task :reset => ['db:purge', 'db:migrate']
+  end
+
+  desc "Reset and bootstrap the database"
   task :bootstrap => [:start, 'coupler:environment'] do
     require 'test/factories'
     confirm("This will delete any existing configuration data.") if ENV['COUPLER_ENV'] != "test"
 
-    server = Coupler::Server.instance
-    server.start
-
-    database = Coupler::Database.instance
-    database.tables.each { |t| database.drop_table(t) }
-    database.migrate!
+    Rake::Task["db:migrate:reset"].invoke
 
     project = Factory(:project)
     resource = Factory(:resource, :project => project)

@@ -8,6 +8,7 @@ module Coupler
 
       many_to_one :project
       one_to_many :transformations
+      one_to_many :fields
 
       def source_database(&block)
         Sequel.connect(source_connection_string, {
@@ -146,6 +147,18 @@ module Coupler
           Config.connection_string(self.project.slug, :create_database => true)
         end
 
+        def create_fields
+          source_schema.each do |(name, info)|
+            Field.create({
+              :name => name,
+              :type => info[:type],
+              :db_type => info[:db_type],
+              :primary_key => info[:primary_key] ? 1 : 0,
+              :resource_id => self.id
+            })
+          end
+        end
+
         def validate
           if self.name.nil? || self.name == ""
             errors[:name] << "is required"
@@ -215,6 +228,11 @@ module Coupler
             self.select = [primary_key_name] + select
           end
           super
+        end
+
+        def after_create
+          super
+          create_fields
         end
     end
   end
