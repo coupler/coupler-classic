@@ -11,6 +11,10 @@ module Coupler
         assert Comparators.list.include?("exact")
       end
 
+      def test_field_arity
+        assert_equal :infinite, Exact.field_arity
+      end
+
       def test_score_match_with_single_dataset
         dataset = stub("Dataset")
         dataset.expects(:order).with(:first_name).returns(dataset)
@@ -96,13 +100,6 @@ module Coupler
 
         comparator = Exact.new('field_name' => ['first_name', 'first_name'], 'key' => ['id', 'id'])
         comparator.score(score_set, dataset_1, dataset_2)
-      end
-
-      def test_options
-        expected = [
-          {:label => "Field", :name => "field_name", :type => "text"}
-        ]
-        assert_equal expected, Exact::OPTIONS
       end
 
       #def test_matching_with_different_field_names

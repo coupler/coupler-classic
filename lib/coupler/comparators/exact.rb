@@ -6,17 +6,8 @@ module Coupler
       ]
       LIMIT = 1000
 
-      def initialize(options)
-        super
-
-        case options['field_name']
-        when String
-          @field_names = [options['field_name'].to_sym]
-        when Array
-          @field_names = options['field_name'].collect { |x| x.to_sym }
-        else
-          raise "invalid options"
-        end
+      def self.field_arity
+        :infinite
       end
 
       def score(score_set, *datasets)
