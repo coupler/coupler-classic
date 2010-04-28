@@ -29,6 +29,11 @@ namespace :db do
     task :reset => ['db:purge', 'db:migrate']
   end
 
+  desc "Roll the database back a version"
+  task :rollback => [:start, 'coupler:environment'] do
+    Coupler::Database.instance.rollback!
+  end
+
   desc "Reset and bootstrap the database"
   task :bootstrap => [:start, 'coupler:environment'] do
     require 'test/factories'

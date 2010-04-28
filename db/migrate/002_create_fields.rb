@@ -15,6 +15,7 @@ class CreateFields < Sequel::Migration
         Time :updated_at
       end
     end
+
     fields = Coupler::Database.instance[:fields]
     fields_versions = Coupler::Database.instance[:fields_versions]
     Coupler::Models::Resource.each do |resource|
@@ -37,9 +38,29 @@ class CreateFields < Sequel::Migration
         fields_versions.insert(hash.merge(:current_id => id))
       end
     end
+
+    [:resources, :resources_versions].each do |name|
+      alter_table(name) do
+        drop_column :select
+      end
+    end
   end
 
   def down
+    [:resources, :resources_versions].each do |name|
+      alter_table(name) do
+        add_column :select, :text
+      end
+    end
+    resources = Coupler::Database.instance[:resources]
+    resources_versions = Coupler::Database.instance[:resources_versions]
+    Coupler::Models::Resource.each do |resource|
+      select = resource.fields_dataset.filter(:selected => 1).collect(&:name)
+      dump = [Marshal.dump(select)].pack('m')
+      resources.filter(:id => resource.id).update(:select => dump)
+      resources_versions.filter(:current_id => resource.id, :version => resource.version).update(:select => dump)
+    end
+
     drop_table(:fields, :fields_versions)
   end
 end

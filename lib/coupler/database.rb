@@ -14,6 +14,11 @@ module Coupler
       @database
     end
 
+    def rollback!
+      version = Sequel::Migrator.get_current_migration_version(@database)
+      migrate!(version - 1)
+    end
+
     def migrate!(to = nil, from = nil)
       if @env == "test"
         # FIXME: this isn't really the best solution
