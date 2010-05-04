@@ -69,7 +69,7 @@ module Coupler
       end
 
       def test_transform_new_field
-        xformer = Factory(:transformer, :name => "downcaser", :code => "value.downcase")
+        xformer = Factory(:transformer, :name => "downcaser", :code => "value.downcase", :allowed_types => %w{string})
         original = {:id => 1, :first_name => "Golan", :last_name => "Trevize"}
         expected = original.merge(:first_name_small => "golan")
         result = xformer.transform(original.dup, { :in => :first_name, :out => :first_name_small })
@@ -152,27 +152,26 @@ module Coupler
         assert xformer.valid?
       end
 
-      def test_new_schema_with_no_type_changes
+      def test_field_changes_with_no_type_changes
+        resource = Factory(:resource)
         transformer = Factory(:transformer, {
           :allowed_types => %w{integer datetime string},
           :result_type => 'same', :code => 'value'
         })
-        schema = [[:id, {:allow_null=>false, :default=>nil, :primary_key=>true, :db_type=>"int(11)", :type=>:integer, :ruby_default=>nil}], [:first_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}], [:last_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}]]
-        assert_equal schema, transformer.new_schema(schema, 'last_name')
-        assert_equal schema, transformer.new_schema(schema, :last_name)
-        assert_equal schema, transformer.new_schema(schema, 'first_name')
+        resource.fields.each do |field|
+          assert_equal({ field.id => { } }, transformer.field_changes(field))
+        end
       end
 
-      def test_new_schema_to_integer
+      def test_field_changes_to_integer
+        resource = Factory(:resource)
         transformer = Factory(:transformer, {
           :allowed_types => %w{integer datetime string},
           :result_type => 'integer', :code => 'value.to_i'
         })
-        schema = [[:id, {:allow_null=>false, :default=>nil, :primary_key=>true, :db_type=>"int(11)", :type=>:integer, :ruby_default=>nil}], [:first_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}], [:last_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}]]
-        result = transformer.new_schema(schema, 'last_name')
-        assert_equal :string, schema.assoc(:last_name)[1][:type], "Original schema was changed!"
-        assert_equal :integer, result.assoc(:last_name)[1][:type]
-        assert_nil result.assoc(:last_name)[1][:db_type]
+        resource.fields.each do |field|
+          assert_equal({ field.id => { :db_type => "int(11)", :type => :integer } }, transformer.field_changes(field))
+        end
       end
     end
   end

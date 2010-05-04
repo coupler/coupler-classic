@@ -28,6 +28,14 @@ module Coupler
         assert_respond_to Resource.new, :fields
       end
 
+      def test_nested_attributes_for_fields
+        resource = Factory(:resource)
+        ds = resource.fields_dataset.order('id DESC')
+        field = ds.first
+        resource.update(:fields_attributes => [{:id => field.id, :is_selected => 0}])
+        assert !ds.first.is_selected
+      end
+
       def test_requires_name
         resource = Factory.build(:resource, :name => nil)
         assert !resource.valid?
@@ -181,17 +189,60 @@ module Coupler
 
         project = Factory(:project, :name => "local_dataset test")
         resource = Factory(:resource, :name => "Resource 1", :project => project)
+        field = resource.fields.first
         transformer = Factory(:transformer)
         transformation = Factory(:transformation, {
           :resource => resource, :transformer => transformer,
-          :field_name => "first_name"
+          :field => field
         })
 
         resource.local_dataset do |dataset|
           database = dataset.db
-          assert_equal Config.connection_string("local_dataset_test", :create_database => true), database.uri
+          assert_equal Config.connection_string("local_dataset_test", :create_database => true, :zero_date_time_behavior => :convert_to_null), database.uri
           assert_equal database[:resource_1].select_sql, dataset.select_sql
         end
+      end
+
+      def test_update_fields
+        project = Factory(:project, :name => "local_dataset test")
+        resource = Factory(:resource, :name => "Resource 1", :project => project)
+        first_name = resource.fields_dataset[:name => 'first_name']
+        last_name = resource.fields_dataset[:name => 'last_name']
+
+        transformer_1 = Factory(:transformer, {
+          :name => "strlen", :allowed_types => %w{string},
+          :result_type => 'integer', :code => 'value.length'
+        })
+        transformation_1 = Factory(:transformation, {
+          :resource => resource, :transformer => transformer_1,
+          :field => first_name
+        })
+        transformer_2 = Factory(:transformer, {
+          :name => "random", :allowed_types => %w{string},
+          :result_type => 'integer', :code => 'rand(Time.now.to_i)'
+        })
+        transformation_2 = Factory(:transformation, {
+          :resource => resource, :transformer => transformer_2,
+          :field => last_name
+        })
+        #transformer_3 = Factory(:transformer, {
+          #:name => "timeify", :allowed_types => %w{integer},
+          #:result_type => 'datetime', :code => 'Time.at(value)'
+        #})
+        #transformation_3 = Factory(:transformation, {
+          #:resource => resource, :transformer => transformer_3,
+          #:field => last_name
+        #})
+
+        resource.update_fields
+
+        first_name.refresh
+        assert_equal 'int(11)', first_name.local_db_type
+        assert_equal 'integer', first_name.local_type
+
+        last_name.refresh
+        assert_equal 'int(11)', last_name.local_db_type
+        assert_equal 'integer', last_name.local_type
       end
 
       def test_transform
@@ -316,34 +367,9 @@ module Coupler
         assert_equal [job], resource.scheduled_jobs
       end
 
-      def test_transformations_per_field
-        resource = Factory(:resource)
-        transformer_1 = Factory(:transformer)
-        transformer_2 = Factory(:transformer)
-        transformation_1 = Factory(:transformation, :resource => resource, :transformer => transformer_1, :field_name => "first_name")
-        transformation_2 = Factory(:transformation, :resource => resource, :transformer => transformer_2, :field_name => "last_name")
-        expected = {
-          :id => [],
-          :first_name => [transformation_1],
-          :last_name => [transformation_2]
-        }
-        assert_equal expected, resource.transformations_per_field
-      end
-
-      def test_serializes_select
-        id = Factory(:resource, :select => %w{id first_name}).id
-        resource = Resource[:id => id]
-        assert_equal %w{id first_name}, resource.select
-      end
-
-      def test_prepends_primary_key_to_select
-        id = (r = Factory(:resource, :select => %w{first_name})).id
-        resource = Resource[:id => id]
-        assert_equal %w{id first_name}, resource.select
-      end
-
       def test_source_dataset_selects_specified_columns
-        resource = Factory(:resource, :select => %w{first_name})
+        resource = Factory(:resource)
+        resource.fields_dataset.filter(["name NOT IN ?", %w{id first_name}]).update(:is_selected => false)
         resource.source_dataset do |ds|
           assert_equal [:id, :first_name], ds.columns
 
@@ -354,18 +380,13 @@ module Coupler
         end
       end
 
-      def test_source_schema_with_true_returns_only_specified_columns
-        resource = Factory(:resource, :select => %w{first_name})
-        schema = resource.source_schema(true)
-        assert_equal [:id, :first_name], schema.collect(&:first)
-      end
-
       def test_transforming_only_gets_specified_columns
-        resource = Factory(:resource, :select => %w{first_name})
+        resource = Factory(:resource)
+        resource.fields_dataset.filter(["name NOT IN ?", %w{id first_name}]).update(:is_selected => false)
         transformer = Factory(:transformer)
         transformation = Factory(:transformation, {
           :resource => resource, :transformer => transformer,
-          :field_name => "first_name"
+          :field => resource.fields_dataset[:name => 'first_name']
         })
         resource.transform!
         resource.local_database do |db|

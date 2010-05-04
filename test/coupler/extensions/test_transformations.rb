@@ -24,9 +24,10 @@ module Coupler
       end
 
       def test_successfully_creating_transformation
-        xformer = Factory(:transformer)
-        attribs = Factory.attributes_for(:transformation)
-        attribs[:transformer_id] = xformer.id
+        attribs = Factory.attributes_for(:transformation, {
+          :transformer_id => @transformer.id,
+          :field_id => @resource.fields.first.id
+        })
         post("/projects/#{@project.id}/resources/#{@resource.id}/transformations", { 'transformation' => attribs })
         transformation = @resource.transformations_dataset.first
         assert transformation
@@ -47,15 +48,16 @@ module Coupler
       end
 
       def test_for
-        xformer = Factory(:transformer, :name => "downcaser")
-        t12n = Factory(:transformation, :resource => @resource, :field_name => "first_name", :transformer => xformer)
+        field = @resource.fields.first
+        t12n = Factory(:transformation, :resource => @resource, :field => field, :transformer => @transformer)
 
-        get "/projects/#{@project.id}/resources/#{@resource.id}/transformations/for/first_name"
-        assert_match /downcaser/, last_response.body
+        get "/projects/#{@project.id}/resources/#{@resource.id}/transformations/for/#{field.name}"
+        assert_match /#{@transformer.name}/, last_response.body
       end
 
       def test_index
-        t12n = Factory(:transformation, :resource => @resource, :field_name => "first_name")
+        field = @resource.fields.first
+        t12n = Factory(:transformation, :resource => @resource, :field => field)
         get "/projects/#{@project.id}/resources/#{@resource.id}/transformations"
         assert last_response.ok?
       end

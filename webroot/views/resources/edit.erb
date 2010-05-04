@@ -13,23 +13,24 @@
     </tr>
   </thead>
   <tbody>
-  <% @schema.each_with_index do |(field, info), i| %>
+  <% @fields.each do |field| %>
     <tr>
-      <td style="text-align: center;"><input id="field_checkbox_<%= i %>" title="<%= field %>" class="field_checkbox" type="checkbox" onclick="toggleField('<%= i %>', this);" <%= " checked='checked'" if @select.include?(field.to_s) %> /></td>
-      <td><label for="field_checkbox_<%= i %>"><%= field %></label></td>
-      <td><%= info[:db_type] %></td>
+      <td style="text-align: center;"><input id="field_checkbox_<%= field.id %>" class="field_checkbox" type="checkbox" onclick="toggleField('<%= field.id %>', this);" <%= " checked='checked'" if field.is_selected %> /></td>
+      <td><label for="field_checkbox_<%= field.id %>"><%= field.name %></label></td>
+      <td><%= field.db_type %></td>
     </tr>
   <% end %>
   </tbody>
 </table>
-<div id="selection_count"><strong>Fields currently selected</strong>: <span><%= @select.length %></span> (out of <%= @schema.length %>)</div>
+<div id="selection_count"><strong>Fields currently selected</strong>: <span><%= @selection_count %></span> (out of <%= @fields.length %>)</div>
 
 <form method="post" action="/projects/<%= @project.id %>/resources/<%= @resource.id %>">
-  <div style="display: none;"><input name="_method" type="hidden" value="put" /></div>
   <div style="display: none;">
-    <% @schema.each_with_index do |(field, info), i| %>
-      <input id="field_<%= i %>" title="<%= field %>" class='field' type="hidden" name="resource[select][]"<%= %{ value="#{field}"} if @select.include?(field.to_s) %> />
-    <% end %>
+    <input name="_method" type="hidden" value="put" />
+  <%- @fields.each do |field| -%>
+    <input type="hidden" name="resource[fields_attributes][<%= field.id %>][id]" value="<%= field.id %>" />
+    <input id="field_<%= field.id %>" class='field' type="hidden" name="resource[fields_attributes][<%= field.id %>][is_selected]" value="<%= field.is_selected ? 1 : 0 %>" />
+  <%- end -%>
   </div>
   <div class="clear"></div>
   <br/>
@@ -39,17 +40,17 @@
 </form>
 
 <script type="text/javascript">
-  var selection_count = <%= @select.length %>;
+  var selection_count = <%= @selection_count %>;
 
   // called when an actual click happens
-  function toggleField(i, checkbox) {
-    input = $('#field_'+i);
+  function toggleField(id, checkbox) {
+    input = $('#field_'+id);
     if ($(checkbox).is(':checked')) {
-      input.val(checkbox.title);
+      input.val(1);
       selection_count++;
     }
     else {
-      input.val(null);
+      input.val(0);
       selection_count--;
     }
     updateCount();
@@ -57,7 +58,8 @@
   function updateCheckboxes() {
     $('#fields .field_checkbox').each(function() {
       id = this.id.replace("_checkbox", "");
-      $(this).attr('checked', $('#'+id).val() != "");
+      console.log(this, $('#'+id).val());
+      $(this).attr('checked', $('#'+id).val() == "1");
     });
   }
   function updateCount() {
@@ -73,25 +75,15 @@
     });
     $('#toggle_all').click(function() {
       if ($(this).is(':checked')) {
-        $('.field:hidden').each(function() {
-          $(this).val(this.id.replace(/^field_/, ""));
-        });
-        selection_count = <%= @select.count %>;
+        $('.field:hidden').val(1);
+        selection_count = <%= @selection_count %>;
       }
       else {
-        $('.field:hidden').val(null);
+        $('.field:hidden').val(0);
         selection_count = 0;
       }
       updateCheckboxes();
       updateCount();
-    });
-    $('form').submit(function() {
-      $('.field:hidden').each(function() {
-        obj = $(this);
-        if (obj.val() == "")
-          obj.remove();
-        return true;
-      });
     });
   });
 </script>

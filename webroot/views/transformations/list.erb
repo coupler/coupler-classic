@@ -9,7 +9,7 @@
   <tbody>
   <% @transformations.each do |transformation| %>
     <tr>
-      <td><%= transformation.field_name %></td>
+      <td><%= transformation.field.name %></td>
       <td><%= transformation.transformer.name %></td>
       <td><%= delete_link("Delete", "/projects/#{@project.id}/resources/#{@resource.id}/transformations/#{transformation.id}") %></td>
     </tr>

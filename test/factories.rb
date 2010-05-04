@@ -17,9 +17,11 @@ Factory.define :project, :class => Coupler::Models::Project do |d|
 end
 
 Factory.define :transformation, :class => Coupler::Models::Transformation do |t|
-  t.field_name 'first_name'
   t.association :transformer
   t.association :resource
+  t.field do |record|
+    record.resource.fields_dataset.first rescue nil
+  end
 end
 
 Factory.define :scenario, :class => Coupler::Models::Scenario do |s|
@@ -60,6 +62,15 @@ end
 Factory.define :transformer, :class => Coupler::Models::Transformer do |t|
   t.sequence(:name) { |n| "Transformer #{n}" }
   t.code "value"
-  t.allowed_types { |x| %w{string} }
+  t.allowed_types { |x| %w{string integer datetime} }
   t.result_type "same"
+end
+
+Factory.define :field, :class => Coupler::Models::Field do |f|
+  f.sequence(:name) { |n| "field_#{n}" }
+  f.add_attribute :type, "integer"
+  f.db_type "int(11)"
+  f.is_primary_key 0
+  f.is_selected 1
+  f.association :resource
 end

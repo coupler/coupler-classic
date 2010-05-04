@@ -8,8 +8,12 @@ module Coupler
         assert_equal :transformations, Transformation.table_name
       end
 
-      def test_many_to_one_resources
+      def test_many_to_one_resource
         assert_respond_to Transformation.new, :resource
+      end
+
+      def test_many_to_one_field
+        assert_respond_to Transformation.new, :field
       end
 
       def test_requires_resource_id
@@ -24,18 +28,25 @@ module Coupler
 
       def test_requires_correct_field_type
         transformer = Factory(:transformer, :allowed_types => %w{integer})
-        transformation = Factory.build(:transformation, :transformer => transformer, :field_name => 'first_name')
+        resource = Factory(:resource)
+        field = resource.fields_dataset.first
+        transformation = Factory.build(:transformation, :transformer => transformer, :field => field)
         assert !transformation.valid?
       end
 
       def test_requires_existing_field
-        transformation = Factory.build(:transformation, :field_name => 'hagis')
+        transformation = Factory.build(:transformation, :field => nil, :field_id => 1337)
         assert !transformation.valid?
       end
 
       def test_transform
         transformer = Factory(:transformer)
-        transformation = Factory(:transformation, :transformer => transformer)
+        resource = Factory(:resource)
+        transformation = Factory(:transformation, {
+          :transformer => transformer,
+          :resource => resource,
+          :field => resource.fields_dataset[:name => 'first_name']
+        })
 
         data = {:id => 1, :first_name => "Peter"}
         expected = stub("result")
@@ -44,14 +55,29 @@ module Coupler
         assert_equal expected, transformation.transform(data)
       end
 
-      def test_new_schema
+      def test_field_changes
         transformer = Factory(:transformer)
-        transformation = Factory(:transformation, :transformer => transformer, :field_name => 'first_name')
+        resource = Factory(:resource)
+        field = resource.fields_dataset.first
+        transformation = Factory(:transformation, :transformer => transformer, :field => field)
 
-        original_schema = stub('original schema')
-        new_schema = stub('new schema')
-        transformation.transformer.expects(:new_schema).with(original_schema, 'first_name').returns(new_schema)
-        assert_equal new_schema, transformation.new_schema(original_schema)
+        result = stub('result')
+        transformation.transformer.expects(:field_changes).with(field).returns(result)
+        assert_equal result, transformation.field_changes
+      end
+
+      def test_updates_resource_fields_on_save
+        transformer = Factory.build(:transformer)
+        resource = Factory.build(:resource)
+        Timecop.freeze(Time.now - 1000) do
+          transformer.save
+          resource.save
+        end
+        field = resource.fields_dataset.first
+        time = field.updated_at
+        transformation = Factory(:transformation, :resource => resource, :transformer => transformer, :field => field)
+        field.refresh
+        assert field.updated_at > time, "#{field.updated_at} isn't more recent than #{time}"
       end
     end
   end

@@ -3,15 +3,16 @@ module Coupler
     class Transformation < Sequel::Model
       include CommonModel
       many_to_one :resource
+      many_to_one :field
       many_to_one :transformer
 
       def transform(data)
-        sym = field_name.to_sym
+        sym = field.name.to_sym
         transformer.transform(data, { :in => sym, :out => sym })
       end
 
-      def new_schema(schema)
-        transformer.new_schema(schema, field_name)
+      def field_changes
+        transformer.field_changes(field)
       end
 
       private
@@ -25,16 +26,20 @@ module Coupler
           end
 
           if resource && transformer
-            field_info = resource.source_schema.assoc(field_name.to_sym)
-            if field_info.nil?
-              errors[:field_name] << "is invalid"
+            field = resource.fields_dataset[:id => field_id]
+            if field.nil?
+              errors[:field_id] << "is invalid"
             else
-              field_type = field_info[1][:type].to_s
-              if !transformer.allowed_types.include?(field_type)
-                errors[:base] << "#{transformer.name} cannot transform type '#{field_type}'"
+              if !transformer.allowed_types.include?(field[:type])
+                errors[:base] << "#{transformer.name} cannot transform type '#{field[:type]}'"
               end
             end
           end
+        end
+
+        def after_save
+          super
+          resource.update_fields
         end
     end
   end

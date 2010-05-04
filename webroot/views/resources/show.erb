@@ -1,7 +1,6 @@
-<% @breadcrumbs = [@project, @resource] %>
-<% add_javascript("jquery.tooltip.min.js", "jquery-ui.min.js", 'jquery.dataTables.min.js') %>
-<% add_stylesheet('jquery-ui.css', 'dataTables.css') %>
-
+<%- @breadcrumbs = [@project, @resource] -%>
+<%- add_javascript("jquery.tooltip.min.js", "jquery-ui.min.js", 'jquery.dataTables.min.js') -%>
+<%- add_stylesheet('jquery-ui.css', 'dataTables.css') -%>
 <h2>Fields</h2>
 <table id="fields" class="dataTable" style="clear: both;">
   <thead>
@@ -13,33 +12,32 @@
     </tr>
   </thead>
   <tbody>
-  <% @schema.each do |column_name, info| %>
-    <% t13s = @transformations[column_name] %>
+  <%- @fields.each do |field| -%>
     <tr>
-      <td><%= column_name %></td>
-      <td><%= info[:db_type] %></td>
-      <% if @t12n_count > 0 %>
-        <% if t13s.length > 0 %>
-          <% list = "<ul>" + t13s.inject("") { |s, t| s + "<li>#{t.transformer.name}</li>" } + "</ul>" %>
+      <td><%= field.name %></td>
+      <td><%= field.db_type %></td>
+      <%- if @t12n_count > 0 -%>
+        <%- if field.transformations_dataset.count > 0 -%>
+          <%- list = "<ul>" + field.transformations.inject("") { |s, t| s + "<li>#{t.transformer.name}</li>" } + "</ul>" %>
           <td>
-            <a href="#" onclick="transformationsFor('<%= column_name %>');"><img class="tooltip" src="/images/cog.png" title="Transformations - <%= list %>" alt="Cog" /></a>
+            <a href="#" onclick="transformationsFor('<%= field.name %>');"><img class="tooltip" src="/images/cog.png" title="Transformations - <%= list %>" alt="Cog" /></a>
           </td>
-        <% else %>
+        <%- else -%>
         <td></td>
-        <% end %>
-      <% end %>
+        <%- end -%>
+      <%- end -%>
       <td>
-        <a href="#" onclick="newTransformation('<%= column_name %>');"><img class="tooltip" src="/images/hammer.png" title="New Transformation - <%= column_name %>" alt="Hammer" /></a>
+        <a href="#" onclick="newTransformation('<%= field.name %>');"><img class="tooltip" src="/images/hammer.png" title="New Transformation - <%= field.name %>" alt="Hammer" /></a>
       </td>
     </tr>
-  <% end %>
+  <%- end -%>
   </tbody>
 </table>
 <p>
   <a href="/projects/<%= @project.id %>/resources/<%= @resource.id %>/edit">Select Fields</a>
-  <% if @t12n_count > 0 %>
+  <%- if @t12n_count > 0 -%>
   | <a href="/projects/<%= @project.id %>/resources/<%= @resource.id %>/transformations">All Transformations</a>
-  <% end %>
+  <%- end -%>
 </p>
 
 <h2>Status</h2>

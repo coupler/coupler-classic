@@ -6,8 +6,10 @@ class CreateFields < Sequel::Migration
         String :name
         String :type
         String :db_type
-        Boolean :primary_key
-        Boolean :selected, :default => true
+        String :local_type
+        String :local_db_type
+        Boolean :is_primary_key, :default => false
+        Boolean :is_selected, :default => true
         Integer :resource_id
         Integer :version, :default => 0
         Integer :current_id   if name.to_s =~ /_versions$/
@@ -27,8 +29,8 @@ class CreateFields < Sequel::Migration
           :name => name.to_s,
           :type => info[:type].to_s,
           :db_type => info[:db_type],
-          :primary_key => info[:primary_key] ? 1 : 0,
-          :selected => resource.select.include?(name.to_s) ? 1 : 0,
+          :is_primary_key => info[:primary_key] ? 1 : 0,
+          :is_selected => resource.select.include?(name.to_s) ? 1 : 0,
           :resource_id => resource.id,
           :version => 1,
           :created_at => now,

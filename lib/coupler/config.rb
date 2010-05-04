@@ -118,8 +118,10 @@ if !defined? Coupler::Config
 
       def self.connection_string(database, options = {})
         retval = self[:conn_str] % [self[:port], database, self[:user], self[:password]]
-        if options[:create_database]
-          retval += "&createDatabaseIfNotExist=true"
+        retval += "&createDatabaseIfNotExist=true"  if options[:create_database]
+        case options[:zero_date_time_behavior]
+        when :convert_to_null
+          retval += "&zeroDateTimeBehavior=convertToNull"
         end
         retval
       end

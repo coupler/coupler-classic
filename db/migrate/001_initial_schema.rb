@@ -54,7 +54,7 @@ class InitialSchema < Sequel::Migration
       create_table(name) do
         primary_key :id
         String :field_name
-        String :transformer_id
+        Integer :transformer_id
         Integer :resource_id
         Integer :version, :default => 0
         Integer :current_id   if name.to_s =~ /_versions$/

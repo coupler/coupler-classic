@@ -4,11 +4,12 @@ module Coupler
       include CommonModel
       include Jobify
 
-      plugin :serialization, :marshal, :select
-
       many_to_one :project
       one_to_many :transformations
       one_to_many :fields
+
+      plugin :nested_attributes
+      nested_attributes :fields, :destroy => false, :fields => [:is_selected]
 
       def source_database(&block)
         Sequel.connect(source_connection_string, {
@@ -19,19 +20,18 @@ module Coupler
       def source_dataset
         source_database do |db|
           ds = db[table_name.to_sym]
-          ds = ds.select(*select.collect(&:to_sym)) if select.is_a?(Array)
+          if fields_dataset.filter(:is_selected => 0).count > 0
+            columns = fields_dataset.filter(:is_selected => 1).collect(&:name)
+            ds = ds.select(*columns.collect(&:to_sym))
+          end
           yield ds
         end
       end
 
-      def source_schema(only_selected = false)
+      def source_schema
         schema = nil
         source_database { |db| schema = db.schema(table_name) }
-        if only_selected && select.is_a?(Array)
-          schema.select { |x| select.include?(x[0].to_s) }
-        else
-          schema
-        end
+        schema
       end
 
       def local_database(&block)
@@ -83,35 +83,22 @@ module Coupler
         Scenario.filter(["resource_1_id = ? OR resource_2_id = ?", id, id]).all
       end
 
-      def transformations_per_field
-        retval = source_schema.inject({}) { |h, f| h[f[0]] = []; h }
-        transformations.each do |t12n|
-          retval[t12n.field_name.to_sym] << t12n
+      def update_fields
+        transformations_dataset.order(:id).each do |transformation|
+          field = transformation.field
+          changes = transformation.field_changes[field.id]
+          field.local_db_type = changes[:db_type] || field[:db_type]
+          field.local_type = changes[:type] || field[:type]
+          field.save
         end
-        retval
       end
 
       def transform!
-        # create transformers and get result schema
-        local_schema = transformations.inject(source_schema(true)) do |schema, t12n|
-          t12n.new_schema(schema)
-        end
-
+        fields_ds = fields_dataset.filter(:is_selected => 1).order(:id)
         local_database do |l_db|
           # create intermediate table
           l_db.create_table!(self.slug) do
-            local_schema.each do |(name, info)|
-              options = info.dup
-              if options.has_key?(:db_type)
-                db_type = options.delete(:db_type)
-                options[:type] = db_type    unless db_type.nil?
-              end
-              options[:name] = name
-              if options[:primary_key]
-                options.delete(:default)  unless options[:default]
-              end
-              columns << options
-            end
+            fields_ds.each { |f| columns << f.local_column_options }
           end
 
           l_ds = l_db[self.slug.to_sym]
@@ -144,7 +131,10 @@ module Coupler
         end
 
         def local_connection_string
-          Config.connection_string(self.project.slug, :create_database => true)
+          Config.connection_string(self.project.slug, {
+            :create_database => true,
+            :zero_date_time_behavior => :convert_to_null
+          })
         end
 
         def create_fields
@@ -153,7 +143,7 @@ module Coupler
               :name => name,
               :type => info[:type],
               :db_type => info[:db_type],
-              :primary_key => info[:primary_key] ? 1 : 0,
+              :is_primary_key => info[:primary_key] ? 1 : 0,
               :resource_id => self.id
             })
           end
@@ -223,9 +213,6 @@ module Coupler
               schema = db.schema(self.table_name)
               self.primary_key_name = schema.detect { |x| x[1][:primary_key] }[0].to_s
             end
-          end
-          if select.is_a?(Array) && !select.include?(primary_key_name)
-            self.select = [primary_key_name] + select
           end
           super
         end

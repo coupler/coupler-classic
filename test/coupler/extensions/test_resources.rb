@@ -52,7 +52,7 @@ module Coupler
 
       def test_show_resource
         resource = Factory(:resource, :project => @project)
-        transformer = Factory(:transformer, :name => 'foo', :code => "value.downcase")
+        transformer = Factory(:transformer, :name => 'foo')
         transformation = Factory(:transformation, :transformer => transformer, :resource => resource)
         get "/projects/#{@project[:id]}/resources/#{resource.id}"
         assert last_response.ok?
@@ -98,7 +98,10 @@ module Coupler
 
       def test_update
         resource = Factory(:resource, :project => @project)
-        put "/projects/#{@project[:id]}/resources/#{resource.id}", :resource => { :select => %w{first_name} }
+        field = resource.fields_dataset.order('id DESC').first
+        put "/projects/#{@project[:id]}/resources/#{resource.id}", :resource => { 
+          :fields_attributes => [{'id' => field.id, 'is_selected' => 0}]
+        }
         assert last_response.redirect?
       end
 

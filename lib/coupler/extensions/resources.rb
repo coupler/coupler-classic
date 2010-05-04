@@ -36,9 +36,8 @@ module Coupler
         app.get "/projects/:project_id/resources/:id" do
           @project = Models::Project[:id => params[:project_id]]
           @resource = @project.resources_dataset[:id => params[:id]]
-          @schema = @resource.source_schema(true)
+          @fields = @resource.fields_dataset.filter(:is_selected => 1).all
           @transformers = Models::Transformer.all
-          @transformations = @resource.transformations_per_field
           @t12n_count = @resource.transformations_dataset.count
           @scenarios = @resource.scenarios
           @running_jobs = @resource.running_jobs
@@ -56,8 +55,8 @@ module Coupler
         app.get "/projects/:project_id/resources/:id/edit" do
           @project = Models::Project[:id => params[:project_id]]
           @resource = @project.resources_dataset[:id => params[:id]]
-          @schema = @resource.source_schema
-          @select = @resource.select || @schema.collect { |x| x[0].to_s }
+          @fields = @resource.fields
+          @selection_count = @resource.fields_dataset.filter(:is_selected => true).count
           erb 'resources/edit'.to_sym
         end
 
@@ -65,8 +64,7 @@ module Coupler
           @project = Models::Project[:id => params[:project_id]]
           @resource = @project.resources_dataset[:id => params[:id]]
 
-          attribs = params[:resource] || {:select => nil}
-          @resource.set(attribs)
+          @resource.set(params[:resource])  if params[:resource]
           if @resource.valid?
             # FIXME
             #flash[:notice] = "Resource successfully created!  Next, if you want to change this resource's fields, you'll need to add transformations."

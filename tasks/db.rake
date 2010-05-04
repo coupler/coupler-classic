@@ -42,6 +42,7 @@ namespace :db do
     Rake::Task["db:migrate:reset"].invoke
 
     project = Factory(:project)
+    transformer = Factory(:transformer)
     resource = Factory(:resource, :project => project)
     scenario = Factory(:scenario, :project => project, :resource_1 => resource)
     matcher = Factory(:matcher, :scenario => scenario)

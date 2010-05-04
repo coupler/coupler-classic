@@ -35,7 +35,8 @@ module Coupler
         app.get "/projects/:project_id/resources/:resource_id/transformations/for/:field_name" do
           @project = Models::Project[:id => params[:project_id]]
           @resource = @project.resources_dataset[:id => params[:resource_id]]
-          @transformations = @resource.transformations_dataset.filter(:field_name => params[:field_name]).all
+          @field = @resource.fields_dataset[:name => params[:field_name]]
+          @transformations = @field.transformations
           erb('transformations/for'.to_sym, :layout => false)
         end
 
