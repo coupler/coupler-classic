@@ -52,12 +52,13 @@ module Coupler
         assert last_response.ok?
       end
 
-      #def test_delete
-        
-        #count = Models::Transformer.count
-        #post '/transformers', 'transformer' => {}
-        #assert_equal count, Models::Transformer.count
-      #end
+      def test_delete
+        xformer = Factory(:transformer)
+        delete "/transformers/#{xformer.id}"
+        assert_equal 0, Models::Transformer.filter(:id => xformer.id).count
+        assert last_response.redirect?, last_response.inspect
+        assert_equal "/transformers", last_response['location']
+      end
     end
   end
 end

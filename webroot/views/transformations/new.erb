@@ -2,16 +2,16 @@
 <%= error_messages_for @transformation %>
 <form method="post" action="/projects/<%= @project.id %>/resources/<%= @resource.id %>/transformations">
   <p>
-    <label for="field_name">Field</label><br/>
-    <select id="field_name" name="transformation[field_name]">
-    <% @resource.source_schema.each do |(column_name, info)| %>
-      <option><%= column_name %></option>
+    <label for="field_id">Field</label><br/>
+    <select id="field_id" name="transformation[field_id]">
+    <% @fields.each do |field| %>
+      <option value="<%= field.id %>"><%= field.name %></option>
     <% end %>
     </select>
   </p>
   <p>
     <label for="transformer_name">Transformer</label><br/>
-    <select id="transformer_name" name="transformation[transformer_name]">
+    <select id="transformer_name" name="transformation[transformer_id]">
     <% @transformers.each do |transformer| %>
       <option value="<%= transformer.id %>"><%= transformer.name %></option>
     <% end %>

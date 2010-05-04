@@ -30,10 +30,17 @@ module Coupler
 
       def test_nested_attributes_for_fields
         resource = Factory(:resource)
-        ds = resource.fields_dataset.order('id DESC')
-        field = ds.first
+        field = resource.fields_dataset[:name => 'first_name']
         resource.update(:fields_attributes => [{:id => field.id, :is_selected => 0}])
-        assert !ds.first.is_selected
+        field.refresh
+        assert field.is_selected == false || field.is_selected == 0
+      end
+
+      def test_rejects_new_fields_for_nested_attributes
+        resource = Factory(:resource)
+        count = resource.fields_dataset.count
+        resource.update(:fields_attributes => [{:is_selected => 0}])
+        assert_equal count, resource.fields_dataset.count
       end
 
       def test_requires_name

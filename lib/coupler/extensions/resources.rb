@@ -72,8 +72,8 @@ module Coupler
             @resource.save
             redirect "/projects/#{@project.id}/resources/#{@resource.id}"
           else
-            @schema = @resource.source_schema
-            @select = @resource.select || @schema.collect(&:first)
+            @fields = @resource.fields
+            @selection_count = @resource.fields_dataset.filter(:is_selected => true).count
             erb 'resources/edit'.to_sym
           end
         end

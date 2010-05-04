@@ -41,6 +41,12 @@ module Coupler
             erb :'transformers/edit'
           end
         end
+
+        app.delete '/transformers/:id' do
+          @transformer = Models::Transformer[:id => params[:id]]
+          @transformer.destroy
+          redirect '/transformers'
+        end
       end
     end
   end

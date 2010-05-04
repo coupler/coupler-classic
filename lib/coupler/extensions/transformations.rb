@@ -5,6 +5,7 @@ module Coupler
         app.get "/projects/:project_id/resources/:resource_id/transformations/new" do
           @project = Models::Project[:id => params[:project_id]]
           @resource = @project.resources_dataset[:id => params[:resource_id]]
+          @fields = @resource.fields_dataset.filter(:is_selected => 1)
           @transformers = Models::Transformer.all
           @transformation = Models::Transformation.new
           erb 'transformations/new'.to_sym
@@ -13,6 +14,7 @@ module Coupler
         app.post "/projects/:project_id/resources/:resource_id/transformations" do
           @project = Models::Project[:id => params[:project_id]]
           @resource = @project.resources_dataset[:id => params[:resource_id]]
+          @fields = @resource.fields_dataset.filter(:is_selected => 1)
           @transformation = Models::Transformation.new(params[:transformation])
           @transformation.resource = @resource
 

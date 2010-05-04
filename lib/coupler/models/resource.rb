@@ -9,7 +9,7 @@ module Coupler
       one_to_many :fields
 
       plugin :nested_attributes
-      nested_attributes :fields, :destroy => false, :fields => [:is_selected]
+      nested_attributes(:fields, :destroy => false, :fields => [:is_selected]) { |h| !(h.has_key?('id') || h.has_key?(:id)) }
 
       def source_database(&block)
         Sequel.connect(source_connection_string, {

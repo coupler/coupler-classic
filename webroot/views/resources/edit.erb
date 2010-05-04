@@ -1,6 +1,6 @@
-<% @breadcrumbs = [@project, @resource, "Edit"] %>
-<% add_javascript('jquery.dataTables.min.js') %>
-<% add_stylesheet('jquery-ui.css', 'dataTables.css') %>
+<%- @breadcrumbs = [@project, @resource, "Edit"] -%>
+<%- add_javascript('jquery.dataTables.min.js') -%>
+<%- add_stylesheet('jquery-ui.css', 'dataTables.css') -%>
 <%= error_messages_for @resource %>
 
 <h2>Fields To Select</h2>
@@ -13,13 +13,13 @@
     </tr>
   </thead>
   <tbody>
-  <% @fields.each do |field| %>
+  <%- @fields.each do |field| -%>
     <tr>
-      <td style="text-align: center;"><input id="field_checkbox_<%= field.id %>" class="field_checkbox" type="checkbox" onclick="toggleField('<%= field.id %>', this);" <%= " checked='checked'" if field.is_selected %> /></td>
+      <td style="text-align: center;"><input id="field_checkbox_<%= field.id %>" class="field_checkbox" type="checkbox" onclick="toggleField('<%= field.id %>', this);"<%= " checked='checked'" if field.is_selected %> /></td>
       <td><label for="field_checkbox_<%= field.id %>"><%= field.name %></label></td>
       <td><%= field.db_type %></td>
     </tr>
-  <% end %>
+  <%- end -%>
   </tbody>
 </table>
 <div id="selection_count"><strong>Fields currently selected</strong>: <span><%= @selection_count %></span> (out of <%= @fields.length %>)</div>
@@ -27,10 +27,10 @@
 <form method="post" action="/projects/<%= @project.id %>/resources/<%= @resource.id %>">
   <div style="display: none;">
     <input name="_method" type="hidden" value="put" />
-  <%- @fields.each do |field| -%>
+    <%- @fields.each do |field| -%>
     <input type="hidden" name="resource[fields_attributes][<%= field.id %>][id]" value="<%= field.id %>" />
     <input id="field_<%= field.id %>" class='field' type="hidden" name="resource[fields_attributes][<%= field.id %>][is_selected]" value="<%= field.is_selected ? 1 : 0 %>" />
-  <%- end -%>
+    <%- end -%>
   </div>
   <div class="clear"></div>
   <br/>

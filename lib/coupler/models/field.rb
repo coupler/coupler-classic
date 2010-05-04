@@ -17,7 +17,10 @@ module Coupler
       private
         def before_save
           super
-          self.is_selected = 1   if is_primary_key == 1
+          case is_primary_key
+          when TrueClass, 1
+            self.is_selected = 1
+          end
         end
     end
   end

@@ -1,2 +1,5 @@
 <%- @breadcrumbs = [@project, "Scenarios"] -%>
 <%= erb(:"scenarios/list", :layout => false) %>
+<p>
+  <a href="/projects/<%= @project.id %>/scenarios/new">Create scenario</a>
+</p>
