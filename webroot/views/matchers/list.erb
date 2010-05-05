@@ -5,7 +5,6 @@
   <thead>
     <tr>
       <th>Type</th>
-      <th>Options</th>
       <th></th>
     </tr>
   </thead>
@@ -13,7 +12,6 @@
   <% @matchers.each do |matcher| %>
     <tr>
       <td><%=h matcher.comparator_name %></td>
-      <td><%=h matcher.comparator_options.inspect %></td>
       <td><%= delete_link("Delete", "/projects/#{@project.id}/scenarios/#{@scenario.id}/matchers/#{matcher.id}") %></td>
     </tr>
   <% end %>

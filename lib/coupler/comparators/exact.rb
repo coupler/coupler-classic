@@ -1,9 +1,6 @@
 module Coupler
   module Comparators
     class Exact < Base
-      OPTIONS = [
-        {:label => "Field", :name => "field_name", :type => "text"}
-      ]
       LIMIT = 1000
 
       def self.field_arity
@@ -15,8 +12,10 @@ module Coupler
         when 1
           last_value = nil
           last_key = nil
-          datasets[0].order(@field_names[0]).each do |record|
-            value = record[@field_names[0]]
+          unique_fields = @field_names[0].inject([]) { |o, f| o.push(*f) }.uniq.collect(&:to_sym)
+          select = [@keys[0]] + unique_fields
+          datasets[0].select(*select).order(*unique_fields).each do |record|
+            value = record[@field_names[0][0]]
             key = record[@keys[0]]
             if value != last_value
               last_value = value

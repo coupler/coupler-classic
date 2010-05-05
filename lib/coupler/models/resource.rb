@@ -8,6 +8,10 @@ module Coupler
       many_to_one :project
       one_to_many :transformations
       one_to_many :fields
+      one_to_many :selected_fields, {
+        :class => 'Coupler::Models::Field', :key => 'resource_id',
+        :conditions => {:is_selected => 1}, :read_only => true
+      }
 
       plugin :nested_attributes
       nested_attributes(:fields, :destroy => false, :fields => [:is_selected]) { |h| !(h.has_key?('id') || h.has_key?(:id)) }

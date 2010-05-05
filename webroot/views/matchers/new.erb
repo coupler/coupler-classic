@@ -1,58 +1,135 @@
-<% @breadcrumbs = [@project, @scenario, @matcher] %>
+<%- @breadcrumbs = [@project, @scenario, @matcher] -%>
+<%- add_javascript('jquery-ui.min.js') -%>
+<%- add_stylesheet('jquery-ui.css') -%>
+<%= error_messages_for @matcher %>
+<form method="post" action="/projects/<%= @project.id %>/scenarios/<%= @scenario.id %>/matchers">
+  <h3>Comparator</h3>
+  <p>
+    <select id="comparator_name" name="matcher[comparator_name]">
+      <% Coupler::Comparators.list.keys.each do |comparator_name| %>
+      <option><%= comparator_name %></option>
+      <% end %>
+    </select>
+  </p>
+  <h3>Fields To Match</h3>
+  <div id="no-comparisons" style="margin-bottom: 1em;">
+    There are currently no fields selected.
+  </div>
+  <div id="comparisons" style="display: none;">
+    <table class="list">
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>Match To</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    <a href="#" onclick="addField(); return false;">Add field</a>
+  </p>
+  <h3>Finish</h3>
+  <div id="no-finish">
+    You must add at least one field before finishing, or you can <a href="/projects/<%= @project.id %>/scenarios/<%= @scenario.id %>">cancel</a>.
+  </div>
+  <div id="finish" style="display: none;">
+    <input type="submit" value="Submit" /> or <a href="/projects/<%= @project.id %>/scenarios/<%= @scenario.id %>">Cancel</a>
+  </div>
+
+  <div id="add-comparison-dialog" style="display: none;">
+    <table class="form">
+      <tbody>
+        <tr>
+          <th colspan="2"><%= @scenario.resource_1.name %></th>
+        </tr>
+        <tr>
+          <td class="left">Field:</td>
+          <td>
+            <select id="field-1-select">
+              <option></option>
+            <%- @scenario.resource_1.selected_fields.each do |field| -%>
+              <option value="<%= field.id %>"><%= field.name %></option>
+            <%- end -%>
+            </select>
+          </td>
+        </tr>
+        <%- if @scenario.resource_2 -%>
+        <tr>
+          <th colspan="2"><%= @scenario.resource_2.name %></th>
+        </tr>
+        <%- end -%>
+        <tr>
+          <td class="left">Match&nbsp;To:</td>
+          <td>
+            <select id="field-2-select">
+              <option></option>
+            <%- if @scenario.resource_2 -%>
+            <%- @scenario.resource_2.selected_fields.each do |field| -%>
+              <option value="<%= field.id %>"><%= field.name %></option>
+            <%- end -%>
+            <%- else -%>
+            <%- @scenario.resource_1.selected_fields.each do |field| -%>
+              <option value="<%= field.id %>"><%= field.name %></option>
+            <%- end -%>
+            <%- end -%>
+            </select>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</form>
+
 <script type="text/javascript">
-  var comparator_options = {
-  <% Coupler::Comparators.list.each_pair do |name, klass| %>
-    '<%= name %>': <%= klass.const_get(:OPTIONS).to_json %>
-  <% end %>
+  var comparators = {
+  <%- Coupler::Comparators.list.each_pair do |name, klass| -%>
+    '<%= name %>': { 'arity': <%= ((a = klass.field_arity).is_a?(Fixnum) ? a : a.to_s).inspect %> }
+  <%- end -%>
   };
-  var resources = <%= @scenario.resources.collect { |r| { 'id' => r.id, 'name' => r.name } }.to_json %>
+
+  function addField() {
+    $('#add-comparison-dialog').dialog('open');
+  }
 
   $(function() {
-    $('#comparator_name').change(function() {
-      table = $('#form-table')
-      table.find('.comparator-option').remove();
-      count = table.find('tr').length;
-      opts = comparator_options[$(this).val()];
-      if (opts) {
-        $.each(resources, function(i, resource) {
-          $.each(opts, function(j, option) {
-            tr = $('<tr/>')
-            tr.addClass('comparator-option');
-            if (count++ % 2 == 1) {
-              tr.addClass('alt');
-            }
-            label = $('<label/>')
-              .attr('for', option.name+"_"+resource.id)
-              .html(option.label+' for '+resource.name);
-            input = $('<input/>')
-              .attr('type', option.type)
-              .attr('id', option.name+"_"+resource.id)
-              .attr('name', 'matcher[comparator_options]['+resource.id+']['+option.name+']');
-            tr.append($("<td/>").append(label)).append($("<td/>").append(input));
-            table.append(tr);
-          });
-        });
+    $('#add-comparison-dialog').dialog({
+      autoOpen: false, title: "Add comparison", modal: true, width: 'auto',
+      buttons: {
+        "Add": function() {
+          field_1 = $('#field-1-select :selected');
+          field_2 = $('#field-2-select :selected');
+          num = $('#comparisons table tbody tr').length;
+
+          $('#comparisons table tbody').append("<tr id='comparison-row-"+num+"'><td>"+field_1.html()+"</td><td>"+field_2.html()+"</td></tr>");
+          $("<div id='comparison-"+num+"'></div>")
+            .append("<input type='hidden' name='matcher[comparisons_attributes]["+num+"][field_1_id]' value='"+field_1.attr('value')+"' />")
+            .append("<input type='hidden' name='matcher[comparisons_attributes]["+num+"][field_2_id]' value='"+field_2.attr('value')+"' />")
+            .appendTo($('#comparisons'));
+
+          $('#no-comparisons').hide();
+          $('#comparisons').show();
+          $('#no-finish').hide();
+          $('#finish').show();
+          $('#add-comparison-dialog').dialog('close');
+        },
+        "Cancel": function() {
+          //$('#field-1-select').val("");
+          //$('#field-2-select').val("");
+          $('#add-comparison-dialog').dialog('close');
+        }
+      }
+    });
+    $('#field-1-select').change(function() {
+      // try to select an analagous second field
+      field_2_select = $('#field-2-select');
+      name = $(this).find(':selected').html();
+      option = field_2_select.find('option:contains('+name+')')
+      if (option.length > 0) {
+        field_2_select.val(option.attr('value'));
       }
     });
   });
 </script>
-
-<%= error_messages_for @matcher %>
-<form method="post" action="/projects/<%= @project.id %>/scenarios/<%= @scenario.id %>/matchers">
-  <table id="form-table" class="form">
-    <tr>
-      <td class="left"><label for="comparator_name">Comparator</label></td>
-      <td>
-        <select id="comparator_name" name="matcher[comparator_name]">
-          <option></option>
-          <% Coupler::Comparators.list.keys.each do |comparator_name| %>
-          <option><%= comparator_name %></option>
-          <% end %>
-        </select>
-      </td>
-    </tr>
-  </table>
-  <p>
-    <input type="submit" value="Submit" /> or <a href="/projects/<%= @project.id %>/scenarios/<%= @scenario.id %>">Cancel</a>
-  </p>
-</form>

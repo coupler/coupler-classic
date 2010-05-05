@@ -32,6 +32,10 @@ module Coupler
         assert_respond_to Resource.new, :fields
       end
 
+      def test_one_to_many_selected_fields
+        assert_respond_to Resource.new, :selected_fields
+      end
+
       def test_nested_attributes_for_fields
         resource = Factory(:resource)
         field = resource.fields_dataset[:name => 'first_name']

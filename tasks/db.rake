@@ -45,7 +45,12 @@ namespace :db do
     transformer = Factory(:transformer)
     resource = Factory(:resource, :project => project)
     scenario = Factory(:scenario, :project => project, :resource_1 => resource)
-    matcher = Factory(:matcher, :scenario => scenario)
+    matcher = Factory(:matcher, {
+      :scenario => scenario,
+      :comparisons_attributes => [
+        {:field_1_id => resource.fields_dataset[:name => 'first_name'].id}
+      ]
+    })
   end
 
   desc "Start server daemon"

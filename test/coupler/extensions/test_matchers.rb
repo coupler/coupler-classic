@@ -15,19 +15,7 @@ module Coupler
       end
 
       def test_successfully_creating_matcher
-        attribs = Factory.attributes_for(:matcher, :comparator_options => {"field_name" => "first_name"})
-        post("/projects/#{@project.id}/scenarios/#{@scenario.id}/matchers", { 'matcher' => attribs })
-        assert last_response.redirect?, "Wasn't redirected"
-        follow_redirect!
-        assert_equal "http://example.org/projects/#{@project.id}/scenarios/#{@scenario.id}", last_request.url
-
-        matcher = @scenario.matchers_dataset.first
-        assert matcher
-        assert_equal({"field_name" => "first_name"}, matcher.comparator_options)
-      end
-
-      def test_creating_without_comparator_options
-        attribs = Factory.attributes_for(:matcher, :comparator_options => nil)
+        attribs = Factory.attributes_for(:matcher)
         post("/projects/#{@project.id}/scenarios/#{@scenario.id}/matchers", { 'matcher' => attribs })
         assert last_response.redirect?, "Wasn't redirected"
         follow_redirect!

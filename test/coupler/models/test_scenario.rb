@@ -110,18 +110,18 @@ module Coupler
 
         project = Factory(:project, :name => "Test without transformations")
         resource = Factory(:resource, :name => "Resource 1", :project => project)
+        first_name = resource.fields_dataset[:name => 'first_name']
+        last_name = resource.fields_dataset[:name => 'last_name']
         scenario = Factory(:scenario, {
           :name => "Scenario 1", :project => project,
           :resource_1 => resource
         })
-        matcher_1 = Factory(:matcher, {
+        matcher = Factory(:matcher, {
           :comparator_name => "exact",
-          :comparator_options => { resource.id.to_s => {"field_name" => "last_name"} },
-          :scenario => scenario
-        })
-        matcher_2 = Factory(:matcher, {
-          :comparator_name => "exact",
-          :comparator_options => { resource.id.to_s => {"field_name" => "first_name"} },
+          :comparisons_attributes => [
+            {:field_1 => last_name, :field_2 => last_name},
+            {:field_1 => first_name, :field_2 => first_name}
+          ],
           :scenario => scenario
         })
 
@@ -139,7 +139,7 @@ module Coupler
           resource.source_dataset do |ds|
             ds.order("id").each do |row|
               expected = ds.filter("last_name = ? AND first_name = ? AND id > ?", row[:last_name], row[:first_name], row[:id]).count
-              actual = score_set.filter("first_id = ? AND score = 200", row[:id]).count
+              actual = score_set.filter("first_id = ? AND score = 100", row[:id]).count
               assert_equal expected, actual, "Expected #{expected} match for id #{row[:id]}"
             end
           end

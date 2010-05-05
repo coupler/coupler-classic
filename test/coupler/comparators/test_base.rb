@@ -5,7 +5,7 @@ module Coupler
     class TestBase < Test::Unit::TestCase
       def setup
         super
-        @comparator = Base.new({'key' => ['id'], 'field_name' => 'foo'})
+        @comparator = Base.new({'keys' => ['id'], 'field_names' => [%w{foo bar}]})
       end
 
       def test_simple_score_raises_not_implemented_error
@@ -48,7 +48,7 @@ module Coupler
         klass = Class.new(Base)
         def klass.field_arity; 2; end
         assert_raise(RuntimeError) do
-          klass.new({'key' => 'id', 'field_name' => 'foo'})
+          klass.new({'keys' => ['id'], 'field_names' => [%w{foo bar}]})
         end
       end
     end

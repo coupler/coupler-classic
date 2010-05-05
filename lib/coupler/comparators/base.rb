@@ -15,17 +15,16 @@ module Coupler
 
       def initialize(options)
         @options = options
-        keys = options['key']
-        keys = [keys] if !keys.is_a?(Array)
-        @keys = keys.collect { |k| k.to_sym }
+        @keys = options['keys'].collect { |k| k.to_sym }
 
-        @field_names = case options['field_name']
-                       when String
-                         [options['field_name'].to_sym]
-                       when Array
-                         options['field_name'].collect { |x| x.to_sym }
-                       end
+        @field_names = options['field_names']
         raise "invalid options"   if @field_names.nil?
+
+        case arity = self.class.field_arity
+        when :infinite
+        else
+          raise "wrong arity" if @field_names.length != arity
+        end
       end
 
       def simple_score(first, second)

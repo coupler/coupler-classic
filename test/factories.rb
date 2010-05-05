@@ -40,12 +40,6 @@ end
 Factory.define :matcher, :class => Coupler::Models::Matcher do |m|
   m.association :scenario
   m.comparator_name 'exact'
-  m.comparator_options do |matcher|
-    matcher.scenario.resources.inject({}) do |hash, resource|
-      hash[resource.id.to_s] = {'field_name' => 'last_name'}
-      hash
-    end
-  end
 end
 
 Factory.define :result, :class => Coupler::Models::Result do |r|

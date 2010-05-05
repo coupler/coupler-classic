@@ -15,8 +15,9 @@ module Coupler
         assert_equal :infinite, Exact.field_arity
       end
 
-      def test_score_match_with_single_dataset
+      def test_score_match_with_single_dataset_and_one_field
         dataset = stub("Dataset")
+        dataset.expects(:select).with(:id, :first_name).returns(dataset)
         dataset.expects(:order).with(:first_name).returns(dataset)
         records = [
           [{:id => 5, :first_name => "Harry"}],
@@ -29,7 +30,7 @@ module Coupler
         score_set.expects(:insert_or_update).with(:first_id => 5, :second_id => 6, :score => 100)
         score_set.expects(:insert_or_update).with(:first_id => 3, :second_id => 8, :score => 100)
 
-        comparator = Exact.new('field_name' => 'first_name', 'key' => 'id')
+        comparator = Exact.new('field_names' => [['first_name', 'first_name']], 'keys' => ['id'])
         comparator.score(score_set, dataset)
       end
 
@@ -55,7 +56,7 @@ module Coupler
           results[hash[:first_id]] << hash[:second_id]
         end
 
-        comparator = Exact.new('field_name' => ['first_name', 'name_first'], 'key' => ['id', 'leet_id'])
+        comparator = Exact.new('field_names' => ['first_name', 'name_first'], 'keys' => ['id', 'leet_id'])
         comparator.score(score_set, dataset_1, dataset_2)
 
         (1..50).each do |key_1|
@@ -98,7 +99,7 @@ module Coupler
           results[hash[:first_id]] << hash[:second_id]
         end
 
-        comparator = Exact.new('field_name' => ['first_name', 'first_name'], 'key' => ['id', 'id'])
+        comparator = Exact.new('field_names' => ['first_name', 'first_name'], 'keys' => ['id', 'id'])
         comparator.score(score_set, dataset_1, dataset_2)
       end
 

@@ -12,6 +12,10 @@ module Coupler
         assert_respond_to Matcher.new, :scenario
       end
 
+      def test_one_to_many_comparisons
+        assert_respond_to Matcher.new, :comparisons
+      end
+
       def test_requires_comparator_name
         matcher = Factory.build(:matcher, :comparator_name => nil)
         assert !matcher.valid?
@@ -25,10 +29,34 @@ module Coupler
         assert !matcher.valid?
       end
 
-      def test_serializes_comparator_options
-        expected = {:test => 123}
-        matcher = Factory(:matcher, :comparator_options => expected)
-        assert_equal expected, Matcher[:id => matcher.id].comparator_options
+      def test_nested_attributes_for_comparisons
+        project = Factory(:project)
+        resource = Factory(:resource, :project => project)
+        fields = resource.fields
+        scenario = Factory(:scenario, :project => project, :resource_1_id => resource.id)
+        matcher = Factory(:matcher, {
+          :scenario => scenario,
+          :comparisons_attributes => {
+            '1' => {'field_1_id' => fields[1].id.to_s},
+            '2' => {'field_1_id' => fields[2].id.to_s}
+          }
+        })
+        assert_equal 2, matcher.comparisons_dataset.count
+      end
+
+      def test_rejects_empty_nested_attributes_for_comparisons
+        project = Factory(:project)
+        resource = Factory(:resource, :project => project)
+        fields = resource.fields
+        scenario = Factory(:scenario, :project => project, :resource_1_id => resource.id)
+        matcher = Factory(:matcher, {
+          :scenario => scenario,
+          :comparisons_attributes => {
+            '1' => {'field_1_id' => fields[1].id.to_s},
+            '2' => {'field_1_id' => ''}
+          }
+        })
+        assert_equal 1, matcher.comparisons_dataset.count
       end
     end
   end
