@@ -1,14 +1,19 @@
 require 'factory_girl'
 
+Factory.define :connection, :class => Coupler::Models::Connection do |c|
+  c.sequence(:name) { |n| "Connection #{n}" }
+  c.adapter "mysql"
+  c.host "localhost"
+  c.port 12345
+  c.username "coupler"
+  c.password "cupla"
+  c.database_name "fake_data"
+end
+
 Factory.define :resource, :class => Coupler::Models::Resource do |r|
   r.sequence(:name) { |n| "Resource #{n}" }
-  r.adapter "mysql"
-  r.host "localhost"
-  r.port 12345
-  r.username "coupler"
-  r.password "cupla"
-  r.database_name "fake_data"
   r.table_name "people"
+  r.association :connection
   r.association :project
 end
 

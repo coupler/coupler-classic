@@ -1,0 +1,55 @@
+<% @breadcrumbs = [@connection] %>
+<%= error_messages_for @connection %>
+<form method="post" action="/connections">
+  <table class="form">
+    <tr>
+      <td class="left"><label for="name">Name</label></td>
+      <td>
+        <input id="name" name="connection[name]" type="text" value="<%= @connection.name %>" />
+      </td>
+    </tr>
+    <tr class="alt">
+      <td class="left"><label for="adapter">Type</label></td>
+      <td>
+        <select id="adapter" name="connection[adapter]">
+          <% [%w{mysql MySQL}].each do |(value, label)| %>
+            <option value="<%= value %>"<%= ' selected="selected"' if @connection.adapter == value %>><%= label %></option>
+          <% end %>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td class="left"><label for="host">Host</label></td>
+      <td>
+        <input id="host" name="connection[host]" type="text" value="<%= @connection.host %>" />
+      </td>
+    </tr>
+    <tr class="alt">
+      <td class="left"><label for="port">Port</label></td>
+      <td>
+        <input id="port" name="connection[port]" type="text" value="<%= @connection.port %>" />
+      </td>
+    </tr>
+    <tr>
+      <td class="left"><label for="username">Username</label></td>
+      <td>
+        <input id="username" name="connection[username]" type="text" value="<%= @connection.username %>" />
+      </td>
+    </tr>
+    <tr class="alt">
+      <td class="left"><label for="password">Password</label><br/></td>
+      <td>
+        <input id="password" name="connection[password]" type="password" value="<%= @connection.password %>" />
+      </td>
+    </tr>
+    <tr>
+      <td class="left"><label for="database_name">Database</label></td>
+      <td>
+        <input id="database_name" name="connection[database_name]" type="text" value="<%= @connection.database_name %>" />
+      </td>
+    </tr>
+  </table>
+  <p>
+    <input type="submit" value="Submit" /> or <a href="/connections">Cancel</a>
+  </p>
+</form>

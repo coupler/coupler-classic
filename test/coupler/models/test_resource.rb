@@ -12,7 +12,11 @@ module Coupler
         assert_equal :resources, Resource.table_name
       end
 
-      def test_many_to_one_projects
+      def test_many_to_one_connection
+        assert_respond_to Resource.new, :connection
+      end
+
+      def test_many_to_one_project
         assert_respond_to Resource.new, :project
       end
 
@@ -72,16 +76,6 @@ module Coupler
         resource.save!
       end
 
-      def test_requires_valid_database_connection
-        resource = Factory.build(:resource, :database_name => "blargh")
-        assert !resource.valid?, "Resource wasn't invalid"
-      end
-
-      def test_requires_non_empty_database_name
-        resource = Factory.build(:resource, :database_name => nil)
-        assert !resource.valid?, "Resource wasn't invalid"
-      end
-
       def test_requires_non_empty_table_name
         resource = Factory.build(:resource, :table_name => nil)
         assert !resource.valid?, "Resource wasn't invalid"
@@ -99,8 +93,8 @@ module Coupler
 
       def test_requires_unique_slug_across_projects
         project = Factory(:project)
-        resource_1 = Factory(:resource, :slug => 'pants')
-        resource_2 = Factory.build(:resource, :name => 'foo', :slug => 'pants')
+        resource_1 = Factory(:resource, :slug => 'pants', :project => project)
+        resource_2 = Factory.build(:resource, :name => 'foo', :slug => 'pants', :project => project)
         assert !resource_2.valid?
 
         resource_2.slug = "roflslam"
@@ -132,7 +126,8 @@ module Coupler
       end
 
       def test_creates_fields
-        resource = Factory.build(:resource)
+        connection = Factory(:connection)
+        resource = Factory.build(:resource, :connection => connection)
         schema = [
           [:id, {:allow_null=>false, :default=>nil, :primary_key=>true, :db_type=>"int(11)", :type=>:integer, :ruby_default=>nil}],
           [:first_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}],
@@ -144,22 +139,10 @@ module Coupler
         assert_equal 3, resource.fields_dataset.count
       end
 
-      def test_mysql_source_database
-        resource = Factory.create(:resource, {
-          :name => "testing",
-          :adapter => "mysql",
-          :host => "localhost",
-          :port => 12345,
-          :username => "coupler",
-          :password => "cupla",
-          :database_name => "fake_data",
-          :table_name => "people"
-        })
-        resource.source_database do |database|
-          assert_kind_of Sequel::JDBC::Database, database
-          assert_match /zeroDateTimeBehavior=convertToNull/, database.uri
-          assert database.test_connection
-        end
+      def test_source_database
+        resource = Factory(:resource)
+        resource.connection.expects(:database)
+        resource.source_database { puts "huge" }
       end
 
       def test_source_dataset
@@ -257,10 +240,10 @@ module Coupler
 
         project = Factory(:project, :name => "Awesome Test Project")
         resource = Factory(:resource, :name => "pants", :project => project)
-        transformer = Factory(:transformer, :code => 'value.downcase')
+        transformer = Factory(:transformer, :allowed_types => %w{string}, :code => 'value.downcase')
         transformation = Factory(:transformation, {
           :resource => resource, :transformer => transformer,
-          :field_name => "first_name"
+          :field => resource.fields_dataset[:name => 'first_name']
         })
 
         original_row = nil

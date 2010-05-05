@@ -14,6 +14,7 @@ module Coupler
         end
 
         app.get "/projects/:project_id/resources/new" do
+          @connections = Models::Connection.all
           @project = Models::Project[:id => params[:project_id]]
           @resource = Models::Resource.new
           erb 'resources/new'.to_sym

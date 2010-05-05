@@ -1,0 +1,18 @@
+<% if @connections.empty? %>
+<p>There are currently no connections.</p>
+<% else %>
+<table class="list">
+  <thead>
+    <tr>
+      <th>Name</th>
+    </tr>
+  </thead>
+  <tbody>
+  <% @connections.each do |connection| %>
+    <tr>
+      <td><a href="/connections/<%= connection.id %>"><%= connection.name %></a></td>
+    </tr>
+  <% end %>
+  </tbody>
+</table>
+<% end %>

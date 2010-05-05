@@ -19,6 +19,7 @@ module Coupler
     enable :sessions
 
     use Rack::Flash
+    register Extensions::Connections
     register Extensions::Projects
     register Extensions::Resources
     register Extensions::Transformations

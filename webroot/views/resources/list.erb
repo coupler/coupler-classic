@@ -5,16 +5,16 @@
   <thead>
     <tr>
       <th>Name</th>
-      <th>Database</th>
+      <th>Connection</th>
       <th>Table</th>
     </tr>
   </thead>
   <tbody>
   <% @resources.each do |resource| %>
     <tr>
-      <td><a href="/projects/<%= @project.id %>/resources/<%= resource.id %>"><%= resource[:name] %></a></td>
-      <td><%= resource[:database_name] %></td>
-      <td><%= resource[:table_name] %></td>
+      <td><a href="/projects/<%= @project.id %>/resources/<%= resource.id %>"><%= resource.name %></a></td>
+      <td><%= resource.connection.name %></td>
+      <td><%= resource.table_name %></td>
     </tr>
   <% end %>
   </tbody>

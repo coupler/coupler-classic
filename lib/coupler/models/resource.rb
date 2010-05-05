@@ -4,6 +4,7 @@ module Coupler
       include CommonModel
       include Jobify
 
+      many_to_one :connection
       many_to_one :project
       one_to_many :transformations
       one_to_many :fields
@@ -12,9 +13,7 @@ module Coupler
       nested_attributes(:fields, :destroy => false, :fields => [:is_selected]) { |h| !(h.has_key?('id') || h.has_key?(:id)) }
 
       def source_database(&block)
-        Sequel.connect(source_connection_string, {
-          :loggers => [Coupler::Logger.instance],
-        }, &block)
+        connection.database(&block)
       end
 
       def source_dataset
@@ -170,19 +169,11 @@ module Coupler
             errors[:slug] << "is already taken"   if count > 0
           end
 
-          try_connect = true
-          [:database_name, :table_name].each do |name|
-            value = self.send(name)
-            if value.nil? || value == ""
-              try_connect = false
-              errors[name] << "is required"
-            end
-          end
-
-          if try_connect
+          if table_name.nil? || table_name == ""
+            errors[:table_name] << "is required"
+          else
             begin
               source_database do |db|
-                db.test_connection
                 sym = self.table_name.to_sym
                 if !db.tables.include?(sym)
                   errors[:table_name] << "is invalid"

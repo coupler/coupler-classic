@@ -5,12 +5,7 @@ module Coupler
     class TestResources < Test::Unit::TestCase
       def setup
         super
-        @project = ::Factory.create(:project)
-        @database = mock("sequel database")
-        @database.stubs(:test_connection).returns(true)
-        @database.stubs(:tables).returns([:people])
-        Models::Resource.any_instance.stubs(:connection).returns(@database)
-        Models::Resource.any_instance.stubs(:schema).returns([[:id, {:allow_null=>false, :default=>nil, :primary_key=>true, :db_type=>"int(11)", :type=>:integer, :ruby_default=>nil}], [:first_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(50)", :type=>:string, :ruby_default=>nil}], [:last_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(50)", :type=>:string, :ruby_default=>nil}]])
+        @project = Factory(:project)
       end
 
       def test_index
@@ -25,14 +20,14 @@ module Coupler
 
         doc = Nokogiri::HTML(last_response.body)
         assert_equal 1, doc.css("form[action='/projects/#{@project.id}/resources']").length
-        assert_equal 1, doc.css("select[name='resource[adapter]']").length
-        %w{name host port username password database_name table_name}.each do |name|
+        %w{name table_name}.each do |name|
           assert_equal 1, doc.css("input[name='resource[#{name}]']").length
         end
       end
 
       def test_successfully_creating_resource
-        attribs = Factory.attributes_for(:resource)
+        connection = Factory(:connection)
+        attribs = Factory.attributes_for(:resource, :connection_id => connection.id)
         post "/projects/#{@project.id}/resources", { 'resource' => attribs }
         resource = Models::Resource[:name => attribs[:name], :project_id => @project.id]
         assert resource
@@ -43,8 +38,9 @@ module Coupler
       end
 
       def test_failing_to_create_resource
+        connection = Factory(:connection)
         post "/projects/#{@project.id}/resources", {
-          'resource' => Factory.attributes_for(:resource, :name => nil)
+          'resource' => Factory.attributes_for(:resource, :name => nil, :connection_id => connection.id)
         }
         assert last_response.ok?
         assert_match /Name is required/, last_response.body

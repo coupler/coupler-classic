@@ -1,5 +1,19 @@
 class InitialSchema < Sequel::Migration
   def up
+    create_table(:connections) do
+      primary_key :id
+      String :name
+      String :slug
+      String :adapter
+      String :host
+      Integer :port
+      String :username
+      String :password
+      String :database_name
+      Time :created_at
+      Time :updated_at
+    end
+
     [:projects, :projects_versions].each do |name|
       create_table(name) do
         primary_key :id
@@ -18,19 +32,31 @@ class InitialSchema < Sequel::Migration
         primary_key :id
         String :name
         String :slug
-        String :adapter
-        String :host
-        Integer :port
-        String :username
-        String :password
-        String :database_name
         String :table_name
         String :primary_key_name, :default => "id"
-        Text :select
+        Integer :connection_id
         Integer :project_id
         Integer :version, :default => 0
         Integer :current_id   if name.to_s =~ /_versions$/
         Time :transformed_at
+        Time :created_at
+        Time :updated_at
+      end
+    end
+
+    [:fields, :fields_versions].each do |name|
+      create_table(name) do
+        primary_key :id
+        String :name
+        String :type
+        String :db_type
+        String :local_type
+        String :local_db_type
+        Boolean :is_primary_key, :default => false
+        Boolean :is_selected, :default => true
+        Integer :resource_id
+        Integer :version, :default => 0
+        Integer :current_id   if name.to_s =~ /_versions$/
         Time :created_at
         Time :updated_at
       end
@@ -53,8 +79,8 @@ class InitialSchema < Sequel::Migration
     [:transformations, :transformations_versions].each do |name|
       create_table(name) do
         primary_key :id
-        String :field_name
         Integer :transformer_id
+        Integer :field_id
         Integer :resource_id
         Integer :version, :default => 0
         Integer :current_id   if name.to_s =~ /_versions$/
