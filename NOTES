@@ -1,0 +1,6 @@
+How to run IRB with JDBC/MySQL
+------------------------------
+
+GEM_HOME=/opt/jruby/lib/ruby/gems/1.8 java -cp \
+  vendor/java/mysql-connector-java-5.1.12/mysql-connector-java-5.1.12-bin.jar:vendor/java/jruby-complete.jar \
+  org.jruby.Main -S irb

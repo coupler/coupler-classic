@@ -8,111 +8,63 @@ module Coupler
       end
 
       def score(score_set, *datasets)
-        case datasets.length
-        when 1
-          last_value = nil
-          last_key = nil
-          unique_fields = @field_names[0].inject([]) { |o, f| o.push(*f) }.uniq.collect(&:to_sym)
-          select = [@keys[0]] + unique_fields
-          datasets[0].select(*select).order(*unique_fields).each do |record|
-            value = record[@field_names[0][0]]
-            key = record[@keys[0]]
-            if value != last_value
-              last_value = value
-              last_key = record[@keys[0]]
-            else
-              score_set.insert_or_update({
-                :first_id => last_key, :second_id => key,
-                :score => 100
-              })
-            end
-          end
-        when 2
-          # FIXME: Hey, maybe do a join instead, dummy?
+        if datasets.length == 1
+          if @field_names.all? { |f| !f.is_a?(Array) }
+            # This happens when there is no cross-matching, like matching
+            # first name to last name within the same dataset, for example.
+            # This is the only case that doesn't involve a join.
 
-          ## What's happening here:
-          # 1. First sort both datasets on the field(s) in question
-          # 2. Walk down the first dataset until there's a matching row in the
-          #    second dataset
-          # 3. When there's a match, walk down the second dataset until there
-          #    are no more matches, saving each id in the second dataset that
-          #    matches
-          # 4. Walk down the first dataset again.  For each row that matches
-          #    the previous first dataset row, record scores for the matching
-          #    ids in the second dataset that we saved
-
-          counts, records, values, previous_values, keys = [], [], [], [], []
-          offsets, indices, completed = [0, 0], [0, 0], [0, 0]
-          datasets.each_with_index do |ds, i|
-            datasets[i] = ds.select(@keys[i], @field_names[i]).order(@field_names[i])
-            counts << datasets[i].count
-            records << datasets[i].limit(LIMIT, 0).all
-            values << records[i][0][@field_names[i]]
-            previous_values << nil
-            keys << records[i][0][@keys[i]]
-          end
-
-          advance = previous_advance = nil
-          matching_second_ids = []
-          while completed[0] < counts[0] && completed[1] < counts[1]
-            if values[0].nil?
-              advance = 0
-            elsif values[1].nil?
-              advance = 1
-            elsif values[0] < values[1]
-              # if the value for the previous dataset 1 row is the same as
-              # this one, record matching scores for all the matching ids
-              # from the previous row
-              if previous_advance == 0 && values[0] == previous_values[1]
-                matching_second_ids.each do |second_id|
-                  score_set.insert_or_update({
-                    :first_id => keys[0], :second_id => second_id,
-                    :score => 100
-                  })
-                end
-              end
-
-              # advance dataset 1
-              advance = 0
-            else
-              if values[1] != previous_values[1]
-                # reset matching ids
-                matching_second_ids.clear
-              end
-
-              if values[0] == values[1]
+            key_name = @keys[0]
+            last_value = nil
+            last_key = nil
+            datasets[0].select(*([key_name]+@field_names)).order(*@field_names).each do |record|
+              value = record.values_at(*@field_names)
+              key = record[key_name]
+              if value != last_value
+                last_value = value
+                last_key = key
+              else
                 score_set.insert_or_update({
-                  :first_id => keys[0], :second_id => keys[1],
+                  :first_id => last_key, :second_id => key,
                   :score => 100
                 })
-                matching_second_ids << keys[1]
-              end
-
-              # advance dataset 2
-              advance = 1
-            end
-
-            completed[advance] += 1
-            indices[advance] += 1
-            if indices[advance] == LIMIT
-              # fetch more records
-              offsets[advance] += LIMIT
-              indices[advance] = 0
-              if offsets[advance] < counts[advance]
-                records[advance] = datasets[advance].limit(LIMIT, offsets[advance]).all
               end
             end
-
-            previous_values[advance] = values[advance]
-            row = records[advance][indices[advance]]
-            if row
-              values[advance] = row[@field_names[advance]]
-              keys[advance]   = row[@keys[advance]]
-            end
-            previous_advance = advance    # this is only for readability
+            return
+          else
+            # Single dataset with multiple fields; do a self-join
           end
         end
+
+        join_hash = @field_names.inject({}) do |hash, obj|
+          case obj
+          when Symbol
+            hash[obj] = obj
+          when Array
+            hash[obj[1]] = obj[0]
+          end
+          hash
+        end
+
+        dataset = datasets[0].from(datasets[0].first_source_table => :t1).
+          join(datasets[1].first_source_table, join_hash, :table_alias => :t2).
+          select(:"t1__#{@keys[0]}" => :first_id, :"t2__#{@keys[1]}" => :second_id).
+          order(:"t1__#{@keys[0]}", :"t2__#{@keys[1]}")
+        offset = 0
+
+        loop do
+          matches = dataset.limit(LIMIT, offset)
+          offset += LIMIT
+
+          count = 0
+          matches.each do |row|
+            score_set.insert_or_update(row.merge(:score => 100))
+            count += 0
+          end
+          break if count < LIMIT
+        end
       end
+
     end
     self.register("exact", Exact)
   end

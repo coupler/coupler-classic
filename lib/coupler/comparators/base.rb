@@ -15,10 +15,17 @@ module Coupler
 
       def initialize(options)
         @options = options
-        @keys = options['keys'].collect { |k| k.to_sym }
+        @keys = options['keys'].collect(&:to_sym)
 
-        @field_names = options['field_names']
-        raise "invalid options"   if @field_names.nil?
+        @field_names = options['field_names'].collect do |obj|
+          case obj
+          when Array  then obj.collect(&:to_sym)
+          when String then obj.to_sym
+          else
+            raise "invalid 'field_names' option"
+          end
+        end
+        raise "invalid 'field_names' options"   if @field_names.nil?
 
         case arity = self.class.field_arity
         when :infinite

@@ -7,7 +7,8 @@ module Coupler
 
       plugin :nested_attributes
       nested_attributes :comparisons do |hash|
-        hash['field_1_id'].nil? || hash['field_1_id'] == ''
+        (hash['field_1_id'].nil? || hash['field_1_id'] == '') &&
+          (hash[:field_1_id].nil? || hash[:field_1_id] == '')
       end
 
       private

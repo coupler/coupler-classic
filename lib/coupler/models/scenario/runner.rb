@@ -20,11 +20,18 @@ module Coupler
             @parent.matchers.each do |matcher|
               klass = Comparators[matcher.comparator_name]
 
-              options = Hash.new { |h, k| h[k] = [] }
-              matcher.comparator_options.values_at(*(@resources.collect { |r| r.id.to_s})).each do |ropts|
-                ropts.each_pair { |k, v| options[k] << v }
-              end
-              options['key'] = @keys
+              options = {
+                'keys' => @keys,
+                'field_names' => matcher.comparisons.collect do |comparison|
+                  field_1 = comparison.field_1
+                  field_2 = comparison.field_2
+                  if field_1.name == field_2.name
+                    field_1.name
+                  else
+                    [field_1.name, field_2.name]
+                  end
+                end
+              }
               object = klass.new(options)
               if klass.scoring_method == :simple_score
                 @comparators[:simple] << object

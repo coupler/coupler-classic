@@ -30,6 +30,7 @@ module Coupler
             flash[:notice] = "Resource was created successfully!  Now you can choose which fields you wish to select."
             redirect "/projects/#{@project.id}/resources/#{@resource.id}/edit"
           else
+            @connections = Models::Connection.all
             erb 'resources/new'.to_sym
           end
         end

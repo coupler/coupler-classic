@@ -119,8 +119,8 @@ module Coupler
         matcher = Factory(:matcher, {
           :comparator_name => "exact",
           :comparisons_attributes => [
-            {:field_1 => last_name, :field_2 => last_name},
-            {:field_1 => first_name, :field_2 => first_name}
+            {:field_1_id => last_name.id, :field_2_id => last_name.id},
+            {:field_1_id => first_name.id, :field_2_id => first_name.id}
           ],
           :scenario => scenario
         })
@@ -203,20 +203,16 @@ module Coupler
           :resource_1 => resource_1, :resource_2 => resource_2
         })
 
-        matcher_1 = Factory(:matcher, {
+        first_name = resource_1.fields_dataset[:name => "first_name"]
+        last_name = resource_1.fields_dataset[:name => "last_name"]
+        owner_first_name = resource_2.fields_dataset[:name => "owner_first_name"]
+        owner_last_name = resource_2.fields_dataset[:name => "owner_last_name"]
+        matcher = Factory(:matcher, {
           :comparator_name => "exact",
-          :comparator_options => {
-            resource_1.id.to_s => { "field_name" => "last_name" },
-            resource_2.id.to_s => { "field_name" => "owner_last_name" }
-          },
-          :scenario => scenario
-        })
-        matcher_2 = Factory(:matcher, {
-          :comparator_name => "exact",
-          :comparator_options => {
-            resource_1.id.to_s => { "field_name" => "first_name" },
-            resource_2.id.to_s => { "field_name" => "owner_first_name" }
-          },
+          :comparisons_attributes => [
+            {:field_1_id => first_name.id, :field_2_id => owner_first_name.id},
+            {:field_1_id => last_name.id, :field_2_id => owner_last_name.id}
+          ],
           :scenario => scenario
         })
 
@@ -235,7 +231,7 @@ module Coupler
             resource_2.source_dataset do |ds_2|
               ds_1.order("id").each do |row_1|
                 expected = ds_2.filter("owner_last_name = ? AND owner_first_name = ?", row_1[:last_name], row_1[:first_name]).count
-                actual = score_set.filter("first_id = ? AND score = 200", row_1[:id]).count
+                actual = score_set.filter("first_id = ? AND score = 100", row_1[:id]).count
                 assert_equal expected, actual, "Expected #{expected} for id #{row_1[:id]}"
               end
             end
@@ -254,9 +250,13 @@ module Coupler
           :name => "Scenario 1", :project => project,
           :resource_1 => resource
         })
+
+        scurvy_dog = resource.fields_dataset[:name => 'scurvy_dog']
         matcher = Factory(:matcher, {
           :comparator_name => "exact",
-          :comparator_options => { resource.id.to_s => {"field_name" => "scurvy_dog"} },
+          :comparisons_attributes => [
+            {:field_1_id => scurvy_dog.id, :field_2_id => scurvy_dog.id}
+          ],
           :scenario => scenario
         })
 
