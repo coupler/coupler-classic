@@ -16,11 +16,13 @@ ENV['COUPLER_ENV'] = 'test'
 require 'coupler/server'
 require 'coupler'
 
+Coupler::Base.set(:sessions, false) # workaround
+Coupler::Base.set(:environment, :test)
+
 class Test::Unit::TestCase
   include Rack::Test::Methods
 
   def app
-    Coupler::Base.set :environment, :test
     Coupler::Base
   end
 

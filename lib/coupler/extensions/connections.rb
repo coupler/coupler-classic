@@ -16,8 +16,14 @@ module Coupler
           @connection = Models::Connection.new(params[:connection])
 
           if @connection.save
-            flash[:notice] = "Connection was successfully created."
-            redirect "/connections"
+            if session[:return_to]
+              flash[:notice] = "Connection was successfully created.  You can now create a resource for that connection."
+              redirect session[:return_to]
+              session[:return_to] = nil
+            else
+              flash[:notice] = "Connection was successfully created."
+              redirect "/connections"
+            end
           else
             erb 'connections/new'.to_sym
           end

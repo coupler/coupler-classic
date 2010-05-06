@@ -6,12 +6,20 @@ module Coupler
       def setup
         super
         @project = Factory(:project)
+        @connection = Factory(:connection)
       end
 
       def test_index
         resource = Factory(:resource, :project => @project)
         get "/projects/#{@project.id}/resources"
         assert last_response.ok?
+      end
+
+      def test_new_redirects_to_connections
+        Models::Connection.delete
+        get "/projects/#{@project.id}/resources/new"
+        assert last_response.redirect?
+        assert_equal '/connections/new', last_response['location']
       end
 
       def test_new_resource

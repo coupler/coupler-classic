@@ -15,9 +15,15 @@ module Coupler
 
         app.get "/projects/:project_id/resources/new" do
           @connections = Models::Connection.all
-          @project = Models::Project[:id => params[:project_id]]
-          @resource = Models::Resource.new
-          erb 'resources/new'.to_sym
+          if @connections.empty?
+            session[:return_to] = "/projects/%s/resources/new" % params[:project_id]
+            flash[:notice] = "Before creating a resource, you must first create a connection."
+            redirect '/connections/new'
+          else
+            @project = Models::Project[:id => params[:project_id]]
+            @resource = Models::Resource.new
+            erb 'resources/new'.to_sym
+          end
         end
 
         app.post "/projects/:project_id/resources" do
