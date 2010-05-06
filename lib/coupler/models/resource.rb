@@ -97,32 +97,9 @@ module Coupler
       end
 
       def transform!
-        fields_ds = fields_dataset.filter(:is_selected => 1).order(:id)
-        local_database do |l_db|
-          # create intermediate table
-          l_db.create_table!(self.slug) do
-            fields_ds.each { |f| columns << f.local_column_options }
-          end
-
-          l_ds = l_db[self.slug.to_sym]
-
-          source_dataset do |s_ds|
-            # for progress bar
-            #self.update(:total => s_ds.count, :completed => 0)
-
-            thread_pool = ThreadPool.new(10)
-            s_ds.each do |row|
-              thread_pool.execute(row) do |r|
-                hash = transformations.inject(r) { |x, t| t.transform(x) }
-                l_ds.insert(hash)
-                #self.class.filter(:id => self.id).update("completed = completed + 1")
-              end
-            end
-            thread_pool.join
-
-            self.update(:transformed_at => Time.now)
-          end
-        end
+        runner = Runner.new(self)
+        runner.transform
+        self.update(:transformed_at => Time.now)
       end
 
       private
@@ -219,3 +196,5 @@ module Coupler
     end
   end
 end
+
+require File.join(File.dirname(__FILE__), 'resource', 'runner')
