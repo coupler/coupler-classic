@@ -47,7 +47,8 @@ module Coupler
         [:id, :integer],
         [:first_id, :integer],
         [:second_id, :integer],
-        [:score, :integer]
+        [:score, :integer],
+        [:matcher_id, :integer]
       ]
       Coupler::ScoreSet.create do |set|
         schema = set.db.schema(:'1')

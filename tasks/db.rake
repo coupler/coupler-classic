@@ -82,6 +82,8 @@ namespace :db do
         primary_key :id
         String :first_name
         String :last_name
+        index :first_name
+        index :last_name
       end
       db.create_table :pets do
         primary_key :id
@@ -103,24 +105,32 @@ namespace :db do
         primary_key :arrr
         String :scurvy_dog
       end
+      db.create_table :lots_of_nulls do
+        primary_key :id
+        String :empty
+      end
 
       people = db[:people]
       pets = db[:pets]
 
       num = ENV.has_key?('NUM') ? ENV['NUM'].to_i : 50
+      person_records = []
+      pet_records = []
       num.times do |i|
-        person = {
-          :first_name => Forgery(:name).first_name,
-          :last_name  => Forgery(:name).last_name
-        }
-        pet = {
-          :name => Forgery(:name).first_name,
-          :owner_first_name => person[:first_name],
-          :owner_last_name => person[:last_name]
-        }
-        people.insert(person)
-        pets.insert(pet)
+        person = [ Forgery(:name).first_name, Forgery(:name).last_name ]
+        pet = [ Forgery(:name).first_name, person[0], person[1] ]
+
+        person_records << person
+        pet_records << pet
+        if i % 10000 == 0
+          people.import([:first_name, :last_name], person_records)
+          pets.import([:name, :owner_first_name, :owner_last_name], pet_records)
+          person_records.clear
+          pet_records.clear
+        end
       end
+      people.import([:first_name, :last_name], person_records)
+      pets.import([:name, :owner_first_name, :owner_last_name], pet_records)
 
       pirates = db[:avast_ye]
       pirates.insert(:scurvy_dog => "Pete")

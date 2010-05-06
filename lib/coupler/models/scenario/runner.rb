@@ -22,6 +22,7 @@ module Coupler
 
               options = {
                 'keys' => @keys,
+                'matcher_id' => matcher.id,
                 'field_names' => matcher.comparisons.collect do |comparison|
                   field_1 = comparison.field_1
                   field_2 = comparison.field_2

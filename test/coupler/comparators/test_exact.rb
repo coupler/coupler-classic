@@ -18,6 +18,8 @@ module Coupler
       def test_score_with_single_dataset_and_one_field
         dataset = stub("Dataset")
         dataset.expects(:select).with(:id, :first_name).returns(dataset)
+        dataset.expects(:filter).with(~{:first_name => nil}).returns(dataset)
+        dataset.expects(:limit).with(1000, 0).returns(dataset)
         dataset.expects(:order).with(:first_name).returns(dataset)
         records = [
           [{:id => 5, :first_name => "Harry"}],
@@ -27,16 +29,23 @@ module Coupler
         ]
         dataset.expects(:each).multiple_yields(*records)
         score_set = stub("ScoreSet")
-        score_set.expects(:insert_or_update).with(:first_id => 5, :second_id => 6, :score => 100)
-        score_set.expects(:insert_or_update).with(:first_id => 3, :second_id => 8, :score => 100)
+        score_set.expects(:import).with(
+          [:first_id, :second_id, :score, :matcher_id],
+          [[5, 6, 100, 123], [3, 8, 100, 123]]
+        )
 
-        comparator = Exact.new('field_names' => ['first_name'], 'keys' => ['id'])
+        comparator = Exact.new({
+          'field_names' => ['first_name'], 'keys' => ['id'],
+          'matcher_id' => 123
+        })
         comparator.score(score_set, dataset)
       end
 
       def test_score_with_single_dataset_and_two_fields
         dataset = stub("Dataset")
         dataset.expects(:select).with(:id, :first_name, :last_name).returns(dataset)
+        dataset.expects(:filter).with(~{:first_name => nil, :last_name => nil}).returns(dataset)
+        dataset.expects(:limit).with(1000, 0).returns(dataset)
         dataset.expects(:order).with(:first_name, :last_name).returns(dataset)
         records = [
           [{:id => 5, :first_name => "Harry", :last_name => "Pewterschmidt"}],
@@ -46,9 +55,39 @@ module Coupler
         ]
         dataset.expects(:each).multiple_yields(*records)
         score_set = stub("ScoreSet")
-        score_set.expects(:insert_or_update).with(:first_id => 6, :second_id => 3, :score => 100)
+        score_set.expects(:import).with(
+          [:first_id, :second_id, :score, :matcher_id],
+          [[6, 3, 100, 123]]
+        )
 
-        comparator = Exact.new('field_names' => ['first_name', 'last_name'], 'keys' => ['id'])
+        comparator = Exact.new({
+          'field_names' => ['first_name', 'last_name'], 'keys' => ['id'],
+          'matcher_id' => 123
+        })
+        comparator.score(score_set, dataset)
+      end
+
+      def test_score_with_single_dataset_and_cross_matching
+        dataset = mock("Dataset")
+        dataset.expects(:first_source_table).twice.returns(:people)
+        dataset.expects(:from).with({:people => :t1}).returns(dataset)
+        joined_dataset = mock("Joined dataset")
+        dataset.expects(:join).with(:people, [~{:t2__id => :t1__id}, {:t2__last_name => :t1__first_name}], {:table_alias => :t2}).returns(joined_dataset)
+        joined_dataset.expects(:select).with({:t1__id => :first_id, :t2__id => :second_id}).returns(joined_dataset)
+        joined_dataset.expects(:filter).with(~{:t1__first_name => nil, :t2__last_name => nil}).returns(joined_dataset)
+        joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset)
+        joined_dataset.expects(:each).multiple_yields([{:first_id => 123, :second_id => 456}], [{:first_id => 789, :second_id => 369}])
+        joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
+        score_set = stub("ScoreSet")
+        score_set.expects(:import).with(
+          [:first_id, :second_id, :score, :matcher_id],
+          [[123, 456, 100, 123], [789, 369, 100, 123]]
+        )
+
+        comparator = Exact.new({
+          'field_names' => [['first_name', 'last_name']], 'keys' => ['id'],
+          'matcher_id' => 123
+        })
         comparator.score(score_set, dataset)
       end
 
@@ -57,16 +96,22 @@ module Coupler
         dataset_2 = mock("Dataset 2", :first_source_table => :adults)
         joined_dataset = mock("Joined dataset")
         dataset_1.expects(:from).with({:people => :t1}).returns(dataset_1)
-        dataset_1.expects(:join).with(:adults, {:first_name => :first_name}, {:table_alias => :t2}).returns(joined_dataset)
+        dataset_1.expects(:join).with(:adults, [{:t2__first_name => :t1__first_name}], {:table_alias => :t2}).returns(joined_dataset)
         joined_dataset.expects(:select).with({:t1__id => :first_id, :t2__id => :second_id}).returns(joined_dataset)
+        joined_dataset.expects(:filter).with(~{:t1__first_name => nil, :t2__first_name => nil}).returns(joined_dataset)
         joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset)
         joined_dataset.expects(:each).multiple_yields([{:first_id => 123, :second_id => 456}], [{:first_id => 789, :second_id => 369}])
         joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
         score_set = stub("ScoreSet")
-        score_set.expects(:insert_or_update).with(:first_id => 123, :second_id => 456, :score => 100)
-        score_set.expects(:insert_or_update).with(:first_id => 789, :second_id => 369, :score => 100)
+        score_set.expects(:import).with(
+          [:first_id, :second_id, :score, :matcher_id],
+          [[123, 456, 100, 123], [789, 369, 100, 123]]
+        )
 
-        comparator = Exact.new('field_names' => ['first_name'], 'keys' => ['id', 'id'])
+        comparator = Exact.new({
+          'field_names' => ['first_name'], 'keys' => ['id', 'id'],
+          'matcher_id' => 123
+        })
         comparator.score(score_set, dataset_1, dataset_2)
       end
 
@@ -75,53 +120,24 @@ module Coupler
         dataset_2 = mock("Dataset 2", :first_source_table => :adults)
         joined_dataset = mock("Joined dataset")
         dataset_1.expects(:from).with({:people => :t1}).returns(dataset_1)
-        dataset_1.expects(:join).with(:adults, {:first_name => :first_name, :last_name => :last_name}, {:table_alias => :t2}).returns(joined_dataset)
+        dataset_1.expects(:join).with(:adults, [{:t2__first_name => :t1__first_name, :t2__last_name => :t1__last_name}], {:table_alias => :t2}).returns(joined_dataset)
         joined_dataset.expects(:select).with({:t1__id => :first_id, :t2__id => :second_id}).returns(joined_dataset)
+        joined_dataset.expects(:filter).with(~{:t1__first_name => nil, :t2__first_name => nil}, ~{:t1__last_name => nil, :t2__last_name => nil}).returns(joined_dataset)
         joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset)
         joined_dataset.expects(:each).multiple_yields([{:first_id => 123, :second_id => 456}], [{:first_id => 789, :second_id => 369}])
         joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
         score_set = stub("ScoreSet")
-        score_set.expects(:insert_or_update).with(:first_id => 123, :second_id => 456, :score => 100)
-        score_set.expects(:insert_or_update).with(:first_id => 789, :second_id => 369, :score => 100)
+        score_set.expects(:import).with(
+          [:first_id, :second_id, :score, :matcher_id],
+          [[123, 456, 100, 123], [789, 369, 100, 123]]
+        )
 
-        comparator = Exact.new('field_names' => ['first_name', 'last_name'], 'keys' => ['id', 'id'])
+        comparator = Exact.new({
+          'field_names' => ['first_name', 'last_name'], 'keys' => ['id', 'id'],
+          'matcher_id' => 123
+        })
         comparator.score(score_set, dataset_1, dataset_2)
       end
-
-      #def test_scores_null_values_as_non_match
-        #dataset_1 = stub("Dataset 1", :count => 4)
-        #dataset_1.stubs({
-          #:select => dataset_1, :order => dataset_1, :limit => dataset_1
-        #})
-        #dataset_1.stubs(:all).returns([
-          #{:id => 1, :first_name => nil}, {:id => 2, :first_name => nil},
-          #{:id => 3, :first_name => 'Bob'}, {:id => 4, :first_name => 'George'},
-        #])
-
-        #dataset_2 = stub("Dataset 2", :count => 4)
-        #dataset_2.stubs({
-          #:select => dataset_2, :order => dataset_2, :limit => dataset_2
-        #})
-        #dataset_2.stubs(:all).returns([
-          #{:id => 1, :first_name => nil}, {:id => 2, :first_name => 'Bob'},
-          #{:id => 3, :first_name => 'Fred'}, {:id => 4, :first_name => 'George'},
-        #])
-
-        #results = Hash.new { |h, k| h[k] = [] }
-        #score_set = stub("ScoreSet")
-        #score_set.expects(:insert_or_update).times(2).with do |hash|
-          #assert_equal 100, hash[:score]
-          #results[hash[:first_id]] << hash[:second_id]
-        #end
-
-        #comparator = Exact.new('field_names' => ['first_name', 'first_name'], 'keys' => ['id', 'id'])
-        #comparator.score(score_set, dataset_1, dataset_2)
-      #end
-
-      #def test_null_as_nonmatch
-        #comparator = Exact.new('field_name' => 'first_name')
-        #assert_equal 0, comparator.score({:first_name => nil}, {:first_name => nil})
-      #end
     end
   end
 end

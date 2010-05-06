@@ -32,6 +32,8 @@ module Coupler
         else
           raise "wrong arity" if @field_names.length != arity
         end
+
+        @matcher_id = options['matcher_id'] or raise "matcher_id is required"
       end
 
       def simple_score(first, second)

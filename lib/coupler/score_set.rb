@@ -24,6 +24,7 @@ module Coupler
           Integer :first_id
           Integer :second_id
           Integer :score
+          Integer :matcher_id
         end
         housekeeping.update(:last_table => new_table_num)
 
