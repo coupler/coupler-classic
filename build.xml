@@ -2,7 +2,7 @@
   <property name="build" location="build"/>
 
   <!-- 3rd party gems -->
-  <property name="gems.needed" value="sinatra rack-flash viking-sequel json-jruby fastercsv" />
+  <property name="gems.needed" value="sinatra rack-flash sequel json-jruby fastercsv" />
 
   <!-- 3rd party java libs -->
   <property name="one.jar.version" value="0.96"/>
