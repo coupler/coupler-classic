@@ -1,8 +1,4 @@
 namespace :db do
-  task :environment do
-    require File.join(File.dirname(__FILE__), "..", "lib", "coupler", "server")
-  end
-
   desc "Obliterate the local database"
   task :nuke => :stop do
     confirm("This will completely obliterate the local database.")
@@ -13,13 +9,13 @@ namespace :db do
   end
 
   desc "Purge the database"
-  task :purge => [:start, 'coupler:environment'] do
+  task :purge => [:start, :environment] do
     database = Coupler::Database.instance
     database.tables.each { |t| database.drop_table(t) }
   end
 
   desc "Run migrations"
-  task :migrate => [:start, 'coupler:environment'] do
+  task :migrate => [:start, :environment] do
     version = ENV['VERSION']
     Coupler::Database.instance.migrate!(version ? version.to_i : nil)
   end
@@ -30,12 +26,12 @@ namespace :db do
   end
 
   desc "Roll the database back a version"
-  task :rollback => [:start, 'coupler:environment'] do
+  task :rollback => [:start, :environment] do
     Coupler::Database.instance.rollback!
   end
 
   desc "Reset and bootstrap the database"
-  task :bootstrap => [:start, 'coupler:environment'] do
+  task :bootstrap => [:start, :environment] do
     require 'test/factories'
     confirm("This will delete any existing configuration data.") if ENV['COUPLER_ENV'] != "test"
 
@@ -75,7 +71,7 @@ namespace :db do
     require 'forgery'
     require 'sequel'
     desc "Create database with fake data"
-    task :fake => [:start, 'coupler:environment'] do
+    task :fake => [:start, :environment] do
       db = Sequel.connect(Coupler::Config.connection_string("fake_data", :create_database => true))
       db.tables.each { |t| db.drop_table(t) }
       db.create_table :people do
