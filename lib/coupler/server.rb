@@ -1,27 +1,3 @@
-# This needs to be standalone, since this needs to be running before the rest
-# of Coupler is loaded.  The reason for this is that Sequel model classes (in
-# Coupler::Models) will freak out if there is no connection established when
-# the classes are initialized.
-
-require 'java'
-require 'singleton'
-require File.join(File.dirname(__FILE__), "config")
-
-# mysql embedded
-begin
-  com.mysql.management.MysqldResource
-rescue NameError
-  # load jar files only if necessary
-  Coupler::Config.require_vendor_libs('mysql-connector-mxj')
-end
-
-# jdbc/mysql
-begin
-  com.mysql.jdbc.Driver
-rescue NameError
-  Coupler::Config.require_vendor_libs('mysql-connector-java')
-end
-
 module Coupler
   class Server
     include Singleton

@@ -3,6 +3,12 @@ package edu.vanderbilt.coupler;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.ArrayList;
+import java.util.List;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.jruby.embed.ScriptingContainer;
 
 public class Main {
@@ -35,10 +41,32 @@ public class Main {
         properties.getProperty("build.timestamp"));
 
     ScriptingContainer container = new ScriptingContainer();
+    String location = findCouplerPath();
+    List<String> loadPaths = new ArrayList();
+    loadPaths.add(location);
+    container.getProvider().setLoadPaths(loadPaths);
+
     String script =
-      "require 'coupler/runner'\n" +
+      "require 'coupler'\n" +
       "Coupler::Runner.new";
     container.runScriptlet(script);
+  }
+
+  private String findCouplerPath() {
+    try {
+      URL resource = getClass().getResource("/META-INF/coupler.home/lib/coupler.rb");
+      String location = resource.toURI().getSchemeSpecificPart();
+      Pattern p = Pattern.compile("coupler\\.rb$");
+      Matcher m = p.matcher(location);
+      while(m.find()) {
+        location = location.substring(0, m.start() - 1);
+        return location;
+      }
+      return null;
+    }
+    catch (URISyntaxException e) {
+      return null;
+    }
   }
 
   public static void main(String[] args) {

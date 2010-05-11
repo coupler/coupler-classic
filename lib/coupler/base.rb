@@ -1,11 +1,5 @@
 module Coupler
   class Base < Sinatra::Base
-    def self.run!(*args)
-      scheduler = Scheduler.instance
-      scheduler.start
-      at_exit { scheduler.shutdown }
-      super
-    end
 
     set :root, File.expand_path(File.join(File.dirname(__FILE__), "..", "..", "webroot"))
     set :static, true

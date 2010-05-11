@@ -13,7 +13,6 @@ require 'ruby-debug'
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 ENV['COUPLER_ENV'] = 'test'
-require 'coupler/server'
 require 'coupler'
 
 Coupler::Base.set(:sessions, false) # workaround
