@@ -11,15 +11,18 @@ module Coupler
         Coupler::Scheduler.instance.start
       end
 
-      trap("INT") { shutdown }
-
       Coupler::Database.instance.migrate!
-      Coupler::Base.run!
+      Coupler::Base.run! { |_| shutdown }
     end
 
     def shutdown
-      Coupler::Scheduler.instance.shutdown
-      Coupler::Server.instance.shutdown
+      if @stop_scheduler
+        Coupler::Scheduler.instance.shutdown
+      end
+
+      if @stop_server
+        Coupler::Server.instance.shutdown
+      end
     end
   end
 end
