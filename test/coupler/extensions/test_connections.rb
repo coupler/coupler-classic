@@ -16,7 +16,7 @@ module Coupler
         doc = Nokogiri::HTML(last_response.body)
         assert_equal 1, doc.css("form[action='/connections']").length
         assert_equal 1, doc.css("select[name='connection[adapter]']").length
-        %w{name host port username password database_name}.each do |name|
+        %w{name host port username password}.each do |name|
           assert_equal 1, doc.css("input[name='connection[#{name}]']").length
         end
       end

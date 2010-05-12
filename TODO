@@ -1,11 +1,10 @@
 Major features/bugs:
-- Add more validations for comparators
-- Use select boxes in exact comparator instead of text box
 - Make the exact matcher threaded!
 - JRuby/Java multi-processor use
 - Database timeout issues (autoReconnect=true for MySQL)
 - Job management: canceling, etc.
 - MySQL spawning in JAR is lame
+- Combine multiple matcher scores in scenario runs
 
 Fancy features for the future:
 - Do authorization on projects

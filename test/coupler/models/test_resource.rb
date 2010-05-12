@@ -80,6 +80,22 @@ module Coupler
         resource.save!
       end
 
+      def test_requires_non_empty_database_name
+        resource = Factory.build(:resource, :database_name => nil)
+        assert !resource.valid?, "Resource wasn't invalid"
+      end
+
+      def test_requires_valid_database_name
+        connection = Factory(:connection)
+        resource = Factory.build(:resource, :connection => connection, :database_name => "blargh")
+
+        database = mock("database")
+        database.expects(:test_connection).raises(Sequel::DatabaseConnectionError)
+        resource.connection.expects(:database).with("blargh").yields(database)
+
+        assert !resource.valid?, "Connection wasn't invalid"
+      end
+
       def test_requires_non_empty_table_name
         resource = Factory.build(:resource, :table_name => nil)
         assert !resource.valid?, "Resource wasn't invalid"
@@ -144,8 +160,8 @@ module Coupler
       end
 
       def test_source_database
-        resource = Factory(:resource)
-        resource.connection.expects(:database)
+        resource = Factory(:resource, :database_name => 'fake_data')
+        resource.connection.expects(:database).with('fake_data')
         resource.source_database { puts "huge" }
       end
 

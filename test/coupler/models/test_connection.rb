@@ -47,13 +47,8 @@ module Coupler
         assert !connection_2.valid?
       end
 
-      def test_requires_non_empty_database_name
-        connection = Factory.build(:connection, :database_name => nil)
-        assert !connection.valid?, "Connection wasn't invalid"
-      end
-
-      def test_requires_valid_database_connection
-        connection = Factory.build(:connection, :database_name => "blargh")
+      def test_requires_valid_connection
+        connection = Factory.build(:connection, :password => "foo")
         assert !connection.valid?, "Connection wasn't invalid"
       end
 
@@ -70,9 +65,8 @@ module Coupler
           :port => 12345,
           :username => "coupler",
           :password => "cupla",
-          :database_name => "fake_data",
         })
-        connection.database do |database|
+        connection.database('fake_data') do |database|
           assert_kind_of Sequel::JDBC::Database, database
           assert_match /zeroDateTimeBehavior=convertToNull/, database.uri
           assert database.test_connection

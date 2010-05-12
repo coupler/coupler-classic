@@ -7,11 +7,11 @@ Factory.define :connection, :class => Coupler::Models::Connection do |c|
   c.port 12345
   c.username "coupler"
   c.password "cupla"
-  c.database_name "fake_data"
 end
 
 Factory.define :resource, :class => Coupler::Models::Resource do |r|
   r.sequence(:name) { |n| "Resource #{n}" }
+  r.database_name "fake_data"
   r.table_name "people"
   r.association :connection
   r.association :project
