@@ -1,0 +1,32 @@
+<% @breadcrumbs = [@connection] %>
+
+<table class="show">
+  <tr>
+    <td class="col1">Name</td>
+    <td><%= @connection.name %></td>
+  </tr>
+  <tr>
+    <td class="col1">Adapter</td>
+    <td><%= @connection.adapter %></td>
+  </tr>
+  <tr>
+    <td class="col1">Host</td>
+    <td><%= @connection.host %></td>
+  </tr>
+  <tr>
+    <td class="col1">Port</td>
+    <td><%= @connection.port %></td>
+  </tr>
+  <tr>
+    <td class="col1">Username</td>
+    <td><%= @connection.username %></td>
+  </tr>
+</table>
+
+<h2>Related Resources</h2>
+<div class="section">
+  <%- @hide_connection = true -%>
+  <%= erb(:'resources/list', :layout => false) %>
+</div>
+
+<a href="/connections">Back to connections</a>

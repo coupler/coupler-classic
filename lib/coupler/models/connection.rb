@@ -3,6 +3,8 @@ module Coupler
     class Connection < Sequel::Model
       include CommonModel
 
+      one_to_many :resources
+
       def database(database_name, &block)
         Sequel.connect(connection_string(database_name), {
           :loggers => [Coupler::Logger.instance],

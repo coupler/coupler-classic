@@ -1,0 +1,175 @@
+<%- @breadcrumbs = [@project, @scenario, @matcher.new? ? "New Matcher" : "Edit Matcher"] -%>
+<%- add_javascript('jquery-ui.min.js') -%>
+<%- add_stylesheet('jquery-ui.css') -%>
+<%= error_messages_for @matcher %>
+<%= form_tag_for(@matcher, :base_url => "/projects/#{@project.id}/scenarios/#{@scenario.id}/matchers") %>
+  <h3>Comparator</h3>
+  <p>
+    <select id="comparator_name" name="matcher[comparator_name]">
+    <%- Coupler::Comparators.list.keys.each do |comparator_name| -%>
+      <option<%= " selected='selected'" if @matcher.comparator_name == comparator_name %>><%= comparator_name %></option>
+    <%- end -%>
+    </select>
+  </p>
+  <h3>Fields To Match</h3>
+  <%- if @matcher.comparisons.count == 0 -%>
+  <div id="no-comparisons" style="margin-bottom: 1em;">
+    There are currently no fields selected.
+  </div>
+  <%- end -%>
+  <div id="comparisons" style="display: <%= @matcher.comparisons.count == 0 ? "none;" : "block;" %>">
+    <table class="list">
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>Match To</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+      <%- @matcher.comparisons.each_with_index do |comparison, i| -%>
+        <tr id="comparison-row-<%= i %>">
+          <td><%= comparison.field_1.name %></td>
+          <td><%= comparison.field_2.name %></td>
+          <td><a href="#" onclick="return deleteComparison(<%= i %>);">Delete</a></td>
+        </tr>
+      <%- end -%>
+      </tbody>
+    </table>
+  <%- @matcher.comparisons.each_with_index do |comparison, i| -%>
+    <%# This could be done in one loop, but it's a lot less readable %>
+    <div id='comparison-<%= i %>' style='display: none;'>
+      <% if !comparison.new? %><input type='hidden' name='matcher[comparisons_attributes][<%= i %>][id]' value='<%= comparison.id %>' /><% end %>
+      <input type='hidden' name='matcher[comparisons_attributes][<%= i %>][field_1_id]' value='<%= comparison.field_1_id %>' />
+      <input type='hidden' name='matcher[comparisons_attributes][<%= i %>][field_2_id]' value='<%= comparison.field_2_id %>' />
+    </div>
+  <%- end -%>
+  </div>
+  <p>
+    <a href="#" onclick="addComparison(); return false;">Add comparison</a>
+  </p>
+  <h3>Finish</h3>
+  <div id="no-finish" style="display: <%= @matcher.comparisons.count == 0 ? "block;" : "none;" %>">
+    You must add at least one field before finishing, or you can <a href="/projects/<%= @project.id %>/scenarios/<%= @scenario.id %>">cancel</a>.
+  </div>
+  <div id="finish" style="display: <%= @matcher.comparisons.count == 0 ? "none;" : "block;" %>">
+    <input type="submit" value="Submit" /> or <a href="/projects/<%= @project.id %>/scenarios/<%= @scenario.id %>">Cancel</a>
+  </div>
+
+  <div id="add-comparison-dialog" style="display: none;">
+    <table class="form">
+      <tbody>
+        <tr>
+          <th colspan="2"><%= @scenario.resource_1.name %></th>
+        </tr>
+        <tr>
+          <td class="left">Field:</td>
+          <td>
+            <select id="field-1-select">
+              <option></option>
+            <%- @scenario.resource_1.selected_fields.each do |field| -%>
+              <option value="<%= field.id %>"><%= field.name %></option>
+            <%- end -%>
+            </select>
+          </td>
+        </tr>
+        <%- if @scenario.resource_2 -%>
+        <tr>
+          <th colspan="2"><%= @scenario.resource_2.name %></th>
+        </tr>
+        <%- end -%>
+        <tr>
+          <td class="left">Match&nbsp;To:</td>
+          <td>
+            <select id="field-2-select">
+              <option></option>
+            <%- if @scenario.resource_2 -%>
+            <%- @scenario.resource_2.selected_fields.each do |field| -%>
+              <option value="<%= field.id %>"><%= field.name %></option>
+            <%- end -%>
+            <%- else -%>
+            <%- @scenario.resource_1.selected_fields.each do |field| -%>
+              <option value="<%= field.id %>"><%= field.name %></option>
+            <%- end -%>
+            <%- end -%>
+            </select>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</form>
+
+<script type="text/javascript">
+  var comparators = {
+  <%- Coupler::Comparators.list.each_pair do |name, klass| -%>
+    '<%= name %>': { 'arity': <%= ((a = klass.field_arity).is_a?(Fixnum) ? a : a.to_s).inspect %> }
+  <%- end -%>
+  };
+  var totalComparisons = <%= @matcher.comparisons.length %>;
+  var numComparisons = <%= @matcher.comparisons.length %>;
+
+  function addComparison() {
+    $('#add-comparison-dialog').dialog('open');
+  }
+
+  function deleteComparison(i) {
+    container = $('#comparison-'+i);
+    if (container.find('input[name$="[id]"]').length > 0) {
+      container.append("<input type='hidden' name='matcher[comparisons_attributes]["+i+"][_delete]' value='true' />");
+    }
+    else {
+      container.remove();
+    }
+    $('#comparison-row-'+i).remove();
+    if (--numComparisons == 0) {
+      $('#no-finish').show();
+      $('#finish').hide();
+    }
+    return false;
+  }
+
+  $(function() {
+    $('#add-comparison-dialog').dialog({
+      autoOpen: false, title: "Add comparison", modal: true, width: 'auto',
+      buttons: {
+        "Add": function() {
+          field_1 = $('#field-1-select :selected');
+          field_2 = $('#field-2-select :selected');
+
+          $("<tr id='comparison-row-"+totalComparisons+"'></tr>")
+            .append("<td>"+field_1.html()+"</td>")
+            .append("<td>"+field_2.html()+"</td>")
+            .append("<td><a href='#' onclick='return deleteComparison("+totalComparisons+");'>Delete</a></td>")
+            .appendTo($('#comparisons table tbody'));
+          $("<div id='comparison-"+totalComparisons+"' style='display: none;'></div>")
+            .append("<input type='hidden' name='matcher[comparisons_attributes]["+totalComparisons+"][field_1_id]' value='"+field_1.attr('value')+"' />")
+            .append("<input type='hidden' name='matcher[comparisons_attributes]["+totalComparisons+"][field_2_id]' value='"+field_2.attr('value')+"' />")
+            .appendTo($('#comparisons'));
+          numComparisons++;
+          totalComparisons++;
+
+          $('#no-comparisons').hide();
+          $('#comparisons').show();
+          $('#no-finish').hide();
+          $('#finish').show();
+          $('#add-comparison-dialog').dialog('close');
+        },
+        "Cancel": function() {
+          //$('#field-1-select').val("");
+          //$('#field-2-select').val("");
+          $('#add-comparison-dialog').dialog('close');
+        }
+      }
+    });
+    $('#field-1-select').change(function() {
+      // try to select an analagous second field
+      field_2_select = $('#field-2-select');
+      name = $(this).find(':selected').html();
+      option = field_2_select.find('option:contains('+name+')')
+      if (option.length > 0) {
+        field_2_select.val(option.attr('value'));
+      }
+    });
+  });
+</script>

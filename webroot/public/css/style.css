@@ -197,7 +197,7 @@ table.form td.left {
 
 table.list th {
   border-bottom: 2px solid gray;
-  padding: 0.5em;
+  padding: 0.2em 0.5em;
 }
 table.list td {
   padding: 0.5em;
@@ -208,13 +208,19 @@ table.list img {
 
 table.show td {
   padding: 3px;
+  padding-left: 6px;
 }
 table.show td.col1 {
   text-align: right;
+  border-right: 2px solid gray;
+  font-weight: bold;
   padding-right: 6px;
 }
 
 tr.alt td {
+  background-color: #ddd;
+}
+tr.lightalt td {
   background-color: #eee;
 }
 tr.yellow td {

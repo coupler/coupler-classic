@@ -44,5 +44,15 @@ module Coupler
       expected = %{<div class="timeago leet" title="#{dt.to_s}">#{now.to_s}</div>}
       assert_equal expected, timeago(now, "leet")
     end
+
+    def test_form_tag_for
+      obj = Models::Project.new
+      result = form_tag_for(obj, :base_url => "/projects")
+      assert_equal %{<form action="/projects" method="post">}, result
+
+      obj = Factory(:project)
+      result = form_tag_for(obj, :base_url => "/projects")
+      assert_equal %{<form action="/projects/#{obj.id}" method="post"><div style="display: none;"><input type="hidden" name="_method" value="put" /></div>}, result
+    end
   end
 end

@@ -37,14 +37,15 @@ namespace :db do
 
     Rake::Task["db:migrate:reset"].invoke
 
-    project = Factory(:project)
-    transformer = Factory(:transformer)
-    resource = Factory(:resource, :project => project)
-    scenario = Factory(:scenario, :project => project, :resource_1 => resource)
+    project = Factory(:project, :name => "Fake")
+    connection = Factory(:connection, :name => "Fake")
+    resource = Factory(:resource, :name => "People", :project => project, :connection => connection)
+    scenario = Factory(:scenario, :name => "First to last", :project => project, :resource_1 => resource)
     matcher = Factory(:matcher, {
       :scenario => scenario,
       :comparisons_attributes => [
-        {:field_1_id => resource.fields_dataset[:name => 'first_name'].id}
+        {:field_1_id => resource.fields_dataset[:name => 'first_name'].id,
+         :field_2_id => resource.fields_dataset[:name => 'last_name'].id}
       ]
     })
   end

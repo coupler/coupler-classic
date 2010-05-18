@@ -5,12 +5,20 @@
   <thead>
     <tr>
       <th>Name</th>
+      <th>Adapter</th>
+      <th>Host</th>
+      <th>Port</th>
+      <th>Username</th>
     </tr>
   </thead>
   <tbody>
   <% @connections.each do |connection| %>
     <tr>
       <td><a href="/connections/<%= connection.id %>"><%= connection.name %></a></td>
+      <td><%= connection.adapter %></td>
+      <td><%= connection.host %></td>
+      <td><%= connection.port %></td>
+      <td><%= connection.username %></td>
     </tr>
   <% end %>
   </tbody>

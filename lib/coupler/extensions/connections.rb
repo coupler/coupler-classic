@@ -12,6 +12,12 @@ module Coupler
           erb :'connections/new'
         end
 
+        app.get "/connections/:id" do
+          @connection = Models::Connection[:id => params[:id]]
+          @resources = @connection.resources
+          erb :'connections/show'
+        end
+
         app.post "/connections" do
           @connection = Models::Connection.new(params[:connection])
 

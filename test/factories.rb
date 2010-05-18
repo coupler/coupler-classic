@@ -73,3 +73,9 @@ Factory.define :field, :class => Coupler::Models::Field do |f|
   f.is_selected 1
   f.association :resource
 end
+
+Factory.define :comparison, :class => Coupler::Models::Comparison do |c|
+  c.association :matcher
+  c.association :field_1, :factory => :field
+  c.association :field_2, :factory => :field
+end

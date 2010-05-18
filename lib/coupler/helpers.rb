@@ -87,5 +87,15 @@ module Coupler
         %{<div class="#{klass}" title="#{dt.to_s}">#{time.to_s}</div>}
       end
     end
+
+    def form_tag_for(obj, options)
+      base_url = options[:base_url]
+      action, method = if obj.new?
+                         [base_url, ""]
+                       else
+                         ["#{base_url}/#{obj.id}", %{<div style="display: none;"><input type="hidden" name="_method" value="put" /></div>}]
+                       end
+      %{<form action="#{action}" method="post">#{method}}
+    end
   end
 end

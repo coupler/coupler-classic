@@ -138,6 +138,34 @@ module Coupler
         })
         comparator.score(score_set, dataset_1, dataset_2)
       end
+
+      def test_score_uses_limit_correctly
+        dataset_1 = mock("Dataset 1", :first_source_table => :people)
+        dataset_2 = mock("Dataset 2", :first_source_table => :adults)
+        joined_dataset = mock("Joined dataset")
+        dataset_1.expects(:from).with({:people => :t1}).returns(dataset_1)
+        dataset_1.expects(:join).with(:adults, [{:t2__first_name => :t1__first_name}], {:table_alias => :t2}).returns(joined_dataset)
+        joined_dataset.expects(:select).with({:t1__id => :first_id, :t2__id => :second_id}).returns(joined_dataset)
+        joined_dataset.expects(:filter).with(~{:t1__first_name => nil, :t2__first_name => nil}).returns(joined_dataset)
+        joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
+
+        seq = sequence("selecting")
+        joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset).in_sequence(seq)
+        records_1 = Array.new(1000) { |i| [{:first_id => 123+i, :second_id => 456+i}] }
+        joined_dataset.expects(:each).multiple_yields(*records_1).in_sequence(seq)
+
+        joined_dataset.expects(:limit).with(1000, 1000).returns(joined_dataset).in_sequence(seq)
+        records_2 = Array.new(123) { |i| [{:first_id => 1234+i, :second_id => 4567+i}] }
+        joined_dataset.expects(:each).multiple_yields(*records_2).in_sequence(seq)
+
+        score_set = stub("ScoreSet", :import => nil)
+
+        comparator = Exact.new({
+          'field_names' => ['first_name'], 'keys' => ['id', 'id'],
+          'matcher_id' => 123
+        })
+        comparator.score(score_set, dataset_1, dataset_2)
+      end
     end
   end
 end

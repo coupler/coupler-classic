@@ -5,7 +5,8 @@
   <thead>
     <tr>
       <th>Name</th>
-      <th>Connection</th>
+      <% unless @hide_connection %><th>Connection</th><% end %>
+      <th>Database</th>
       <th>Table</th>
     </tr>
   </thead>
@@ -13,7 +14,8 @@
   <% @resources.each do |resource| %>
     <tr>
       <td><a href="/projects/<%= @project.id %>/resources/<%= resource.id %>"><%= resource.name %></a></td>
-      <td><%= resource.connection.name %></td>
+      <% unless @hide_connection %><td><%= resource.connection.name %></td><% end %>
+      <td><%= resource.database_name %></td>
       <td><%= resource.table_name %></td>
     </tr>
   <% end %>

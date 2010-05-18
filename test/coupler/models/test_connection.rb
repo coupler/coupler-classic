@@ -8,6 +8,10 @@ module Coupler
         assert_equal :connections, Connection.table_name
       end
 
+      def test_one_to_many_resources
+        assert_respond_to Connection.new, :resources
+      end
+
       def test_requires_name
         connection = Factory.build(:connection, :name => nil)
         assert !connection.valid?

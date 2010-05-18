@@ -51,6 +51,7 @@ module Coupler
                 else
                   add_match(score_set, matches, last_key, key)
                 end
+                count += 1
               end
               break if count < LIMIT
             end
@@ -93,7 +94,7 @@ module Coupler
           count = 0
           set.each do |row|
             add_match(score_set, matches, row[:first_id], row[:second_id])
-            count += 0
+            count += 1
           end
           break if count < LIMIT
         end

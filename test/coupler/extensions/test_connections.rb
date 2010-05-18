@@ -48,6 +48,12 @@ module Coupler
         assert last_response.ok?
         assert_match /Name is required/, last_response.body
       end
+
+      def test_show
+        connection = Factory(:connection)
+        get "/connections/#{connection.id}"
+        assert last_response.ok?
+      end
     end
   end
 end

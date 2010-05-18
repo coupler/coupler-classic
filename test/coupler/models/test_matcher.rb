@@ -58,6 +58,30 @@ module Coupler
         })
         assert_equal 1, matcher.comparisons_dataset.count
       end
+
+      def test_deletes_comparisons_via_nested_attributes
+        project = Factory(:project)
+        resource = Factory(:resource, :project => project)
+        fields = resource.fields
+        scenario = Factory(:scenario, :project => project, :resource_1_id => resource.id)
+        matcher = Factory(:matcher, {
+          :scenario => scenario,
+          :comparisons_attributes => {
+            '1' => {'field_1_id' => fields[1].id.to_s, 'field_2_id' => fields[1].id.to_s},
+            '2' => {'field_1_id' => fields[2].id.to_s, 'field_2_id' => fields[2].id.to_s},
+          }
+        })
+
+        count = Comparison.count
+        comparison = matcher.comparisons_dataset.first
+        matcher.set({
+          :updated_at => Time.now,
+          :comparisons_attributes => [{:id => comparison.id, :_delete => true}]
+        })
+        matcher.save
+        assert_equal 1, matcher.comparisons_dataset.count
+        assert_equal count - 1, Comparison.count
+      end
     end
   end
 end

@@ -4,16 +4,31 @@
 <table class="list">
   <thead>
     <tr>
+      <th>#</th>
       <th>Type</th>
+      <th>Field 1</th>
+      <th>Field 2</th>
+      <th></th>
       <th></th>
     </tr>
   </thead>
   <tbody>
-  <% @matchers.each do |matcher| %>
-    <tr>
-      <td><%=h matcher.comparator_name %></td>
-      <td><%= delete_link("Delete", "/projects/#{@project.id}/scenarios/#{@scenario.id}/matchers/#{matcher.id}") %></td>
+  <% @matchers.each_with_index do |matcher, i| %>
+    <%- comparisons = matcher.comparisons -%>
+    <tr<%= " class='alt'" if i % 2 == 1 %>>
+      <td rowspan="<%= comparisons.length %>"><%= i + 1 %></td>
+      <td rowspan="<%= comparisons.length %>"><%=h matcher.comparator_name %></td>
+      <td><%= comparisons[0].field_1.name %></td>
+      <td><%= comparisons[0].field_2.name %></td>
+      <td rowspan="<%= comparisons.length %>"><a href="/projects/<%= @project.id %>/scenarios/<%= @scenario.id %>/matchers/<%= matcher.id %>/edit">Edit</a></td>
+      <td rowspan="<%= comparisons.length %>"><%= delete_link("Delete", "/projects/#{@project.id}/scenarios/#{@scenario.id}/matchers/#{matcher.id}") %></td>
     </tr>
+    <%- comparisons[1..-1].each_with_index do |comparison, j| -%>
+    <tr<%= " class='alt'" if i % 2 == 1 %>>
+      <td><%= comparison.field_1.name %></td>
+      <td><%= comparison.field_2.name %></td>
+    </tr>
+    <%- end -%>
   <% end %>
   </tbody>
 </table>
