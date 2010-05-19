@@ -146,6 +146,54 @@ module Coupler
         end
       end
 
+      def test_run_self_join_with_cross_join_and_no_transformations
+        database_count = Sequel::DATABASES.length
+
+        Sequel.connect(Config.connection_string("information_schema")) do |inf|
+          inf.execute("DROP DATABASE IF EXISTS score_sets")
+        end
+
+        project = Factory(:project, :name => "Cross join test without transformations")
+        resource = Factory(:resource, :project => project)
+        first_name = resource.fields_dataset[:name => 'first_name']
+        last_name = resource.fields_dataset[:name => 'last_name']
+        scenario = Factory(:scenario, :project => project, :resource_1 => resource)
+        matcher = Factory(:matcher, {
+          :comparator_name => "exact",
+          :comparisons_attributes => [
+            {:field_1_id => first_name.id, :field_2_id => last_name.id}
+          ],
+          :scenario => scenario
+        })
+
+        # add some rows that I think will cause failure
+        resource.source_dataset do |ds|
+          ds.insert(:first_name => "Foo", :last_name => "Foo")
+          ds.insert(:first_name => "Foo", :last_name => "Foo")
+          ds.insert(:first_name => "Foo", :last_name => "Foo")
+        end
+
+        Timecop.freeze(Time.now) do
+          scenario.run!
+          assert_equal Time.now, scenario.last_run_at
+        end
+
+        result = scenario.results_dataset.first
+        assert_not_nil result, "Didn't create result"
+
+        ScoreSet.find(result.score_set_id) do |score_set|
+          assert_not_nil score_set, "Didn't create score set"
+
+          resource.source_dataset do |ds|
+            ds.order("id").each do |row|
+              expected = ds.filter("last_name = ? AND id > ?", row[:first_name], row[:id]).count
+              actual = score_set.filter("first_id = ? AND score = 100", row[:id]).count
+              assert_equal expected, actual, "Expected #{expected} match for id #{row[:id]}"
+            end
+          end
+        end
+      end
+
       def test_status_with_no_matchers
         project = Factory(:project)
         resource = Factory(:resource, :project => project)

@@ -22,6 +22,7 @@ module Coupler
 
       def score(score_set, *datasets)
         join_array = []
+        filter_array = []
         if datasets.length == 1
           key_name = @keys[0]
           if @field_names.all? { |f| !f.is_a?(Array) }
@@ -34,7 +35,7 @@ module Coupler
               filter(~filter).order(*@field_names)
 
             last_value = nil
-            last_key = nil
+            keys = []
             matches = []
             offset = 0
             loop do
@@ -47,9 +48,11 @@ module Coupler
                 key = record[key_name]
                 if value != last_value
                   last_value = value
-                  last_key = key
+                  keys.clear
+                  keys << key
                 else
-                  add_match(score_set, matches, last_key, key)
+                  keys.each { |k| add_match(score_set, matches, k, key) }
+                  keys << key
                 end
                 count += 1
               end
@@ -60,13 +63,13 @@ module Coupler
           else
             # Single dataset with multiple fields; do a self-join
             join_array.push(~{:"t2__#{key_name}" => :"t1__#{key_name}"})
+            filter_array.push(:"t2__#{key_name}" > :"t1__#{key_name}")
             datasets[1] = datasets[0].clone
             @keys[1] = key_name
           end
         end
 
         join_hash = {}
-        filter_array = []
         @field_names.each do |obj|
           # For the filter array, is there any reason to 
           case obj

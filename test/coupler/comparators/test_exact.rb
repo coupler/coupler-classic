@@ -24,6 +24,7 @@ module Coupler
         records = [
           [{:id => 5, :first_name => "Harry"}],
           [{:id => 6, :first_name => "Harry"}],
+          [{:id => 9, :first_name => "Harry"}],
           [{:id => 3, :first_name => "Ron"}],
           [{:id => 8, :first_name => "Ron"}]
         ]
@@ -31,7 +32,7 @@ module Coupler
         score_set = stub("ScoreSet")
         score_set.expects(:import).with(
           [:first_id, :second_id, :score, :matcher_id],
-          [[5, 6, 100, 123], [3, 8, 100, 123]]
+          [[5, 6, 100, 123], [5, 9, 100, 123], [6, 9, 100, 123], [3, 8, 100, 123]]
         )
 
         comparator = Exact.new({
@@ -74,7 +75,7 @@ module Coupler
         joined_dataset = mock("Joined dataset")
         dataset.expects(:join).with(:people, [~{:t2__id => :t1__id}, {:t2__last_name => :t1__first_name}], {:table_alias => :t2}).returns(joined_dataset)
         joined_dataset.expects(:select).with({:t1__id => :first_id, :t2__id => :second_id}).returns(joined_dataset)
-        joined_dataset.expects(:filter).with(~{:t1__first_name => nil, :t2__last_name => nil}).returns(joined_dataset)
+        joined_dataset.expects(:filter).with(:t2__id > :t1__id, ~{:t1__first_name => nil, :t2__last_name => nil}).returns(joined_dataset)
         joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset)
         joined_dataset.expects(:each).multiple_yields([{:first_id => 123, :second_id => 456}], [{:first_id => 789, :second_id => 369}])
         joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
@@ -139,15 +140,39 @@ module Coupler
         comparator.score(score_set, dataset_1, dataset_2)
       end
 
-      def test_score_uses_limit_correctly
+      def test_score_with_single_dataset_uses_limit_correctly
+        dataset = stub("Dataset")
+        dataset.stubs(:select).returns(dataset)
+        dataset.stubs(:filter).returns(dataset)
+        dataset.stubs(:order).returns(dataset)
+
+        seq = sequence("selecting")
+        dataset.expects(:limit).with(1000, 0).returns(dataset).in_sequence(seq)
+        records_1 = Array.new(1000) { |i| [{:first_id => 123+i, :second_id => 456+i}] }
+        dataset.expects(:each).multiple_yields(*records_1).in_sequence(seq)
+
+        dataset.expects(:limit).with(1000, 1000).returns(dataset).in_sequence(seq)
+        records_2 = Array.new(123) { |i| [{:first_id => 1234+i, :second_id => 4567+i}] }
+        dataset.expects(:each).multiple_yields(*records_2).in_sequence(seq)
+
+        score_set = stub("ScoreSet", :import => nil)
+
+        comparator = Exact.new({
+          'field_names' => ['first_name'], 'keys' => ['id'],
+          'matcher_id' => 123
+        })
+        comparator.score(score_set, dataset)
+      end
+
+      def test_score_with_two_datasets_uses_limit_correctly
         dataset_1 = mock("Dataset 1", :first_source_table => :people)
         dataset_2 = mock("Dataset 2", :first_source_table => :adults)
         joined_dataset = mock("Joined dataset")
-        dataset_1.expects(:from).with({:people => :t1}).returns(dataset_1)
-        dataset_1.expects(:join).with(:adults, [{:t2__first_name => :t1__first_name}], {:table_alias => :t2}).returns(joined_dataset)
-        joined_dataset.expects(:select).with({:t1__id => :first_id, :t2__id => :second_id}).returns(joined_dataset)
-        joined_dataset.expects(:filter).with(~{:t1__first_name => nil, :t2__first_name => nil}).returns(joined_dataset)
-        joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
+        dataset_1.stubs(:from).returns(dataset_1)
+        dataset_1.stubs(:join).returns(joined_dataset)
+        joined_dataset.stubs(:select).returns(joined_dataset)
+        joined_dataset.stubs(:filter).returns(joined_dataset)
+        joined_dataset.stubs(:order).returns(joined_dataset)
 
         seq = sequence("selecting")
         joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset).in_sequence(seq)
