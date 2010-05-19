@@ -35,6 +35,12 @@
     <mkdir dir="${build}/ruby"/>
     <mkdir dir="${build}/root/licenses"/>
     <mkdir dir="${coupler.home}" />
+    <exec executable="git" outputproperty="coupler.version">
+      <arg line="rev-parse HEAD" />
+    </exec>
+    <exec executable="git" outputproperty="coupler.version.short">
+      <arg line="rev-parse --short HEAD" />
+    </exec>
   </target>
 
   <target name="install-gems" depends="init" description="install needed gems">
@@ -99,9 +105,6 @@
   </target>
 
   <target name="add-version-info">
-    <exec executable="git" outputproperty="coupler.version">
-      <arg line="rev-parse HEAD" />
-    </exec>
     <propertyfile file="${build}/root/edu/vanderbilt/coupler/coupler.properties">
       <entry key="coupler.version" value="${coupler.version}" />
       <entry key="build.timestamp" value="${timestamp}" />
@@ -123,7 +126,7 @@
   </target>
 
   <target name="dist" depends="install-ruby-libs, compile-runner, add-version-info, copy-licenses">
-    <jar destfile="${build}/coupler.jar" basedir="${build}/root">
+    <jar destfile="${build}/coupler-${coupler.version.short}.jar" basedir="${build}/root">
       <manifest>
         <attribute name="Main-Class" value="edu.vanderbilt.coupler.Main" />
       </manifest>
