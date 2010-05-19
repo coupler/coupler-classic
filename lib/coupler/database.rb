@@ -35,5 +35,3 @@ module Coupler
     end
   end
 end
-
-Coupler::Database.instance
