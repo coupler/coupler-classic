@@ -3,7 +3,7 @@ module Coupler
     include Singleton
 
     def initialize
-      db_path = File.join(Config[:data_path], "db")
+      db_path = File.join(Config.get(:data_path), "db")
       Dir.mkdir(db_path)    if !File.exist?(db_path)
 
       file = java.io.File.new(db_path)
@@ -13,10 +13,10 @@ module Coupler
     def start
       if !@server.is_running
         options = java.util.HashMap.new({
-          'port'                     => Config[:port].to_s,
+          'port'                     => Config.get(:database, :port).to_s,
           'initialize-user'          => 'true',
-          'initialize-user.user'     => Config[:user],
-          'initialize-user.password' => Config[:password]
+          'initialize-user.user'     => Config.get(:database, :user),
+          'initialize-user.password' => Config.get(:database, :password)
         })
         @server.start("coupler-server", options)
       end
@@ -28,7 +28,7 @@ module Coupler
 
     def console
       if @server.is_running
-        puts "mysql -P #{Config[:port]} -u #{Config[:user]} --password=#{Config[:password]} -S #{File.join(Config[:data_path], "db", "data", "mysql.sock")}"
+        puts "mysql -P #{Config.get(:database, :port)} -u #{Config.get(:database, :user)} --password=#{Config.get(:database, :password)} -S #{File.join(Config.get(:data_path), "db", "data", "mysql.sock")}"
         true
       else
         false

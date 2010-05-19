@@ -18,5 +18,15 @@ module Coupler
         Config.connection_string("ponies", :create_database => true, :zero_date_time_behavior => :convert_to_null)
       )
     end
+
+    def test_setting_options
+      Config.set(:database, :port, 37222)
+      assert_equal 37222, Config.get(:database, :port)
+    end
+
+    def teardown
+      Config.set(:database, :port, 12345)
+      super
+    end
   end
 end

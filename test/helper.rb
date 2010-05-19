@@ -27,13 +27,16 @@ class Test::Unit::TestCase
 
   def setup
     @original_database_count = Sequel::DATABASES.length
+    @_database = Coupler::Database.instance
   end
 
+  #alias :original_teardown :teardown
   def teardown
-    database ||= Coupler::Database.instance
-    database.tables.each do |name|
+    #original_teardown
+
+    @_database.tables.each do |name|
       next  if name == :schema_info
-      database[name].delete
+      @_database[name].delete
     end
 
     assert_equal @original_database_count, Sequel::DATABASES.length

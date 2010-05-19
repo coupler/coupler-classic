@@ -1,10 +1,12 @@
 module Coupler
   module Config
     DEFAULT_CONFIG = {
-      :port => 12345,
-      :user => 'coupler',
-      :password => 'cupla',
-      :conn_str => 'jdbc:mysql://localhost:%d/%s?user=%s&password=%s'
+      :database => {
+        :port => 12345,
+        :user => 'coupler',
+        :password => 'cupla',
+        :conn_str => 'jdbc:mysql://localhost:%d/%s?user=%s&password=%s'
+      }
     }
 
     VENDOR_LIBS = {
@@ -65,12 +67,12 @@ module Coupler
     end
 
     @@config = nil
-    def self.[](key)
+    def self.get(*keys)
       if @@config.nil?
         @@config = DEFAULT_CONFIG
       end
 
-      if !@@config.has_key?(key) && key == :data_path
+      if keys == [:data_path] && !@@config.has_key?(keys[0])
         # FIXME: this is a little naive
         dir = File.join(File.dirname(__FILE__), "..", "..")
         if ENV['APPDATA']
@@ -85,10 +87,22 @@ module Coupler
         end
         dir = File.expand_path(dir)
         Dir.mkdir(dir)  if !File.exist?(dir)
-        @@config[key] = dir
+        @@config[:data_path] = dir
       end
 
-      @@config[key]
+      keys.inject(@@config) { |hash, key| hash[key] }
+    end
+
+    def self.set(*args)
+      if @@config.nil?
+        @@config = DEFAULT_CONFIG
+      end
+
+      value = args.pop
+      keys = args
+
+      hash = keys[0..-2].inject(@@config) { |h, k| h[k] }
+      hash[keys[-1]] = value
     end
 
     @@data_path = nil
@@ -116,7 +130,7 @@ module Coupler
     end
 
     def self.connection_string(database, options = {})
-      retval = self[:conn_str] % [self[:port], database, self[:user], self[:password]]
+      retval = self.get(:database, :conn_str) % [self.get(:database, :port), database, self.get(:database, :user), self.get(:database, :password)]
       retval += "&createDatabaseIfNotExist=true"  if options[:create_database]
       case options[:zero_date_time_behavior]
       when :convert_to_null

@@ -3,7 +3,6 @@ module Coupler
 
     set :root, File.expand_path(File.join(File.dirname(__FILE__), "..", "..", "webroot"))
     set :static, true
-    #set :port, 37222
     set :erb, :trim => '-'
     set :raise_errors, Proc.new { test? }
     set :show_exceptions, Proc.new { development? }

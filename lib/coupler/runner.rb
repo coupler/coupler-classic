@@ -1,27 +1,36 @@
 module Coupler
   class Runner
-    def initialize
-      if !Coupler::Server.instance.is_running?
+    def initialize(argv = ARGV)
+      OptionParser.new do |opts|
+        opts.on("-p", "--port PORT", "Web server port") do |port|
+          Base.set(:port, port.to_i)
+        end
+        opts.on("-d", "--dport PORT", "Database server port") do |port|
+          Config.set(:database, :port, port.to_i)
+        end
+      end.parse!(argv)
+
+      if !Server.instance.is_running?
         @stop_server = true
-        Coupler::Server.instance.start
+        Server.instance.start
       end
 
-      if !Coupler::Scheduler.instance.is_started?
+      if !Scheduler.instance.is_started?
         @stop_scheduler = true
-        Coupler::Scheduler.instance.start
+        Scheduler.instance.start
       end
 
-      Coupler::Database.instance.migrate!
-      Coupler::Base.run! { |_| shutdown }
+      Database.instance.migrate!
+      Base.run! { |_| shutdown }
     end
 
     def shutdown
       if @stop_scheduler
-        Coupler::Scheduler.instance.shutdown
+        Scheduler.instance.shutdown
       end
 
       if @stop_server
-        Coupler::Server.instance.shutdown
+        Server.instance.shutdown
       end
     end
   end
