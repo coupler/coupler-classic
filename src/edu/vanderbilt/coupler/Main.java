@@ -10,6 +10,9 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.jruby.embed.ScriptingContainer;
+import org.jruby.Ruby;
+import org.jruby.RubyArray;
+import org.jruby.RubyString;
 
 public class Main {
   private static final Properties properties = new Properties();
@@ -35,20 +38,33 @@ public class Main {
     }
   }
 
-  private Main() {
+  private Main(String[] args) {
     System.out.printf("Coupler version: %s\nBuild date: %s\n\n",
         properties.getProperty("coupler.version"),
         properties.getProperty("build.timestamp"));
 
-    ScriptingContainer container = new ScriptingContainer();
     String location = findCouplerPath();
     List<String> loadPaths = new ArrayList();
     loadPaths.add(location);
-    container.getProvider().setLoadPaths(loadPaths);
 
+    ScriptingContainer container = new ScriptingContainer();
+    container.setLoadPaths(loadPaths);
+
+    // FIXME: I feel like there's a simpler way of doing this.
+    Ruby ruby = container.getProvider().getRuntime();
+    RubyArray rbArray = ruby.newArray();
+    for (String string : args) {
+      rbArray.append(ruby.newString(string));
+    }
+    container.put("argv", rbArray);
+
+    // SystemExit gets thrown when someone runs the JAR with --help
     String script =
       "require 'coupler'\n" +
-      "Coupler::Runner.new";
+      "begin\n" +
+      "  Coupler::Runner.new(argv)\n" +
+      "rescue SystemExit\n" +
+      "end";
     container.runScriptlet(script);
   }
 
@@ -70,6 +86,6 @@ public class Main {
   }
 
   public static void main(String[] args) {
-    new Main();
+    new Main(args);
   }
 }
