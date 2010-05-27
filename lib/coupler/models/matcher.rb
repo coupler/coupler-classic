@@ -5,7 +5,6 @@ module Coupler
       many_to_one :scenario
       one_to_many :comparisons
 
-      plugin :instance_hooks
       plugin :nested_attributes
 
       nested_attributes(:comparisons, :destroy => true) do |hash|

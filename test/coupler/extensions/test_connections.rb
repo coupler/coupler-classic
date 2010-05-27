@@ -34,11 +34,17 @@ module Coupler
       def test_successfully_creating_connection_with_return_to
         attribs = Factory.attributes_for(:connection)
         post "/connections", { 'connection' => attribs }, { 'rack.session' => { :return_to => '/foo' } }
-        connection = Models::Connection[:name => attribs[:name]]
-        assert connection
 
         assert last_response.redirect?, "Wasn't redirected"
         assert_equal "/foo", last_response['location']
+      end
+
+      def test_successfully_creating_connection_with_first_use
+        attribs = Factory.attributes_for(:connection)
+        post "/connections", { 'connection' => attribs }, { 'rack.session' => { :first_use => true } }
+
+        assert last_response.redirect?, "Wasn't redirected"
+        assert_equal "/projects/new", last_response['location']
       end
 
       def test_failing_to_create_connection

@@ -6,19 +6,17 @@ module Coupler
       assert_equal Sinatra::Base, Coupler::Base.superclass
     end
 
-    def test_index_when_no_projects
-      Models::Project.delete
+    def test_index_when_no_connections
       get "/"
       assert last_response.ok?
       assert_match /Getting Started/, last_response.body
     end
 
-    def test_redirect_when_projects_exist
-      project = Factory(:project)
+    def test_redirect_when_connections_exist
+      conn = Factory(:connection)
       get "/"
       assert last_response.redirect?
-      follow_redirect!
-      assert_equal "http://example.org/projects", last_request.url
+      assert_equal "/projects", last_response['location']
     end
   end
 end

@@ -340,6 +340,10 @@ module Coupler
         job = Factory(:scenario_job, :scenario => scenario)
         assert_equal [job], scenario.scheduled_jobs
       end
+
+      def test_destroying
+        flunk
+      end
     end
   end
 end

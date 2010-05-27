@@ -58,9 +58,10 @@ EOF
     end
 
     get "/" do
-      if Models::Project.count > 0
+      if Models::Connection.count > 0
         redirect "/projects"
       else
+        session[:first_use] = true
         erb :index
       end
     end

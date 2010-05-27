@@ -114,6 +114,10 @@ module Coupler
         put "/projects/#{@project[:id]}/resources/#{resource.id}"
         assert last_response.redirect?
       end
+
+      def test_delete
+        flunk
+      end
     end
   end
 end
