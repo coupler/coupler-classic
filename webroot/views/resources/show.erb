@@ -74,13 +74,13 @@
 
 <div id="new_transformation" style="display: none">
   <form method="post" action="/projects/<%= @project.id %>/resources/<%= @resource.id %>/transformations">
-    <table class="show">
+    <table class="form">
       <tr>
         <td class="col1"><strong>Field:</strong></td>
         <td id="field_id_label" class="col2"></td>
       </tr>
       <tr>
-        <td class="col1"><label for="transformer_id">Transformer:</label></td>
+        <td class="col1"><label for="transformer_id"><strong>Transformer:</strong></label></td>
         <td class="col2">
           <select id="transformer_id" name="transformation[transformer_id]">
             <% @transformers.each do |transformer| %>

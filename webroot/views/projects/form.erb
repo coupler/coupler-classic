@@ -1,12 +1,12 @@
 <% @breadcrumbs = [@project] %>
-<form method="post" action="/projects">
+<%= form_tag_for(@project, :base_url => "/projects") %>
   <p>
     <label for="name">Name</label><br/>
-    <input id="name" name="project[name]" type="text" />
+    <input id="name" name="project[name]" value="<%= @project.name %>" type="text" />
   </p>
   <p>
     <label for="description">Description</label><br/>
-    <input id="description" name="project[description]" type="text" />
+    <input id="description" name="project[description]" value="<%= @project.description %>" type="text" />
   </p>
   <p>
     <input type="submit" value="Submit" /> or <a href="/projects">Cancel</a>

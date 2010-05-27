@@ -37,15 +37,9 @@ module Coupler
         schema
       end
 
-      def local_database(&block)
-        Sequel.connect(local_connection_string, {
-          :loggers => [Coupler::Logger.instance],
-        }, &block)
-      end
-
       def local_dataset
-        local_database do |database|
-          ds = database[self.slug.to_sym]
+        project.local_database do |database|
+          ds = database[:"resource_#{id}"]
           yield ds
         end
       end
@@ -54,7 +48,7 @@ module Coupler
         if transformations_dataset.count == 0
           source_database(&block)
         else
-          local_database(&block)
+          project.local_database(&block)
         end
       end
 
@@ -104,7 +98,7 @@ module Coupler
 
       private
         def local_connection_string
-          Config.connection_string(self.project.slug, {
+          Config.connection_string(:"project_#{project.id}", {
             :create_database => true,
             :zero_date_time_behavior => :convert_to_null
           })
@@ -195,6 +189,17 @@ module Coupler
         def after_create
           super
           create_fields
+        end
+
+        def after_destroy
+          super
+          if transformations_dataset.count > 0 && !transformed_at.nil?
+            project.local_database do |db|
+              db.drop_table(:"resource_#{id}")
+            end
+          end
+          fields_dataset.each { |f| f.delete_versions_on_destroy = self.delete_versions_on_destroy; f.destroy }
+          transformations_dataset.each { |t| t.delete_versions_on_destroy = self.delete_versions_on_destroy; t.destroy }
         end
     end
   end

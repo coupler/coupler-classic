@@ -2,7 +2,6 @@ Major features/bugs:
 - Make the exact matcher threaded!
 - Database timeout issues (autoReconnect=true for MySQL)
 - Job management: canceling, etc.
-- MySQL spawning in JAR is lame
 - Combine multiple matcher scores in scenario runs
 - JRuby/Java multi-processor use
 - Runner options

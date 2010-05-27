@@ -3,6 +3,10 @@ require File.dirname(__FILE__) + '/../../helper'
 module Coupler
   module Models
     class TestProject < Test::Unit::TestCase
+      def db(&block)
+        Sequel.connect(Config.connection_string("information_schema"), &block)
+      end
+
       def test_sequel_model
         assert_equal ::Sequel::Model, Project.superclass
         assert_equal :projects, Project.table_name
@@ -117,6 +121,60 @@ module Coupler
 
         hash = Project.as_of_time(project.id, time + 1200)
         assert_equal "Foo Project", hash[:name]
+      end
+
+      def test_local_database
+        project = Factory(:project, :name => "roflsauce")
+        db do |inf|
+          databases = inf["SHOW DATABASES"].collect { |x| x[:Database] }
+          inf.run("DROP DATABASE project_#{project.id}")  if databases.include?("project_#{project.id}")
+        end
+
+        project.local_database do |db|
+          assert_kind_of Sequel::JDBC::Database, db
+          assert_match /project_#{project.id}/, db.uri
+          assert db.test_connection
+        end
+      end
+
+      def test_deletes_dependencies_after_destroy
+        project = Factory(:project)
+        resource = Factory(:resource, :project => project)
+        scenario = Factory(:scenario, :project => project, :resource_1 => resource)
+        project.destroy
+        assert_nil Resource[:id => resource.id]
+        assert_nil Scenario[:id => scenario.id]
+      end
+
+      def test_deletes_local_database_after_destroy
+        project = Factory(:project)
+        project.local_database { |db| db.test_connection }  # force creation of database
+        project.destroy
+        db do |inf|
+          databases = inf["SHOW DATABASES"].collect { |x| x[:Database] }
+          assert !databases.include?("project_#{project.id}")
+        end
+      end
+
+      def test_does_not_delete_versions_after_destroy
+        project = Factory(:project)
+        resource = Factory(:resource, :project => project)
+        scenario = Factory(:scenario, :project => project, :resource_1 => resource)
+        project.destroy
+        assert_equal 1, Database.instance[:projects_versions].filter(:current_id => project.id).count
+        assert_equal 1, Database.instance[:resources_versions].filter(:current_id => resource.id).count
+        assert_equal 1, Database.instance[:scenarios_versions].filter(:current_id => scenario.id).count
+      end
+
+      def test_forceably_deletes_versions_after_destroy
+        project = Factory(:project)
+        resource = Factory(:resource, :project => project)
+        scenario = Factory(:scenario, :project => project, :resource_1 => resource)
+        project.delete_versions_on_destroy = true
+        project.destroy
+        assert_equal 0, Database.instance[:projects_versions].filter(:current_id => project.id).count
+        assert_equal 0, Database.instance[:resources_versions].filter(:current_id => resource.id).count
+        assert_equal 0, Database.instance[:scenarios_versions].filter(:current_id => scenario.id).count
       end
     end
   end

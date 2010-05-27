@@ -9,7 +9,7 @@ module Coupler
 
         app.get "/projects/new" do
           @project = Models::Project.new
-          erb 'projects/new'.to_sym
+          erb 'projects/form'.to_sym
         end
 
         app.post "/projects" do
@@ -23,6 +23,29 @@ module Coupler
           @resources = @project.resources
           @scenarios = @project.scenarios
           erb 'projects/show'.to_sym
+        end
+
+        app.get "/projects/:id/edit" do
+          @project = Models::Project[:id => params[:id]]
+          erb 'projects/form'.to_sym
+        end
+
+        app.put "/projects/:id" do
+          @project = Models::Project[:id => params[:id]]
+          @project.set(params[:project])
+          if @project.valid?
+            @project.save
+            redirect '/projects'
+          else
+            erb 'projects/form'.to_sym
+          end
+        end
+
+        app.delete "/projects/:id" do
+          @project = Models::Project[:id => params[:id]]
+          @project.delete_versions_on_destroy = true  if params[:nuke] == "true"
+          @project.destroy
+          redirect '/projects'
         end
       end
     end

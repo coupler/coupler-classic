@@ -8,6 +8,9 @@ module Coupler
         opts.on("-d", "--dport PORT", "Database server port") do |port|
           Config.set(:database, :port, port.to_i)
         end
+        opts.on("--dir DIR", "Directory to use for Coupler's data") do |dir|
+          Config.set(:data_path, dir)
+        end
       end.parse!(argv)
 
       if !Server.instance.is_running?

@@ -10,6 +10,7 @@ module Coupler
       Scheduler.stubs(:instance).returns(@scheduler)
       @database = stub("database", :migrate! => nil)
       Database.stubs(:instance).returns(@database)
+      Config.stubs(:set)
       Base.stubs(:run!)
     end
 
@@ -53,6 +54,12 @@ module Coupler
     def test_sets_database_port
       argv = %w{--dport=31337}
       Config.expects(:set).with(:database, :port, 31337)
+      Runner.new(argv)
+    end
+
+    def test_sets_data_path
+      argv = %w{--dir=/tmp/coupler}
+      Config.expects(:set).with(:data_path, '/tmp/coupler')
       Runner.new(argv)
     end
   end

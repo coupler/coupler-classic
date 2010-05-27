@@ -179,25 +179,10 @@ module Coupler
         assert_equal expected, resource.source_schema
       end
 
-      def test_local_database
-        db do |inf|
-          databases = inf["SHOW DATABASES"].collect { |x| x[:Database] }
-          inf.run("DROP DATABASE roflsauce")  if databases.include?("rolfsauce")
-        end
-
-        project = Factory(:project, :name => "roflsauce")
-        resource = Factory(:resource, :name => "pants", :project => project)
-
-        resource.local_database do |db|
-          assert_kind_of Sequel::JDBC::Database, db
-          assert db.test_connection
-        end
-      end
-
       def test_local_dataset
-        db { |inf| inf.execute("DROP DATABASE IF EXISTS local_dataset_test") }
-
         project = Factory(:project, :name => "local_dataset test")
+        db { |inf| inf.execute("DROP DATABASE IF EXISTS project_#{project.id}") }
+
         resource = Factory(:resource, :name => "Resource 1", :project => project)
         field = resource.fields.first
         transformer = Factory(:transformer)
@@ -208,8 +193,8 @@ module Coupler
 
         resource.local_dataset do |dataset|
           database = dataset.db
-          assert_equal Config.connection_string("local_dataset_test", :create_database => true, :zero_date_time_behavior => :convert_to_null), database.uri
-          assert_equal database[:resource_1].select_sql, dataset.select_sql
+          assert_equal Config.connection_string("project_#{project.id}", :create_database => true, :zero_date_time_behavior => :convert_to_null), database.uri
+          assert_equal database[:"resource_#{resource.id}"].select_sql, dataset.select_sql
         end
       end
 
@@ -274,13 +259,13 @@ module Coupler
           assert_equal Time.now, resource.transformed_at
         end
 
-        Sequel.connect(Config.connection_string("awesome_test_project")) do |db|
-          assert db.tables.include?(:pants)
+        Sequel.connect(Config.connection_string("project_#{project.id}")) do |db|
+          assert db.tables.include?(:"resource_#{resource.id}")
 
           expected = [[:id, {:allow_null=>false, :default=>nil, :primary_key=>true, :db_type=>"int(11)", :type=>:integer, :ruby_default=>nil}], [:first_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}], [:last_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}]]
-          assert_equal expected, db.schema(:pants)
+          assert_equal expected, db.schema(:"resource_#{resource.id}")
 
-          changed_row = db[:pants][:id => original_row[:id]]
+          changed_row = db[:"resource_#{resource.id}"][:id => original_row[:id]]
           assert_equal original_row[:first_name].downcase, changed_row[:first_name]
         end
 
@@ -330,9 +315,10 @@ module Coupler
       end
 
       def test_final_database_is_local_database_with_transformations
-        resource = Factory(:resource)
+        project = Factory(:project)
+        resource = Factory(:resource, :project => project)
         transformation = Factory(:transformation, :resource => resource)
-        resource.local_database do |expected|
+        project.local_database do |expected|
           resource.final_database do |actual|
             assert_equal expected.uri, actual.uri
           end
@@ -391,7 +377,8 @@ module Coupler
       end
 
       def test_transforming_only_gets_specified_columns
-        resource = Factory(:resource)
+        project = Factory(:project)
+        resource = Factory(:resource, :project => project)
         resource.fields_dataset.filter(["name NOT IN ?", %w{id first_name}]).update(:is_selected => false)
         transformer = Factory(:transformer)
         transformation = Factory(:transformation, {
@@ -399,10 +386,66 @@ module Coupler
           :field => resource.fields_dataset[:name => 'first_name']
         })
         resource.transform!
-        resource.local_database do |db|
-          schema = db.schema(resource.slug.to_sym)
+        project.local_database do |db|
+          schema = db.schema(:"resource_#{resource.id}")
           assert_equal [:id, :first_name], schema.collect(&:first)
         end
+      end
+
+      def test_deletes_dependencies_after_destroy
+        resource = Factory(:resource)
+        transformer = Factory(:transformer)
+        transformation = Factory(:transformation, {
+          :resource => resource, :transformer => transformer,
+          :field => resource.fields_dataset[:name => 'first_name']
+        })
+        resource.destroy
+        assert_equal 0, Field.filter(:resource_id => resource.id).count
+        assert_nil Transformation[:id => transformation.id]
+      end
+
+      def test_deletes_local_dataset_after_destroy
+        project = Factory(:project)
+        resource = Factory(:resource, :project => project)
+        transformer = Factory(:transformer)
+        transformation = Factory(:transformation, {
+          :resource => resource, :transformer => transformer,
+          :field => resource.fields_dataset[:name => 'first_name']
+        })
+        resource.transform!
+        resource.destroy
+        project.local_database do |db|
+          assert !db.tables.include?(:"resource_#{resource.id}")
+        end
+      end
+
+      def test_does_not_delete_versions_after_destroy
+        resource = Factory(:resource)
+        field = resource.fields_dataset.first
+        transformer = Factory(:transformer)
+        transformation = Factory(:transformation, {
+          :resource => resource, :transformer => transformer,
+          :field => resource.fields_dataset[:name => 'first_name']
+        })
+        resource.destroy
+        assert_equal 1, Database.instance[:resources_versions].filter(:current_id => resource.id).count
+        assert_equal 1, Database.instance[:fields_versions].filter(:current_id => field.id).count
+        assert_equal 1, Database.instance[:transformations_versions].filter(:current_id => transformation.id).count
+      end
+
+      def test_forceably_deletes_versions_after_destroy
+        resource = Factory(:resource)
+        field = resource.fields_dataset.first
+        transformer = Factory(:transformer)
+        transformation = Factory(:transformation, {
+          :resource => resource, :transformer => transformer,
+          :field => resource.fields_dataset[:name => 'first_name']
+        })
+        resource.delete_versions_on_destroy = true
+        resource.destroy
+        assert_equal 0, Database.instance[:resources_versions].filter(:current_id => resource.id).count
+        assert_equal 0, Database.instance[:fields_versions].filter(:current_id => field.id).count
+        assert_equal 0, Database.instance[:transformations_versions].filter(:current_id => transformation.id).count
       end
     end
   end

@@ -1,17 +1,72 @@
-<% @breadcrumbs = ["Projects"] %>
-
+<%- @breadcrumbs = ["Projects"] -%>
+<%- add_javascript("jquery-ui.min.js") -%>
+<%- add_stylesheet("jquery-ui.css") -%>
 <table class="list">
   <tr>
     <th>Name</th>
     <th>Description</th>
+    <th></th>
+    <th></th>
   </tr>
   <% @projects.each_with_index do |project, i| %>
   <tr<% " class='alt'" if i % 2 == 1 %>>
     <td><a href="/projects/<%= project.id %>"><%= project.name %></a></td>
     <td><%= project.description %></td>
+    <td><a href="/projects/<%= project.id %>/edit">Edit</a></td>
+    <td><a href="#" onclick="return deleteProject(<%= project.id %>, '<%= project.name %>');">Delete</a></td>
   </tr>
   <% end %>
 </table>
 <p>
   <a href="/projects/new">New Project</a>
 </p>
+<div id="delete-project-dialog" style="display: none;">
+  <form id="delete-form" method="post">
+    <div style="display: none;">
+      <input type="hidden" name="_method" value="delete" />
+    </div>
+    <div id="confirm-1">
+      <p>Are you sure you want to delete this project?  This will delete everything about this project, including scenarios and resources.</p>
+      <br/>
+      <p>
+        <label for="nuke">Delete old versions, too?</label>
+        <input id="nuke" name="nuke" type="checkbox" value="true" />
+      </p>
+    </div>
+    <div id="confirm-2" style="display: none;">
+      <div id="nuke-choice" style="margin-bottom: 1em;">You have chosen to delete the project <strong>AND</strong> its history.</div>
+      <p>Are you really sure?</p>
+    </div>
+  </form>
+</div>
+
+<script type="text/javascript">
+  function deleteProject(id, name) {
+    $('#delete-form').attr('action', '/projects/'+id);
+    $('#delete-project-dialog').dialog('option', 'title', 'Delete '+name).dialog('open');
+  }
+  $(function() {
+    $('#delete-project-dialog').dialog({
+      autoOpen: false,
+      buttons: {
+        "Yes": function() {
+          if ($('#confirm-1').is(':visible')) {
+            $('#nuke-choice').toggle($('#nuke').is(':checked'));
+            $('#confirm-1').hide();
+            $('#confirm-2').show();
+          }
+          else {
+            $('#delete-form').submit();
+          }
+        },
+        "No": function() {
+          $('#delete-project-dialog').dialog('close');
+          $('#nuke').attr('checked', false)
+          $('#confirm-1').show();
+          $('#confirm-2').hide();
+        }
+      },
+      modal: true
+    });
+  });
+</script>

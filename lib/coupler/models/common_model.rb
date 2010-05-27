@@ -17,6 +17,10 @@ module Coupler
         def versions_dataset
           db[versions_table_name]
         end
+
+        def const_missing(name)
+          Models.const_missing(name)
+        end
       end
 
       @@versioned = {}
@@ -28,6 +32,7 @@ module Coupler
         versions_table_name = base.versions_table_name
         if base.db.tables.include?(versions_table_name)
           @@versioned[base] = versions_table_name
+          base.send(:attr_accessor, :delete_versions_on_destroy)
         end
       end
 
@@ -58,6 +63,14 @@ module Coupler
           hash = self.values.clone
           hash[:current_id] = hash.delete(:id)
           dataset.insert(hash)
+        end
+      end
+
+      def after_destroy
+        super
+        if @delete_versions_on_destroy && (versions_table_name = @@versioned[self.class])
+          dataset = self.db[versions_table_name]
+          dataset.filter(:current_id => id).delete
         end
       end
 

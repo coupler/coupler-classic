@@ -14,9 +14,9 @@ module Coupler
 
         def create_local_table
           cols = @fields.collect { |f| f.local_column_options }
-          @parent.local_database do |l_db|
+          @parent.project.local_database do |l_db|
             # create intermediate table
-            l_db.create_table!(@parent.slug) do
+            l_db.create_table!("resource_#{@parent.id}") do
               columns.push(*cols)
             end
           end
@@ -37,8 +37,8 @@ module Coupler
         end
 
         def transform
-          @parent.local_database do |l_db|
-            l_ds = l_db[@parent.slug.to_sym]
+          @parent.project.local_database do |l_db|
+            l_ds = l_db[:"resource_#{@parent.id}"]
 
             @parent.source_dataset do |s_ds|
               rows = []

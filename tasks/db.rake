@@ -4,7 +4,7 @@ namespace :db do
     confirm("This will completely obliterate the local database.")
 
     require 'fileutils'
-    dirs = Dir.glob(File.join(Coupler::Config[:data_path], "db", "*"))
+    dirs = Dir.glob(File.join(Coupler::Config.get(:data_path), "db", "*"))
     FileUtils.rm_rf(dirs.reject { |d| d =~ /migrate$/ }, :verbose => true)
   end
 

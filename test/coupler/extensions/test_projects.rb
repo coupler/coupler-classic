@@ -40,6 +40,36 @@ module Coupler
         assert last_response.ok?
         assert_match /Blah blah/, last_response.body
       end
+
+      def test_edit_project
+        project = Factory(:project, :name => "Blah blah")
+        get "/projects/#{project.id}/edit"
+        assert last_response.ok?
+      end
+
+      def test_update_project
+        project = Factory(:project, :name => "Blah blah")
+        put "/projects/#{project.id}", :project => {:name => "Hee haw"}
+        assert last_response.redirect?
+        assert_equal "/projects", last_response['location']
+      end
+
+      def test_delete
+        project = Factory(:project, :name => "Blah blah")
+        delete "/projects/#{project.id}"
+        assert_nil Models::Project[:id => project.id]
+        assert last_response.redirect?
+        assert_equal "/projects", last_response['location']
+      end
+
+      def test_delete_with_versions
+        project = Factory(:project, :name => "Blah blah")
+        delete "/projects/#{project.id}", :nuke => "true"
+        assert_nil Models::Project[:id => project.id]
+        assert_nil Database.instance[:projects_versions][:current_id => project.id]
+        assert last_response.redirect?
+        assert_equal "/projects", last_response['location']
+      end
     end
   end
 end

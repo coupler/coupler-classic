@@ -72,22 +72,23 @@ module Coupler
         @@config = DEFAULT_CONFIG
       end
 
-      if keys == [:data_path] && !@@config.has_key?(keys[0])
-        # FIXME: this is a little naive
-        dir = File.join(File.dirname(__FILE__), "..", "..")
-        if ENV['APPDATA']
-          # Windows
-          dir = File.join(ENV['APPDATA'], "coupler")
-        elsif !File.writable?(dir)
-          if ENV['HOME']
-            dir = File.join(ENV['HOME'], ".coupler")
-          else
-            raise "don't know where to put data!"
+      if keys == [:data_path]
+        if !@@config.has_key?(keys[0])
+          # FIXME: this is a little naive
+          dir = File.join(File.dirname(__FILE__), "..", "..")
+          if ENV['APPDATA']
+            # Windows
+            dir = File.join(ENV['APPDATA'], "coupler")
+          elsif !File.writable?(dir)
+            if ENV['HOME']
+              dir = File.join(ENV['HOME'], ".coupler")
+            else
+              raise "don't know where to put data!"
+            end
           end
+          @@config[:data_path] = File.expand_path(dir)
         end
-        dir = File.expand_path(dir)
-        Dir.mkdir(dir)  if !File.exist?(dir)
-        @@config[:data_path] = dir
+        Dir.mkdir(@@config[:data_path])  if !File.exist?(@@config[:data_path])
       end
 
       keys.inject(@@config) { |hash, key| hash[key] }
@@ -103,30 +104,6 @@ module Coupler
 
       hash = keys[0..-2].inject(@@config) { |h, k| h[k] }
       hash[keys[-1]] = value
-    end
-
-    @@data_path = nil
-    def self.data_path
-      # FIXME: this is a little naive
-
-      if @@data_path.nil?
-        dir = File.join(File.dirname(__FILE__), "..", "..")
-        if ENV['APPDATA']
-          # Windows
-          dir = File.join(ENV['APPDATA'], "coupler")
-        elsif !File.readable?(dir)
-          if ENV['HOME']
-            dir = File.join(ENV['HOME'], ".coupler")
-          else
-            raise "don't know where to put data!"
-          end
-        end
-        dir = File.expand_path(dir)
-        Dir.mkdir(dir)  if !File.exist?(dir)
-        @@data_path = dir
-      end
-
-      @@data_path
     end
 
     def self.connection_string(database, options = {})
