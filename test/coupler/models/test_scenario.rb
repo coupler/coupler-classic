@@ -117,10 +117,9 @@ module Coupler
           :resource_1 => resource
         })
         matcher = Factory(:matcher, {
-          :comparator_name => "exact",
           :comparisons_attributes => [
-            {:field_1_id => last_name.id, :field_2_id => last_name.id},
-            {:field_1_id => first_name.id, :field_2_id => first_name.id}
+            {:lhs_type => 'field', :lhs_value => last_name.id, :rhs_type => 'field', :rhs_value => last_name.id, :operator => 'equals'},
+            {:lhs_type => 'field', :lhs_value => first_name.id, :rhs_type => 'field', :rhs_value => first_name.id, :operator => 'equals'},
           ],
           :scenario => scenario
         })
@@ -159,9 +158,8 @@ module Coupler
         last_name = resource.fields_dataset[:name => 'last_name']
         scenario = Factory(:scenario, :project => project, :resource_1 => resource)
         matcher = Factory(:matcher, {
-          :comparator_name => "exact",
           :comparisons_attributes => [
-            {:field_1_id => first_name.id, :field_2_id => last_name.id}
+            {:lhs_type => 'field', :lhs_value => first_name.id, :rhs_type => 'field', :rhs_value => last_name.id, :operator => 'equals'},
           ],
           :scenario => scenario
         })
@@ -256,10 +254,9 @@ module Coupler
         owner_first_name = resource_2.fields_dataset[:name => "owner_first_name"]
         owner_last_name = resource_2.fields_dataset[:name => "owner_last_name"]
         matcher = Factory(:matcher, {
-          :comparator_name => "exact",
           :comparisons_attributes => [
-            {:field_1_id => first_name.id, :field_2_id => owner_first_name.id},
-            {:field_1_id => last_name.id, :field_2_id => owner_last_name.id}
+            {:lhs_type => 'field', :lhs_value => first_name.id, :rhs_type => 'field', :rhs_value => owner_first_name.id, :operator => 'equals'},
+            {:lhs_type => 'field', :lhs_value => last_name.id, :rhs_type => 'field', :rhs_value => owner_last_name.id, :operator => 'equals'},
           ],
           :scenario => scenario
         })
@@ -301,9 +298,8 @@ module Coupler
 
         scurvy_dog = resource.fields_dataset[:name => 'scurvy_dog']
         matcher = Factory(:matcher, {
-          :comparator_name => "exact",
           :comparisons_attributes => [
-            {:field_1_id => scurvy_dog.id, :field_2_id => scurvy_dog.id}
+            {:lhs_type => 'field', :lhs_value => scurvy_dog.id, :rhs_type => 'field', :rhs_value => scurvy_dog.id, :operator => 'equals'},
           ],
           :scenario => scenario
         })

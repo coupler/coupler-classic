@@ -39,7 +39,6 @@ end
 
 Factory.define :matcher, :class => Coupler::Models::Matcher do |m|
   m.association :scenario
-  m.comparator_name 'exact'
 end
 
 Factory.define :result, :class => Coupler::Models::Result do |r|
@@ -76,6 +75,9 @@ end
 
 Factory.define :comparison, :class => Coupler::Models::Comparison do |c|
   c.association :matcher
-  c.association :field_1, :factory => :field
-  c.association :field_2, :factory => :field
+  c.lhs_type "integer"
+  c.lhs_value { |x| 1 }
+  c.rhs_type "integer"
+  c.rhs_value { |x| 1 }
+  c.operator "equals"
 end

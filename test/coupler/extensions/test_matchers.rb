@@ -7,6 +7,8 @@ module Coupler
         super
         @project = Factory(:project)
         @resource = Factory(:resource, :project => @project)
+        @first_name = @resource.fields_dataset[:name => 'first_name']
+        @last_name = @resource.fields_dataset[:name => 'last_name']
         @scenario = Factory(:scenario, :project => @project, :resource_1 => @resource)
       end
 
@@ -17,13 +19,13 @@ module Coupler
 
       def test_successfully_creating_matcher
         attribs = {
-          'comparator_name' => 'exact',
-          'comparisons_attributes' => [{
+          'comparisons_attributes' => {
             '0' => {
-              'field_1_id' => @resource.fields_dataset[:name => 'first_name'].id,
-              'field_2_id' => @resource.fields_dataset[:name => 'last_name'].id
+              'lhs_type' => 'field', 'lhs_value' => @first_name.id.to_s,
+              'rhs_type' => 'field', 'rhs_value' => @last_name.id.to_s,
+              'operator' => 'equals'
             }
-          }]
+          }
         }
         post("/projects/#{@project.id}/scenarios/#{@scenario.id}/matchers", { 'matcher' => attribs })
         assert last_response.redirect?, "Wasn't redirected"
@@ -35,23 +37,33 @@ module Coupler
 
       def test_edit
         matcher = Factory(:matcher, :scenario => @scenario)
-        field_1 = @resource.fields[1]
-        field_2 = @resource.fields[2]
-        comparison = Factory(:comparison, :matcher => matcher, :field_1 => field_1, :field_2 => field_2)
+        comparison = Factory(:comparison, {
+          :matcher => matcher, :operator => 'equals',
+          :lhs_type => 'field', :lhs_value => @first_name.id,
+          :rhs_type => 'field', :rhs_value => @last_name.id
+        })
         get "/projects/#{@project.id}/scenarios/#{@scenario.id}/matchers/#{matcher.id}/edit"
         assert last_response.ok?
       end
 
       def test_updating_matcher
         matcher = Factory(:matcher, :scenario => @scenario)
-        field_1 = @resource.fields[1]
-        field_2 = @resource.fields[2]
-        comparison = Factory(:comparison, :matcher => matcher, :field_1 => field_1, :field_2 => field_2)
+        comparison = Factory(:comparison, {
+          :matcher => matcher, :operator => 'equals',
+          :lhs_type => 'field', :lhs_value => @first_name.id,
+          :rhs_type => 'field', :rhs_value => @last_name.id
+        })
 
-        attribs = {'comparisons_attributes' => [
-          { 'id' => comparison.id, '_delete' => true },
-          { 'field_1_id' => field_2.id, 'field_2_id' => field_1.id }
-        ]}
+        attribs = {
+          'comparisons_attributes' => {
+            '0' => { 'id' => comparison.id, '_delete' => true },
+            '1' => {
+              'lhs_type' => 'field', 'lhs_value' => @last_name.id.to_s,
+              'rhs_type' => 'field', 'rhs_value' => @first_name.id.to_s,
+              'operator' => 'equals'
+            }
+          }
+        }
         put "/projects/#{@project.id}/scenarios/#{@scenario.id}/matchers/#{matcher.id}", :matcher => attribs
 
         assert last_response.redirect?, "Wasn't redirected"

@@ -2,12 +2,18 @@ module Coupler
   module Models
     class Scenario
       class Runner
+        LIMIT = 1000
+        MATCHING_SCORE = 100
+
         def initialize(parent)
           @parent = parent
           @thread_pool = ThreadPool.new(10)
           setup_resources
           @keys = @resources.collect { |r| r.primary_key_name.to_sym }
-          setup_comparators
+        end
+
+        def run(*args)
+          raise NotImplementedError
         end
 
         protected
@@ -15,31 +21,110 @@ module Coupler
             raise NotImplementedError
           end
 
-          def setup_comparators
-            @comparators = {:simple => [], :normal => []}
-            @parent.matchers.each do |matcher|
-              klass = Comparators[matcher.comparator_name]
+          def add_match(score_set, matches, first_id, second_id, matcher_id)
+            matches.push([first_id, second_id, MATCHING_SCORE, matcher_id])
+            if matches.length == 1000
+              flush_matches(score_set, matches)
+            end
+          end
 
-              options = {
-                'keys' => @keys,
-                'matcher_id' => matcher.id,
-                'field_names' => matcher.comparisons.collect do |comparison|
-                  field_1 = comparison.field_1
-                  field_2 = comparison.field_2
-                  if field_1.name == field_2.name
-                    field_1.name
-                  else
-                    [field_1.name, field_2.name]
+          def flush_matches(score_set, matches)
+            score_set.import([:first_id, :second_id, :score, :matcher_id], matches)
+            matches.clear
+          end
+
+          def score(score_set, matcher, *datasets)
+            matcher_id = matcher.id
+            join_array = []
+            filter_array = []
+            if datasets.length == 1
+              key_name = @keys[0]
+              join_needed = matcher.comparisons.any? do |comparison|
+                comparison.lhs_type == 'field' &&
+                  comparison.rhs_type == 'field' &&
+                  comparison.raw_lhs_value != comparison.raw_rhs_value
+              end
+
+              if !join_needed
+                # This happens when there are no cross-comparisons within the
+                # same dataset (such as comparing first name to last name, for
+                # example).  This is the only case that doesn't involve a join.
+
+                select = [key_name]
+                filter = {}
+                field_names = []
+                matcher.comparisons.each do |comparison|
+                  comparison.fields.each do |field|
+                    name = field.name.to_sym
+                    select << name
+                    filter[name] = nil  # weed out nils (FIXME: don't hardcode)
+                    field_names << name
                   end
                 end
-              }
-              object = klass.new(options)
-              if klass.scoring_method == :simple_score
-                @comparators[:simple] << object
+                dataset = datasets[0].select(*select).filter(~filter).order(*field_names)
+
+                last_value = nil
+                keys = []
+                matches = []
+                offset = 0
+                loop do
+                  set = dataset.limit(LIMIT, offset)
+                  offset += LIMIT
+
+                  count = 0
+                  set.each do |record|
+                    value = record.values_at(*field_names)
+                    key = record[key_name]
+                    if value != last_value
+                      last_value = value
+                      keys.clear
+                      keys << key
+                    else
+                      keys.each { |k| add_match(score_set, matches, k, key, matcher_id) }
+                      keys << key
+                    end
+                    count += 1
+                  end
+                  break if count < LIMIT
+                end
+                flush_matches(score_set, matches)
+                return
               else
-                @comparators[:normal] << object
+                # Single dataset with multiple fields; do a self-join
+                join_array.push(~{:"t2__#{key_name}" => :"t1__#{key_name}"})
+                filter_array.push(:"t2__#{key_name}" > :"t1__#{key_name}")
+                datasets[1] = datasets[0].clone
+                @keys[1] = key_name
               end
             end
+
+            join_hash = {}
+            matcher.comparisons.each do |comparison|
+              field_names = comparison.fields.collect(&:name)
+              join_hash[:"t2__#{field_names[1]}"] = :"t1__#{field_names[0]}"
+              filter_array.push(~{:"t1__#{field_names[0]}" => nil, :"t2__#{field_names[1]}" => nil})
+            end
+            join_array.push(join_hash)
+
+            dataset = datasets[0].from(datasets[0].first_source_table => :t1).
+              join(datasets[1].first_source_table, join_array, :table_alias => :t2).
+              select(:"t1__#{@keys[0]}" => :first_id, :"t2__#{@keys[1]}" => :second_id).
+              filter(*filter_array).order(:"t1__#{@keys[0]}", :"t2__#{@keys[1]}")
+            offset = 0
+
+            matches = []
+            loop do
+              set = dataset.limit(LIMIT, offset)
+              offset += LIMIT
+
+              count = 0
+              set.each do |row|
+                add_match(score_set, matches, row[:first_id], row[:second_id], matcher_id)
+                count += 1
+              end
+              break if count < LIMIT
+            end
+            flush_matches(score_set, matches)
           end
       end
 
@@ -51,36 +136,13 @@ module Coupler
 
         def run(score_set)
           @resources[0].final_dataset do |dataset|
-            dataset = dataset.order(@keys[0])
-
             # FIXME: add this back somehow
             #num = dataset.count
             #@parent.update(:completed => 0, :total => num * (num - 1) / 2)
 
-            if !@comparators[:simple].empty?
-              dataset.each do |record_1|
-                dataset.filter("#{@keys[0]} > ?", record_1[@keys[0]]).each do |record_2|
-                  @thread_pool.execute(record_1, record_2) do |first, second|
-                    result = @comparators[:simple].inject(0) do |score, comparator|
-                      score + comparator.score(first, second)
-                    end
-
-                    score_set.insert_or_update({
-                      :first_id => first[@keys[0]], :second_id => second[@keys[0]],
-                      :score => result
-                    })
-                    # FIXME: add this back somehow
-                    #@parent.class.filter(:id => @parent.id).update("completed = completed + 1")
-                  end
-                end
-              end
+            @parent.matchers.each do |matcher|
+              score(score_set, matcher, dataset)
             end
-
-            @comparators[:normal].each do |comparator|
-              comparator.score(score_set, dataset)
-            end
-
-            @thread_pool.join
           end
         end
       end
@@ -92,39 +154,14 @@ module Coupler
 
         def run(score_set)
           @resources[0].final_dataset do |dataset_1|
-            dataset_1 = dataset_1.order(@keys[0])
-
             @resources[1].final_dataset do |dataset_2|
-              dataset_2 = dataset_2.order(@keys[1])
-
               # FIXME: add this back somehow
               #num = dataset_1.count * dataset_2.count
               #self.update(:completed => 0, :total => num)
 
-              if !@comparators[:simple].empty?
-                dataset_1.each do |record_1|
-                  dataset_2.each do |record_2|
-                    @thread_pool.execute(record_1, record_2) do |first, second|
-                      result = @comparators[:simple].inject(0) do |score, comparator|
-                        score + comparator.score(first, second)
-                      end
-                      score_set.insert({
-                        :first_id => first[@keys[0]], :second_id => second[@keys[1]],
-                        :score => result
-                      })
-
-                      # FIXME: add this back somehow
-                      #self.class.filter(:id => self.id).update("completed = completed + 1")
-                    end
-                  end
-                end
+              @parent.matchers.each do |matcher|
+                score(score_set, matcher, dataset_1, dataset_2)
               end
-
-              @comparators[:normal].each do |comparator|
-                comparator.score(score_set, dataset_1, dataset_2)
-              end
-
-              @thread_pool.join
             end
           end
         end

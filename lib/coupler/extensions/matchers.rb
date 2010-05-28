@@ -25,7 +25,7 @@ module Coupler
           if @matcher.save
             redirect "/projects/#{@project.id}/scenarios/#{@scenario.id}"
           else
-            erb 'matchers/new'.to_sym
+            erb 'matchers/form'.to_sym
           end
         end
 

@@ -3,14 +3,6 @@
 <%- add_stylesheet('jquery-ui.css') -%>
 <%= error_messages_for @matcher %>
 <%= form_tag_for(@matcher, :base_url => "/projects/#{@project.id}/scenarios/#{@scenario.id}/matchers") %>
-  <h3>Comparator</h3>
-  <p>
-    <select id="comparator_name" name="matcher[comparator_name]">
-    <%- Coupler::Comparators.list.keys.each do |comparator_name| -%>
-      <option<%= " selected='selected'" if @matcher.comparator_name == comparator_name %>><%= comparator_name %></option>
-    <%- end -%>
-    </select>
-  </p>
   <h3>Fields To Match</h3>
   <%- if @matcher.comparisons.count == 0 -%>
   <div id="no-comparisons" style="margin-bottom: 1em;">
@@ -29,8 +21,8 @@
       <tbody>
       <%- @matcher.comparisons.each_with_index do |comparison, i| -%>
         <tr id="comparison-row-<%= i %>">
-          <td><%= comparison.field_1.name %></td>
-          <td><%= comparison.field_2.name %></td>
+          <td><%= comparison.lhs_value.name %></td>
+          <td><%= comparison.rhs_value.name %></td>
           <td><a href="#" onclick="return deleteComparison(<%= i %>);">Delete</a></td>
         </tr>
       <%- end -%>
@@ -40,8 +32,11 @@
     <%# This could be done in one loop, but it's a lot less readable %>
     <div id='comparison-<%= i %>' style='display: none;'>
       <% if !comparison.new? %><input type='hidden' name='matcher[comparisons_attributes][<%= i %>][id]' value='<%= comparison.id %>' /><% end %>
-      <input type='hidden' name='matcher[comparisons_attributes][<%= i %>][field_1_id]' value='<%= comparison.field_1_id %>' />
-      <input type='hidden' name='matcher[comparisons_attributes][<%= i %>][field_2_id]' value='<%= comparison.field_2_id %>' />
+      <input type='hidden' name='matcher[comparisons_attributes][<%= i %>][lhs_type]' value='field' />
+      <input type='hidden' name='matcher[comparisons_attributes][<%= i %>][lhs_value]' value='<%= comparison.raw_lhs_value %>' />
+      <input type='hidden' name='matcher[comparisons_attributes][<%= i %>][rhs_type]' value='field' />
+      <input type='hidden' name='matcher[comparisons_attributes][<%= i %>][rhs_value]' value='<%= comparison.raw_rhs_value %>' />
+      <input type='hidden' name='matcher[comparisons_attributes][<%= i %>][operator]' value='equals' />
     </div>
   <%- end -%>
   </div>
@@ -101,11 +96,6 @@
 </form>
 
 <script type="text/javascript">
-  var comparators = {
-  <%- Coupler::Comparators.list.each_pair do |name, klass| -%>
-    '<%= name %>': { 'arity': <%= ((a = klass.field_arity).is_a?(Fixnum) ? a : a.to_s).inspect %> }
-  <%- end -%>
-  };
   var totalComparisons = <%= @matcher.comparisons.length %>;
   var numComparisons = <%= @matcher.comparisons.length %>;
 
@@ -143,8 +133,11 @@
             .append("<td><a href='#' onclick='return deleteComparison("+totalComparisons+");'>Delete</a></td>")
             .appendTo($('#comparisons table tbody'));
           $("<div id='comparison-"+totalComparisons+"' style='display: none;'></div>")
-            .append("<input type='hidden' name='matcher[comparisons_attributes]["+totalComparisons+"][field_1_id]' value='"+field_1.attr('value')+"' />")
-            .append("<input type='hidden' name='matcher[comparisons_attributes]["+totalComparisons+"][field_2_id]' value='"+field_2.attr('value')+"' />")
+            .append("<input type='hidden' name='matcher[comparisons_attributes]["+totalComparisons+"][lhs_type]' value='field' />")
+            .append("<input type='hidden' name='matcher[comparisons_attributes]["+totalComparisons+"][lhs_value]' value='"+field_1.attr('value')+"' />")
+            .append("<input type='hidden' name='matcher[comparisons_attributes]["+totalComparisons+"][rhs_type]' value='field' />")
+            .append("<input type='hidden' name='matcher[comparisons_attributes]["+totalComparisons+"][rhs_value]' value='"+field_2.attr('value')+"' />")
+            .append("<input type='hidden' name='matcher[comparisons_attributes]["+totalComparisons+"][operator]' value='equals' />")
             .appendTo($('#comparisons'));
           numComparisons++;
           totalComparisons++;
