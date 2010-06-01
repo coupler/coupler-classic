@@ -104,9 +104,9 @@ module Coupler
           dataset.expects(:from).with({:people => :t1}).returns(dataset)
 
           joined_dataset = mock("Joined dataset")
-          dataset.expects(:join).with(:people, [~{:t2__id => :t1__id}, {:t2__last_name => :t1__first_name}], {:table_alias => :t2}).returns(joined_dataset)
+          dataset.expects(:join).with(:people, [:t2__id > :t1__id, {:t2__last_name => :t1__first_name}], {:table_alias => :t2}).returns(joined_dataset)
           joined_dataset.expects(:select).with({:t1__id => :first_id, :t2__id => :second_id}).returns(joined_dataset)
-          joined_dataset.expects(:filter).with(:t2__id > :t1__id, ~{:t1__first_name => nil, :t2__last_name => nil}).returns(joined_dataset)
+          joined_dataset.expects(:filter).with(~{:t1__first_name => nil, :t2__last_name => nil}).returns(joined_dataset)
           joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset)
           joined_dataset.expects(:each).multiple_yields([{:first_id => 123, :second_id => 456}], [{:first_id => 789, :second_id => 369}])
           joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)

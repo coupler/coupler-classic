@@ -101,21 +101,12 @@ module Coupler
         assert_equal resource_2, scenario.resource_2
       end
 
-      def test_run_self_join_without_transformations
-        database_count = Sequel::DATABASES.length
-
-        Sequel.connect(Config.connection_string("information_schema")) do |inf|
-          inf.execute("DROP DATABASE IF EXISTS score_sets")
-        end
-
+      def test_run_self_linkage
         project = Factory(:project, :name => "Test without transformations")
         resource = Factory(:resource, :name => "Resource 1", :project => project)
         first_name = resource.fields_dataset[:name => 'first_name']
         last_name = resource.fields_dataset[:name => 'last_name']
-        scenario = Factory(:scenario, {
-          :name => "Scenario 1", :project => project,
-          :resource_1 => resource
-        })
+        scenario = Factory(:scenario, :name => "Scenario 1", :project => project, :resource_1 => resource)
         matcher = Factory(:matcher, {
           :comparisons_attributes => [
             {:lhs_type => 'field', :lhs_value => last_name.id, :rhs_type => 'field', :rhs_value => last_name.id, :operator => 'equals'},
@@ -124,71 +115,20 @@ module Coupler
           :scenario => scenario
         })
 
-        Timecop.freeze(Time.now) do
-          scenario.run!
-          assert_equal Time.now, scenario.last_run_at
+        score_set = stub("score set", :id => 123)
+        ScoreSet.expects(:create).yields(score_set)
+
+        runner = mock("single runner") do
+          expects(:run).with(score_set)
         end
+        Scenario::SingleRunner.expects(:new).with(scenario).returns(runner)
 
-        result = scenario.results_dataset.first
-        assert_not_nil result, "Didn't create result"
-
-        ScoreSet.find(result.score_set_id) do |score_set|
-          assert_not_nil score_set, "Didn't create score set"
-
-          resource.source_dataset do |ds|
-            ds.order("id").each do |row|
-              expected = ds.filter("last_name = ? AND first_name = ? AND id > ?", row[:last_name], row[:first_name], row[:id]).count
-              actual = score_set.filter("first_id = ? AND score = 100", row[:id]).count
-              assert_equal expected, actual, "Expected #{expected} match for id #{row[:id]}"
-            end
-          end
-        end
-      end
-
-      def test_run_self_join_with_cross_join_and_no_transformations
-        database_count = Sequel::DATABASES.length
-
-        Sequel.connect(Config.connection_string("information_schema")) do |inf|
-          inf.execute("DROP DATABASE IF EXISTS score_sets")
-        end
-
-        project = Factory(:project, :name => "Cross join test without transformations")
-        resource = Factory(:resource, :project => project)
-        first_name = resource.fields_dataset[:name => 'first_name']
-        last_name = resource.fields_dataset[:name => 'last_name']
-        scenario = Factory(:scenario, :project => project, :resource_1 => resource)
-        matcher = Factory(:matcher, {
-          :comparisons_attributes => [
-            {:lhs_type => 'field', :lhs_value => first_name.id, :rhs_type => 'field', :rhs_value => last_name.id, :operator => 'equals'},
-          ],
-          :scenario => scenario
-        })
-
-        # add some rows that I think will cause failure
-        resource.source_dataset do |ds|
-          ds.insert(:first_name => "Foo", :last_name => "Foo")
-          ds.insert(:first_name => "Foo", :last_name => "Foo")
-          ds.insert(:first_name => "Foo", :last_name => "Foo")
-        end
+        result = mock("result", :[]= => nil, :save => true)
+        Result.expects(:new).with(:scenario => scenario).returns(result)
 
         Timecop.freeze(Time.now) do
           scenario.run!
           assert_equal Time.now, scenario.last_run_at
-        end
-
-        result = scenario.results_dataset.first
-        assert_not_nil result, "Didn't create result"
-
-        ScoreSet.find(result.score_set_id) do |score_set|
-          assert_not_nil score_set, "Didn't create score set"
-
-          resource.source_dataset do |ds|
-            ds.order("id").each do |row|
-              expected = ds.filter("last_name = ? AND id > ?", row[:first_name], row[:id]).count
-              actual = score_set.filter("first_id = ? AND score = 100", row[:id]).count
-              assert_equal expected, actual, "Expected #{expected} match for id #{row[:id]}"
-            end
-          end
         end
       end
 
@@ -235,12 +175,6 @@ module Coupler
       end
 
       def test_run_dual_join_without_transformations
-        database_count = Sequel::DATABASES.length
-
-        Sequel.connect(Config.connection_string("information_schema")) do |inf|
-          inf.execute("DROP DATABASE IF EXISTS score_sets")
-        end
-
         project = Factory(:project, :name => "Test without transformations")
         resource_1 = Factory(:resource, :name => "People", :project => project)
         resource_2 = Factory(:resource, :name => "Pets", :project => project, :table_name => 'pets')
@@ -261,67 +195,20 @@ module Coupler
           :scenario => scenario
         })
 
-        Timecop.freeze(Time.now) do
-          scenario.run!
-          assert_equal Time.now, scenario.last_run_at
+        score_set = stub("score set", :id => 123)
+        ScoreSet.expects(:create).yields(score_set)
+
+        runner = mock("dual runner") do
+          expects(:run).with(score_set)
         end
+        Scenario::DualRunner.expects(:new).with(scenario).returns(runner)
 
-        result = scenario.results_dataset.first
-        assert_not_nil result, "Didn't create result"
-
-        ScoreSet.find(result.score_set_id) do |score_set|
-          assert_not_nil score_set, "Didn't create score set"
-
-          resource_1.source_dataset do |ds_1|
-            resource_2.source_dataset do |ds_2|
-              ds_1.order("id").each do |row_1|
-                expected = ds_2.filter("owner_last_name = ? AND owner_first_name = ?", row_1[:last_name], row_1[:first_name]).count
-                actual = score_set.filter("first_id = ? AND score = 100", row_1[:id]).count
-                assert_equal expected, actual, "Expected #{expected} for id #{row_1[:id]}"
-              end
-            end
-          end
-        end
-      end
-
-      def test_run_uses_correct_key
-        Sequel.connect(Config.connection_string("information_schema")) do |inf|
-          inf.execute("DROP DATABASE IF EXISTS score_sets")
-        end
-
-        project = Factory(:project, :name => "Test")
-        resource = Factory(:resource, :name => "Resource 1", :project => project, :table_name => "avast_ye")
-        scenario = Factory(:scenario, {
-          :name => "Scenario 1", :project => project,
-          :resource_1 => resource
-        })
-
-        scurvy_dog = resource.fields_dataset[:name => 'scurvy_dog']
-        matcher = Factory(:matcher, {
-          :comparisons_attributes => [
-            {:lhs_type => 'field', :lhs_value => scurvy_dog.id, :rhs_type => 'field', :rhs_value => scurvy_dog.id, :operator => 'equals'},
-          ],
-          :scenario => scenario
-        })
+        result = mock("result", :[]= => nil, :save => true)
+        Result.expects(:new).with(:scenario => scenario).returns(result)
 
         Timecop.freeze(Time.now) do
           scenario.run!
           assert_equal Time.now, scenario.last_run_at
-        end
-
-        result = scenario.results_dataset.first
-        assert_not_nil result, "Didn't create result"
-
-        ScoreSet.find(result.score_set_id) do |score_set|
-          assert_not_nil score_set, "Didn't create score set"
-
-          resource.source_dataset do |ds|
-            ds.order("arrr").each do |row|
-              expected = ds.filter("scurvy_dog = ? AND arrr > ?", row[:scurvy_dog], row[:arrr]).count
-              actual = score_set.filter("first_id = ? AND score = 100", row[:id]).count
-              assert_equal expected, actual, "Expected #{expected} for id #{row[:id]}"
-            end
-          end
         end
       end
 

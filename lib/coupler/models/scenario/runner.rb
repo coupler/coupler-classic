@@ -36,7 +36,6 @@ module Coupler
           def score(score_set, matcher, *datasets)
             matcher_id = matcher.id
             join_array = []
-            filter_array = []
             if datasets.length == 1
               key_name = @keys[0]
               join_needed = matcher.comparisons.any? do |comparison|
@@ -91,14 +90,14 @@ module Coupler
                 return
               else
                 # Single dataset with multiple fields; do a self-join
-                join_array.push(~{:"t2__#{key_name}" => :"t1__#{key_name}"})
-                filter_array.push(:"t2__#{key_name}" > :"t1__#{key_name}")
+                join_array.push(:"t2__#{key_name}" > :"t1__#{key_name}")
                 datasets[1] = datasets[0].clone
                 @keys[1] = key_name
               end
             end
 
             join_hash = {}
+            filter_array = []
             matcher.comparisons.each do |comparison|
               field_names = comparison.fields.collect(&:name)
               join_hash[:"t2__#{field_names[1]}"] = :"t1__#{field_names[0]}"
