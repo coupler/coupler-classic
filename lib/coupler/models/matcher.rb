@@ -7,6 +7,17 @@ module Coupler
 
       plugin :nested_attributes
       nested_attributes :comparisons, :destroy => true
+
+      private
+        def validate
+          super
+          result = comparisons.any? do |comparison|
+            comparison.lhs_type == "field" && comparison.rhs_type == "field"
+          end
+          if !result
+            errors[:base] << "At least one field-to-field comparison is required."
+          end
+        end
     end
   end
 end

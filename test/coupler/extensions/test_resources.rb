@@ -68,10 +68,10 @@ module Coupler
 
         # resource table
         rows = tables[0].css('tbody tr')
-        assert_equal 3, rows.length
+        assert_equal 4, rows.length
         rows.each_with_index do |row, i|
           cells = row.css('td')
-          assert_equal %w{id first_name last_name}[i], cells[0].inner_html
+          assert_equal %w{id first_name last_name age}[i], cells[0].inner_html
         end
       end
 

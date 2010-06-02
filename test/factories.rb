@@ -39,6 +39,14 @@ end
 
 Factory.define :matcher, :class => Coupler::Models::Matcher do |m|
   m.association :scenario
+  m.comparisons_attributes do |record|
+    resources = record.scenario.resources
+    [{
+      'lhs_type' => 'field', 'lhs_value' => resources[0].fields_dataset.order('id DESC').last.id,
+      'rhs_type' => 'field', 'rhs_value' => resources[-1].fields_dataset.order('id DESC').last.id,
+      'operator' => 'equals'
+    }]
+  end
 end
 
 Factory.define :result, :class => Coupler::Models::Result do |r|

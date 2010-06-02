@@ -79,6 +79,7 @@ namespace :db do
         primary_key :id
         String :first_name
         String :last_name
+        Integer :age
         index :first_name
         index :last_name
       end
@@ -114,19 +115,19 @@ namespace :db do
       person_records = []
       pet_records = []
       num.times do |i|
-        person = [ Forgery(:name).first_name, Forgery(:name).last_name ]
+        person = [ Forgery(:name).first_name, Forgery(:name).last_name, rand(30) + 20 ]
         pet = [ Forgery(:name).first_name, person[0], person[1] ]
 
         person_records << person
         pet_records << pet
         if i % 10000 == 0
-          people.import([:first_name, :last_name], person_records)
+          people.import([:first_name, :last_name, :age], person_records)
           pets.import([:name, :owner_first_name, :owner_last_name], pet_records)
           person_records.clear
           pet_records.clear
         end
       end
-      people.import([:first_name, :last_name], person_records)
+      people.import([:first_name, :last_name, :age], person_records)
       pets.import([:name, :owner_first_name, :owner_last_name], pet_records)
 
       pirates = db[:avast_ye]

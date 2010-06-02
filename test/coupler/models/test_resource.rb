@@ -60,10 +60,13 @@ module Coupler
       end
 
       def test_requires_unique_name_across_projects
-        project = Factory.create(:project)
-        resource_1 = Factory.create(:resource, :name => "avast", :project => project)
-        resource_2 = Factory.build(:resource, :name => "avast", :project => project)
-        assert !resource_2.valid?
+        project_1 = Factory(:project)
+        project_2 = Factory(:project)
+        resource_1 = Factory(:resource, :name => "avast", :project => project_1)
+        resource_2 = Factory.build(:resource, :name => "avast", :project => project_1)
+        resource_3 = Factory(:resource, :name => "avast", :project => project_2)
+        assert !resource_2.valid?, "Resource 2 was supposed to be invalid"
+        assert resource_3.valid?, resource_3.errors.full_messages.join("; ")
       end
 
       def test_required_unique_name_on_update
@@ -112,10 +115,13 @@ module Coupler
       end
 
       def test_requires_unique_slug_across_projects
-        project = Factory(:project)
-        resource_1 = Factory(:resource, :slug => 'pants', :project => project)
-        resource_2 = Factory.build(:resource, :name => 'foo', :slug => 'pants', :project => project)
+        project_1 = Factory(:project)
+        project_2 = Factory(:project)
+        resource_1 = Factory(:resource, :slug => 'pants', :project => project_1)
+        resource_2 = Factory.build(:resource, :name => 'foo', :slug => 'pants', :project => project_1)
+        resource_3 = Factory(:resource, :slug => 'pants', :project => project_2)
         assert !resource_2.valid?
+        assert resource_3.valid?, resource_3.errors.full_messages.join("; ")
 
         resource_2.slug = "roflslam"
         assert resource_2.valid?
@@ -175,7 +181,7 @@ module Coupler
 
       def test_source_schema
         resource = Factory.create(:resource)
-        expected = [[:id, {:allow_null=>false, :default=>nil, :primary_key=>true, :db_type=>"int(11)", :type=>:integer, :ruby_default=>nil}], [:first_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}], [:last_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}]]
+        expected = [[:id, {:allow_null=>false, :default=>nil, :primary_key=>true, :db_type=>"int(11)", :type=>:integer, :ruby_default=>nil}], [:first_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}], [:last_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}], [:age, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"int(11)", :type=>:integer, :ruby_default=>nil}]]
         assert_equal expected, resource.source_schema
       end
 
@@ -262,7 +268,7 @@ module Coupler
         Sequel.connect(Config.connection_string("project_#{project.id}")) do |db|
           assert db.tables.include?(:"resource_#{resource.id}")
 
-          expected = [[:id, {:allow_null=>false, :default=>nil, :primary_key=>true, :db_type=>"int(11)", :type=>:integer, :ruby_default=>nil}], [:first_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}], [:last_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}]]
+          expected = [[:id, {:allow_null=>false, :default=>nil, :primary_key=>true, :db_type=>"int(11)", :type=>:integer, :ruby_default=>nil}], [:first_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}], [:last_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}], [:age, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"int(11)", :type=>:integer, :ruby_default=>nil}]]
           assert_equal expected, db.schema(:"resource_#{resource.id}")
 
           changed_row = db[:"resource_#{resource.id}"][:id => original_row[:id]]

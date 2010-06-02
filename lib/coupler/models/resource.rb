@@ -117,23 +117,24 @@ module Coupler
         end
 
         def validate
+          super
           if self.name.nil? || self.name == ""
             errors[:name] << "is required"
           else
             if self.new?
-              count = self.class.filter(:name => self.name).count
+              count = self.class.filter(:name => name, :project_id => project_id).count
               errors[:name] << "is already taken"   if count > 0
             else
-              count = self.class.filter(["name = ? AND id != ?", self.name, self.id]).count
+              count = self.class.filter({:name => name, :project_id => project_id}, ~{:id => id}).count
               errors[:name] << "is already taken"   if count > 0
             end
           end
 
           if self.new?
-            count = self.class.filter(:slug => self.slug).count
+            count = self.class.filter(:slug => slug, :project_id => project_id).count
             errors[:slug] << "is already taken"   if count > 0
           else
-            count = self.class.filter(["slug = ? AND id != ?", self.slug, self.id]).count
+            count = self.class.filter({:slug => slug, :project_id => project_id}, ~{:id => id}).count
             errors[:slug] << "is already taken"   if count > 0
           end
 

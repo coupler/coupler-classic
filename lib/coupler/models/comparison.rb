@@ -3,7 +3,7 @@ module Coupler
     class Comparison < Sequel::Model
       include CommonModel
 
-      OPERATORS = %w{equals}
+      OPERATORS = %w{equals greater_than}
       TYPES = %w{field integer string}
 
       many_to_one :matcher
@@ -26,9 +26,7 @@ module Coupler
       def fields
         result = []
         result << lhs_value if lhs_type == 'field'
-        if rhs_type == 'field'
-          result << rhs_value if result.empty? || raw_rhs_value != raw_lhs_value
-        end
+        result << rhs_value if rhs_type == 'field'
         result
       end
 

@@ -48,7 +48,37 @@ module Coupler
       end
 
       def test_deletes_comparisons_via_nested_attributes
+        project = Factory(:project)
+        resource = Factory(:resource, :project => project)
+        fields = resource.fields
+        scenario = Factory(:scenario, :project => project, :resource_1_id => resource.id)
         matcher = Factory(:matcher, {
+          :scenario => scenario,
+          :comparisons_attributes => {
+            '1' => {
+              'lhs_type' => 'field', 'lhs_value' => fields[1].id.to_s,
+              'rhs_type' => 'field', 'rhs_value' => fields[2].id.to_s,
+              'operator' => 'equals'
+            },
+            '2' => {
+              'lhs_type' => 'integer', 'lhs_value' => 1,
+              'rhs_type' => 'integer', 'rhs_value' => 1,
+              'operator' => 'equals'
+            }
+          }
+        })
+        assert_equal 2, matcher.comparisons_dataset.count
+
+        comparison = matcher.comparisons_dataset.first
+        matcher.update({
+          :updated_at => Time.now,
+          :comparisons_attributes => [{:id => comparison.id, :_delete => true}]
+        })
+        assert_equal 1, matcher.comparisons_dataset.count
+      end
+
+      def test_requires_at_least_one_field_to_field_comparison
+        matcher = Factory.build(:matcher, {
           :comparisons_attributes => {
             '1' => {
               'lhs_type' => 'integer', 'lhs_value' => 1,
@@ -57,14 +87,7 @@ module Coupler
             }
           }
         })
-        assert_equal 1, matcher.comparisons_dataset.count
-
-        comparison = matcher.comparisons_dataset.first
-        matcher.update({
-          :updated_at => Time.now,
-          :comparisons_attributes => [{:id => comparison.id, :_delete => true}]
-        })
-        assert_equal 0, matcher.comparisons_dataset.count
+        assert !matcher.valid?
       end
     end
   end

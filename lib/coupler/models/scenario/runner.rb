@@ -36,74 +36,49 @@ module Coupler
           def score(score_set, matcher, *datasets)
             matcher_id = matcher.id
             join_array = []
-            if datasets.length == 1
-              key_name = @keys[0]
-              join_needed = matcher.comparisons.any? do |comparison|
-                comparison.lhs_type == 'field' &&
-                  comparison.rhs_type == 'field' &&
-                  comparison.raw_lhs_value != comparison.raw_rhs_value
-              end
-
-              if !join_needed
-                # This happens when there are no cross-comparisons within the
-                # same dataset (such as comparing first name to last name, for
-                # example).  This is the only case that doesn't involve a join.
-
-                select = [key_name]
-                filter = {}
-                field_names = []
-                matcher.comparisons.each do |comparison|
-                  comparison.fields.each do |field|
-                    name = field.name.to_sym
-                    select << name
-                    filter[name] = nil  # weed out nils (FIXME: don't hardcode)
-                    field_names << name
-                  end
-                end
-                dataset = datasets[0].select(*select).filter(~filter).order(*field_names)
-
-                last_value = nil
-                keys = []
-                matches = []
-                offset = 0
-                loop do
-                  set = dataset.limit(LIMIT, offset)
-                  offset += LIMIT
-
-                  count = 0
-                  set.each do |record|
-                    value = record.values_at(*field_names)
-                    key = record[key_name]
-                    if value != last_value
-                      last_value = value
-                      keys.clear
-                      keys << key
-                    else
-                      keys.each { |k| add_match(score_set, matches, k, key, matcher_id) }
-                      keys << key
-                    end
-                    count += 1
-                  end
-                  break if count < LIMIT
-                end
-                flush_matches(score_set, matches)
-                return
-              else
-                # Single dataset with multiple fields; do a self-join
-                join_array.push(:"t2__#{key_name}" > :"t1__#{key_name}")
-                datasets[1] = datasets[0].clone
-                @keys[1] = key_name
-              end
-            end
-
-            join_hash = {}
             filter_array = []
-            matcher.comparisons.each do |comparison|
-              field_names = comparison.fields.collect(&:name)
-              join_hash[:"t2__#{field_names[1]}"] = :"t1__#{field_names[0]}"
-              filter_array.push(~{:"t1__#{field_names[0]}" => nil, :"t2__#{field_names[1]}" => nil})
+            if datasets.length == 1
+              # Self-join
+              join_array.push(:"t1__#{@keys[0]}" < :"t2__#{@keys[0]}")
+              datasets[1] = datasets[0].clone
+              @keys[1] = @keys[0]
             end
-            join_array.push(join_hash)
+
+            matcher.comparisons.each do |comparison|
+              types = [comparison.lhs_type, comparison.rhs_type]
+              lhs_value = comparison.lhs_value
+              if types[0] == 'field'
+                lhs_value = :"t1__#{lhs_value.name}"
+                filter_array.push(~{lhs_value => nil})
+              end
+
+              rhs_value = comparison.rhs_value
+              if types[1] == 'field'
+                rhs_value = :"t2__#{rhs_value.name}"
+                filter_array.push(~{rhs_value => nil})
+              end
+
+              operator = case comparison.operator
+                         when 'equals' then "="
+                         when 'greater_than' then ">"
+                         end
+
+              if types[0] == 'field' && types[1] == 'field'
+                if operator == "="
+                  join_array.push(lhs_value => rhs_value)
+                else
+                  join_array.push(lhs_value.send(operator, rhs_value))
+                end
+              #elsif operator == "="
+                #filter_array.push(lhs_value => rhs_value)
+              elsif which = types.index("field")
+                if which == 0
+                  filter_array.push(lhs_value.send(operator, rhs_value))
+                else
+                  # flip the operator
+                end
+              end
+            end
 
             dataset = datasets[0].from(datasets[0].first_source_table => :t1).
               join(datasets[1].first_source_table, join_array, :table_alias => :t2).

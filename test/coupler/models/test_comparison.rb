@@ -59,7 +59,7 @@ module Coupler
 
       def test_allows_valid_operators
         comparison = Factory.build(:comparison, :operator => nil)
-        %w{equals}.each do |op|
+        %w{equals greater_than}.each do |op|
           comparison.operator = op
           assert comparison.valid?
         end
@@ -117,16 +117,6 @@ module Coupler
           :rhs_type => "field", :rhs_value => field_2.id,
         })
         assert_equal [field_1, field_2], comparison.fields
-      end
-
-      def test_fields_returns_one_field_if_both_are_equal
-        resource = Factory(:resource)
-        field = resource.fields[0]
-        comparison = Factory(:comparison, {
-          :lhs_type => "field", :lhs_value => field.id,
-          :rhs_type => "field", :rhs_value => field.id,
-        })
-        assert_equal [field], comparison.fields
       end
 
       def test_fields_returns_empty_array
