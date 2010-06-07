@@ -74,12 +74,9 @@ module Coupler
         end
       end
 
-      def save!
-        self.class.raise_on_save_failure = true
-        begin
-          save
-        ensure
-          self.class.raise_on_save_failure = false
+      def save!(*args)
+        if !save(*args)
+          raise "couldn't save: " + errors.full_messages.join("; ")
         end
       end
     end

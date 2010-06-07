@@ -12,11 +12,13 @@ module Coupler
       :Transformation, :Scenario, :Matcher, :Job, :Result, :Comparison
     ]
     def self.const_missing(name)
+      name = name.to_sym
       if NAMES.include?(name)
         Database.instance
         require File.dirname(__FILE__) + "/models/#{name.to_s.downcase}"
         const_get(name)
       else
+        puts "#{name.inspect} wasn't in #{NAMES.inspect}"
         super
       end
     end

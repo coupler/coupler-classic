@@ -25,13 +25,13 @@ begin
   require 'git'
 
   Cucumber::Rake::Task.new(:features)
-  task :features => ['environment:test', :check_dependencies, 'db:bootstrap', 'db:fake']
+  task :features => ['environment:test', :check_dependencies, 'db:migrate:reset', 'db:fake']
 
   Cucumber::Rake::Task.new(:features_html, "Run Cucumber features with HTML output") do |t|
     outfile = "pages/_posts/#{Date.today.to_s}-features.html"
     t.cucumber_opts = "--format Butternut::Formatter --out #{outfile} features"
   end
-  task :features_html => ['environment:test', :check_dependencies, 'db:bootstrap', 'db:fake']
+  task :features_html => ['environment:test', :check_dependencies, 'db:migrate:reset', 'db:fake']
 
   desc "Update github pages for coupler"
   task :update_pages => :features_html do

@@ -58,7 +58,6 @@
   function updateCheckboxes() {
     $('#fields .field_checkbox').each(function() {
       id = this.id.replace("_checkbox", "");
-      console.log(this, $('#'+id).val());
       $(this).attr('checked', $('#'+id).val() == "1");
     });
   }

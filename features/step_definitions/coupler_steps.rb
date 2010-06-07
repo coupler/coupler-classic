@@ -1,6 +1,16 @@
+Given /^that I have created a connection called "(.+?)"$/ do |connection_name|
+  @connection_name = connection_name
+  @connection = Factory(:connection, :name => connection_name)
+end
+
 Given /^that I have created a project called "(.+?)"$/ do |project_name|
   @project_name = project_name
   @project = Factory(:project, :name => project_name)
+end
+
+Given /^that I have created a transformer called "(.+?)"$/ do |transformer_name|
+  @transformer_name = transformer_name
+  @transformer = Factory(:transformer, :name => transformer_name)
 end
 
 Given /^that I have added the "(.+?)" resource$/ do |resource_name|
@@ -12,42 +22,43 @@ Given /^that I have added the "(.+?)" resource$/ do |resource_name|
               { :table_name => "pets" }
             end
   @resources ||= []
-  @resources << Factory(:resource, {:name => resource_name, :project => @project}.merge(options))
+  @resources << Factory(:resource, {:name => resource_name, :project => @project, :connection => @connection}.merge(options))
 end
 
-Given /^that I have added a "([^\"]*)" transformation for "([^\"]*)"$/ do |transformer, field|
+Given /^that I have added a transformation for "([^\"]*)"$/ do |field|
+  resource = @resources[0]
   @transformation = Factory(:transformation, {
-    :resource => @resources.last, :transformer_name => transformer,
-    :field_name => field
+    :resource => resource, :transformer => @transformer,
+    :field => resource.fields_dataset[:name => field]
   })
 end
 
-Given /^that I have created a scenario called "([^"]*)"$/ do |scenario_name|
+Given /^that I have created a self-linkage scenario called "([^"]*)"$/ do |scenario_name|
   @scenario = Factory(:scenario, {
-    :name => scenario_name, :type => "self-join",
+    :name => scenario_name, :resource_1_id => @resources[0].id,
     :project => @project
   })
-  @scenario.add_resource(@resources.last)
 end
 
-Given /^that I have created a dual-join scenario called "([^"]*)"$/ do |scenario_name|
+Given /^that I have created a dual-linkage scenario called "([^"]*)"$/ do |scenario_name|
   @scenario = Factory(:scenario, {
-    :name => scenario_name, :type => "dual-join",
-    :project => @project
+    :name => scenario_name, :project => @project,
+    :resource_1_id => @resources[0].id, :resource_2_id => @resources[1].id
   })
-  @scenario.add_resource(@resources[0])
-  @scenario.add_resource(@resources[1])
 end
 
-Given /^that I have added a "([^\"]*)" matcher with these options:$/ do |comparator_name, table|
-  comparator_options = Hash.new { |h, k| h[k] = {} }
-  table.raw.each do |(resource_name, key, value)|
-    resource = Coupler::Models::Resource[:name => resource_name, :project_id => @project.id]
-    comparator_options[resource.id][key] = value
+Given /^that I have added a matcher with these options:$/ do |table|
+  comparisons_attributes = []
+  resources = @scenario.resources
+  table.hashes.each do |hash|
+    comparisons_attributes << { 
+      "lhs_type" => "field", "lhs_value" => resources[0].fields_dataset[:name => hash["Field 1"]].id,
+      "rhs_type" => "field", "rhs_value" => resources[-1].fields_dataset[:name => hash["Field 2"]].id,
+      "operator" => hash["Operator"]
+    }
   end
   @matcher = Factory(:matcher, {
-    :comparator_name => comparator_name,
-    :comparator_options => comparator_options,
+    :comparisons_attributes => comparisons_attributes,
     :scenario => @scenario
   })
 end
@@ -57,10 +68,16 @@ When /^I go to the (.+?) page$/ do |page_name|
   path = case page_name
          when "front"
            "/"
+         when "connections"
+           "/connections"
+         when "projects"
+           "/projects"
          when "project"
            "/projects/#{@project.id}"
          when "resource"
-           "/projects/#{@project.id}/resources/#{@resources.last.id}"
+           "/projects/#{@project.id}/resources/#{@resources[0].id}"
+         when "transformations"
+           "/projects/#{@project.id}/resources/#{@resources[0].id}/transformations"
          when "scenario"
            "/projects/#{@project.id}/scenarios/#{@scenario.id}"
          end
@@ -95,17 +112,24 @@ When /^I click the "(.+?)" button$/ do |button_name|
   click_button(button_name)
 end
 
-Then /^it should show me a confirmation page$/ do
-  assert_match /successfully created/, current_page_source
+When /^I click the "(.+?)" button with confirmation$/ do |button_name|
+  browser.confirm(true) do
+    click_button(button_name)
+  end
+end
+
+Then /^(?:it should )?show me a confirmation notice$/ do
+  assert_match /successfully created|created successfully/, current_page_source
 end
 
 Then /^ask me to (.+)$/ do |question|
+  question = question.sub(/\bI\b/, "you")
   assert current_page_source.include?(question)
 end
 
 Then /^it should take me back to the (\w+) page$/ do |page_name|
   case page_name
   when 'resource'
-    assert_match %r{/projects/#{@project.id}/resources/#{@resources.last.id}$}, current_url
+    assert_match %r{/projects/#{@project.id}/resources/#{@resources[0].id}$}, current_url
   end
 end

@@ -19,6 +19,7 @@ module Coupler
           @transformation.resource = @resource
 
           if @transformation.save
+            flash[:notice] = "Transformation was successfully created."
             redirect "/projects/#{@project.id}/resources/#{@resource.id}"
           else
             @transformers = Models::Transformer.all

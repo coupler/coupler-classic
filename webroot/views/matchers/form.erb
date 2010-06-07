@@ -55,12 +55,12 @@
     <table class="form">
       <tbody>
         <tr>
-          <th colspan="2"><%= @scenario.resource_1.name %></th>
+          <th colspan="2" class="header"><%= @scenario.resource_1.name %></th>
         </tr>
         <tr>
-          <td class="left">Field:</td>
+          <td class="left"><label for="field-1-select">Field</label></td>
           <td>
-            <select id="field-1-select">
+            <select id="field-1-select" style="width: 100%">
               <option></option>
             <%- @scenario.resource_1.selected_fields.each do |field| -%>
               <option value="<%= field.id %>"><%= field.name %></option>
@@ -70,13 +70,13 @@
         </tr>
         <%- if @scenario.resource_2 -%>
         <tr>
-          <th colspan="2"><%= @scenario.resource_2.name %></th>
+          <th colspan="2" class="header"><%= @scenario.resource_2.name %></th>
         </tr>
         <%- end -%>
         <tr>
-          <td class="left">Match&nbsp;To:</td>
+          <td class="left"><label for="field-2-select">Match To</label></td>
           <td>
-            <select id="field-2-select">
+            <select id="field-2-select" style="width: 100%">
               <option></option>
             <%- if @scenario.resource_2 -%>
             <%- @scenario.resource_2.selected_fields.each do |field| -%>

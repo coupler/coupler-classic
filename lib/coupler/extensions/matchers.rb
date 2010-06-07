@@ -23,6 +23,7 @@ module Coupler
           @matcher.scenario = @scenario
 
           if @matcher.save
+            flash[:notice] = "Matcher was successfully created."
             redirect "/projects/#{@project.id}/scenarios/#{@scenario.id}"
           else
             erb 'matchers/form'.to_sym
