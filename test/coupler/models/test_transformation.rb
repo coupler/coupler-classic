@@ -59,10 +59,13 @@ module Coupler
         transformer = Factory(:transformer)
         resource = Factory(:resource)
         field = resource.fields_dataset.first
-        transformation = Factory(:transformation, :transformer => transformer, :field => field)
+        transformation = Factory(:transformation, {
+          :transformer => transformer, :resource => resource,
+          :field => field
+        })
 
         result = stub('result')
-        transformation.transformer.expects(:field_changes).with(field).returns(result)
+        transformation.transformer.expects(:field_changes).with(transformation.field).returns(result)
         assert_equal result, transformation.field_changes
       end
 

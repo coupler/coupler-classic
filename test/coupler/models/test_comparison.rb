@@ -126,6 +126,13 @@ module Coupler
         })
         assert_equal [], comparison.fields
       end
+
+      def test_operator_symbol
+        comparison = Comparison.new(:operator => 'equals')
+        assert_equal "=", comparison.operator_symbol
+        comparison.operator = "greater_than"
+        assert_equal ">", comparison.operator_symbol
+      end
     end
   end
 end

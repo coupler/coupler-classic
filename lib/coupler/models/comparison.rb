@@ -3,7 +3,7 @@ module Coupler
     class Comparison < Sequel::Model
       include CommonModel
 
-      OPERATORS = %w{equals greater_than}
+      OPERATORS = {"equals" => "=", "greater_than" => ">"}
       TYPES = %w{field integer string}
 
       many_to_one :matcher
@@ -28,6 +28,10 @@ module Coupler
         result << lhs_value if lhs_type == 'field'
         result << rhs_value if rhs_type == 'field'
         result
+      end
+
+      def operator_symbol
+        OPERATORS[operator]
       end
 
       private
@@ -55,7 +59,7 @@ module Coupler
               errors.add(attr, "is not valid")
             end
           end
-          if !OPERATORS.include?(operator)
+          if !OPERATORS.keys.include?(operator)
             errors.add(:operator, "is not valid")
           end
         end

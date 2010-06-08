@@ -65,7 +65,11 @@ module CouplerWorld
 
   def find_element_by_label_or_name(type, label_or_name)
     elt = browser.send(type, :label, label_or_name)
-    elt.exist? ? elt : browser.send(type, :name, label_or_name)
+    if !elt.exist?
+      elt = browser.send(type, :name, label_or_name)
+      elt = elt.exist? ? elt : browser.send(type, :id, label_or_name)
+    end
+    elt
   end
 
   private
@@ -115,7 +119,10 @@ end
 
 Before do
   database = Coupler::Database.instance
-  database.tables.each { |t| database[t].delete }
+  database.tables.each do |name|
+    next  if name == :schema_info
+    database[name].delete
+  end
 end
 
 World(CouplerWorld)

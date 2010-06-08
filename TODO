@@ -10,5 +10,3 @@ Fancy features for the future:
 - Do authorization on projects
 - Allow user to enter resource password whenever needed; don't store it
 - Allow score_sets to be used as resources
-
-ADD SOME CUCUMBER TESTS!!!!
