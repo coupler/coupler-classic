@@ -29,8 +29,17 @@ Feature: managing scenarios
   Scenario: running a self-linkage scenario
     Given that I have created a self-linkage scenario called "Link by Last name"
     And that I have added a matcher with these options:
-      | Field 1   | Operator | Field 2   |
-      | last_name | equals   | last_name |
+      | Type 1 | Value 1   | Operator | Type 2 | Value 2   |
+      | field  | last_name | equals   | field  | last_name |
+    When I go to the scenario page
+    And I click the "Run now" button with confirmation
+    Then it should start the linkage process
+
+  Scenario: running a scenario with a non-equality matcher
+    Given that I have created a self-linkage scenario called "Link by Last name"
+    And that I have added a matcher with these options:
+      | Type 1 | Value 1   | Operator       | Type 2 | Value 2   |
+      | field  | last_name | does_not_equal | field  | last_name |
     When I go to the scenario page
     And I click the "Run now" button with confirmation
     Then it should start the linkage process

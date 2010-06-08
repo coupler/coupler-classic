@@ -58,14 +58,13 @@ module Coupler
                 filter_array.push(~{rhs_value => nil})
               end
 
-              operator = case comparison.operator
-                         when 'equals' then "="
-                         when 'greater_than' then ">"
-                         end
+              operator = comparison.operator_symbol
 
               if types[0] == 'field' && types[1] == 'field'
-                if operator == "="
-                  join_array.push(lhs_value => rhs_value)
+                case operator
+                when "=", "!="
+                  hash = {lhs_value => rhs_value}
+                  join_array.push(operator == "=" ? hash : ~hash)
                 else
                   join_array.push(lhs_value.send(operator, rhs_value))
                 end

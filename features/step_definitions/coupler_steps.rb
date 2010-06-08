@@ -51,9 +51,11 @@ Given /^that I have added a matcher with these options:$/ do |table|
   comparisons_attributes = []
   resources = @scenario.resources
   table.hashes.each do |hash|
-    comparisons_attributes << { 
-      "lhs_type" => "field", "lhs_value" => resources[0].fields_dataset[:name => hash["Field 1"]].id,
-      "rhs_type" => "field", "rhs_value" => resources[-1].fields_dataset[:name => hash["Field 2"]].id,
+    lhs_value = hash["Type 1"] == "field" ? resources[0].fields_dataset[:name => hash["Value 1"]].id : hash["Value 1"]
+    rhs_value = hash["Type 2"] == "field" ? resources[-1].fields_dataset[:name => hash["Value 2"]].id : hash["Value 2"]
+    comparisons_attributes << {
+      "lhs_type" => hash["Type 1"], "lhs_value" => lhs_value,
+      "rhs_type" => hash["Type 2"], "rhs_value" => rhs_value,
       "operator" => hash["Operator"]
     }
   end

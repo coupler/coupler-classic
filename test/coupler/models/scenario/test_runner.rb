@@ -63,6 +63,35 @@ module Coupler
           runner.run(score_set)
         end
 
+        def test_single_dataset_and_one_field_to_field_inequality_comparison
+          scenario = Factory(:scenario, :project => @project, :resource_1_id => @resource_1.id)
+          matcher = create_matcher_for(scenario, [@first_name, @first_name, 'does_not_equal'])
+          matcher_id = matcher.id
+
+          dataset = mock("Dataset")
+          dataset.expects(:first_source_table).twice.returns(:people)
+          dataset.expects(:from).with({:people => :t1}).returns(dataset)
+
+          joined_dataset = mock("Joined dataset")
+          dataset.expects(:join).with(:people, [:t1__id < :t2__id, ~{:t1__first_name => :t2__first_name}], {:table_alias => :t2}).returns(joined_dataset)
+          joined_dataset.expects(:select).with({:t1__id => :first_id, :t2__id => :second_id}).returns(joined_dataset)
+          joined_dataset.expects(:filter).with(~{:t1__first_name => nil}, ~{:t2__first_name => nil}).returns(joined_dataset)
+          joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset)
+          joined_dataset.expects(:each).multiple_yields([{:first_id => 123, :second_id => 456}], [{:first_id => 789, :second_id => 369}])
+          joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
+
+          scenario.resource_1.stubs(:final_dataset).yields(dataset)
+
+          score_set = stub("ScoreSet")
+          score_set.expects(:import).with(
+            [:first_id, :second_id, :score, :matcher_id],
+            [[123, 456, 100, matcher_id], [789, 369, 100, matcher_id]]
+          )
+
+          runner = SingleRunner.new(scenario)
+          runner.run(score_set)
+        end
+
         def test_single_dataset_with_a_greater_than_comparison
           scenario = Factory(:scenario, :project => @project, :resource_1_id => @resource_1.id)
           matcher = create_matcher_for(scenario, [@first_name, @first_name], [@age, 30, 'greater_than'])

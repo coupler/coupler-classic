@@ -59,7 +59,7 @@ module Coupler
 
       def test_allows_valid_operators
         comparison = Factory.build(:comparison, :operator => nil)
-        %w{equals greater_than}.each do |op|
+        %w{equals does_not_equal greater_than}.each do |op|
           comparison.operator = op
           assert comparison.valid?
         end
@@ -132,6 +132,8 @@ module Coupler
         assert_equal "=", comparison.operator_symbol
         comparison.operator = "greater_than"
         assert_equal ">", comparison.operator_symbol
+        comparison.operator = "does_not_equal"
+        assert_equal "!=", comparison.operator_symbol
       end
     end
   end

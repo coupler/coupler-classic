@@ -3,7 +3,11 @@ module Coupler
     class Comparison < Sequel::Model
       include CommonModel
 
-      OPERATORS = {"equals" => "=", "greater_than" => ">"}
+      OPERATORS = {
+        "equals" => "=",
+        "does_not_equal" => "!=",
+        "greater_than" => ">",
+      }
       TYPES = %w{field integer string}
 
       many_to_one :matcher
