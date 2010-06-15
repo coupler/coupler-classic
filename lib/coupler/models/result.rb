@@ -21,11 +21,11 @@ module Coupler
         hash = snapshot
         if snapshot[:scenario][:linkage_type] == "self-linkage"
           rslug = snapshot[:resource_1][:slug]
-          csv << %W{#{rslug}_id_1 #{rslug}_id_2 score}
+          csv << %W{#{rslug}_id_1 #{rslug}_id_2 score matcher_ids}
         else
           rslug1 = snapshot[:resource_1][:slug]
           rslug2 = snapshot[:resource_2][:slug]
-          csv << %W{#{rslug1}_id #{rslug2}_id score matches}
+          csv << %W{#{rslug1}_id #{rslug2}_id score matcher_ids}
         end
 
         ScoreSet.find(score_set_id) do |score_set|
@@ -33,9 +33,9 @@ module Coupler
             first_id,
             second_id,
             sum(score).cast(Integer).as(score),
-            group_concat(matcher_id).as(matches)
+            group_concat(matcher_id).as(matcher_ids)
           ]}.group(:first_id, :second_id)
-          ds.each { |row| csv << row.values_at(:first_id, :second_id, :score, :matches) }
+          ds.each { |row| csv << row.values_at(:first_id, :second_id, :score, :matcher_ids) }
         end
         csv.close
         csv.string

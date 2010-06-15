@@ -57,7 +57,7 @@ module Coupler
         result = Factory(:result, :scenario => scenario, :score_set_id => score_set_id)
 
         expected = [
-          %w{uno_id dos_id score matches},
+          %w{uno_id dos_id score matcher_ids},
           %w{13 37 456 1},
           %w{867 5309 444 1,2}
         ]
