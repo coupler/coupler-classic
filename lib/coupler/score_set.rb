@@ -47,6 +47,7 @@ module Coupler
 
     attr_reader :id
     def initialize(id, dataset)
+      super(dataset)
       @id = id
       @dataset = dataset
     end

@@ -6,6 +6,7 @@ module Coupler
       log_path = File.join(Config.get(:data_path), "log")
       Dir.mkdir(log_path)    if !File.exist?(log_path)
       @logger = ::Logger.new(File.join(log_path, 'coupler.log'))
+      super(@logger)
     end
 
     def __getobj__

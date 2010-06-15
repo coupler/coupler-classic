@@ -3,6 +3,11 @@ require File.dirname(__FILE__) + '/../../helper'
 module Coupler
   module Models
     class TestComparison < Test::Unit::TestCase
+      def setup
+        super
+        @resource = Factory(:resource)
+      end
+
       def test_sequel_model
         assert_equal ::Sequel::Model, Comparison.superclass
         assert_equal :comparisons, Comparison.table_name
@@ -66,9 +71,8 @@ module Coupler
       end
 
       def test_value_methods_return_fields_if_type_is_field
-        resource = Factory(:resource)
-        field_1 = resource.fields[0]
-        field_2 = resource.fields[1]
+        field_1 = @resource.fields[0]
+        field_2 = @resource.fields[1]
         comparison = Factory(:comparison, {
           :lhs_type => "field", :lhs_value => field_1.id,
           :rhs_type => "field", :rhs_value => field_2.id
@@ -89,8 +93,7 @@ module Coupler
       end
 
       def test_fields_returns_lhs_field
-        resource = Factory(:resource)
-        field = resource.fields[0]
+        field = @resource.fields[0]
         comparison = Factory(:comparison, {
           :lhs_type => "field", :lhs_value => field.id,
           :rhs_type => "integer", :rhs_value => 123
@@ -99,8 +102,7 @@ module Coupler
       end
 
       def test_fields_returns_rhs_field
-        resource = Factory(:resource)
-        field = resource.fields[0]
+        field = @resource.fields[0]
         comparison = Factory(:comparison, {
           :lhs_type => "integer", :lhs_value => 123,
           :rhs_type => "field", :rhs_value => field.id,
@@ -109,9 +111,8 @@ module Coupler
       end
 
       def test_fields_returns_two_fields
-        resource = Factory(:resource)
-        field_1 = resource.fields[0]
-        field_2 = resource.fields[1]
+        field_1 = @resource.fields[0]
+        field_2 = @resource.fields[1]
         comparison = Factory(:comparison, {
           :lhs_type => "field", :lhs_value => field_1.id,
           :rhs_type => "field", :rhs_value => field_2.id,
@@ -134,6 +135,29 @@ module Coupler
         assert_equal ">", comparison.operator_symbol
         comparison.operator = "does_not_equal"
         assert_equal "!=", comparison.operator_symbol
+      end
+
+      %w{lhs rhs}.each do |name|
+        # A mite silly, this is.
+        define_method(:"test_#{name}_label") do
+          field = @resource.fields[0]
+          comparison = Comparison.new(:"#{name}_type" => 'field', :"#{name}_value" => field.id)
+          assert_equal field.name, comparison.send("#{name}_label")
+
+          comparison.send("#{name}_which=", 1)
+          assert_equal "#{field.name} (#{@resource.name} 1)", comparison.send("#{name}_label")
+
+          comparison.send("#{name}_which=", 2)
+          assert_equal "#{field.name} (#{@resource.name} 2)", comparison.send("#{name}_label")
+
+          comparison.send("#{name}_type=", 'integer')
+          comparison.send("#{name}_value=", 123)
+          assert_equal "123", comparison.send("#{name}_label")
+
+          comparison.send("#{name}_type=", 'string')
+          comparison.send("#{name}_value=", 'foo')
+          assert_equal %{"foo"}, comparison.send("#{name}_label")
+        end
       end
     end
   end

@@ -10,6 +10,7 @@ module Coupler
       @scheduler = StdSchedulerFactory.default_scheduler
       @listener = Scheduler::JobListener.new
       @scheduler.add_global_job_listener(@listener)
+      super(@scheduler)
     end
 
     def __getobj__

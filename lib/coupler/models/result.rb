@@ -25,13 +25,17 @@ module Coupler
         else
           rslug1 = snapshot[:resource_1][:slug]
           rslug2 = snapshot[:resource_2][:slug]
-          csv << %W{#{rslug1}_id #{rslug2}_id score}
+          csv << %W{#{rslug1}_id #{rslug2}_id score matches}
         end
 
         ScoreSet.find(score_set_id) do |score_set|
-          score_set.all.each do |row|
-            csv << row.values_at(:first_id, :second_id, :score)
-          end
+          ds = score_set.select{[
+            first_id,
+            second_id,
+            sum(score).cast(Integer).as(score),
+            group_concat(matcher_id).as(matches)
+          ]}.group(:first_id, :second_id)
+          ds.each { |row| csv << row.values_at(:first_id, :second_id, :score, :matches) }
         end
         csv.close
         csv.string

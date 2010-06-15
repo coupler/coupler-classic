@@ -33,6 +33,16 @@ module Coupler
             matches.clear
           end
 
+          def add_condition(array, lhs, rhs, operator)
+            case operator
+            when "=", "!="
+              hash = {lhs => rhs}
+              array.push(operator == "=" ? hash : ~hash)
+            else
+              array.push(lhs.send(operator, rhs))
+            end
+          end
+
           def score(score_set, matcher, *datasets)
             matcher_id = matcher.id
             join_array = []
@@ -48,31 +58,27 @@ module Coupler
               types = [comparison.lhs_type, comparison.rhs_type]
               lhs_value = comparison.lhs_value
               if types[0] == 'field'
-                lhs_value = :"t1__#{lhs_value.name}"
-                filter_array.push(~{lhs_value => nil})
+                which = comparison.lhs_which || 1
+                lhs_value = :"t#{which}__#{lhs_value.name}"
+                expr = ~{lhs_value => nil}
+                filter_array.push(expr)   unless filter_array.include?(expr)
               end
 
               rhs_value = comparison.rhs_value
               if types[1] == 'field'
-                rhs_value = :"t2__#{rhs_value.name}"
-                filter_array.push(~{rhs_value => nil})
+                which = comparison.rhs_which || 2
+                rhs_value = :"t#{which}__#{rhs_value.name}"
+                expr = ~{rhs_value => nil}
+                filter_array.push(expr)   unless filter_array.include?(expr)
               end
 
               operator = comparison.operator_symbol
 
               if types[0] == 'field' && types[1] == 'field'
-                case operator
-                when "=", "!="
-                  hash = {lhs_value => rhs_value}
-                  join_array.push(operator == "=" ? hash : ~hash)
-                else
-                  join_array.push(lhs_value.send(operator, rhs_value))
-                end
-              #elsif operator == "="
-                #filter_array.push(lhs_value => rhs_value)
+                add_condition(join_array, lhs_value, rhs_value, operator)
               elsif which = types.index("field")
                 if which == 0
-                  filter_array.push(lhs_value.send(operator, rhs_value))
+                  add_condition(filter_array, lhs_value, rhs_value, operator)
                 else
                   # flip the operator
                 end

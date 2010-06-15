@@ -15,7 +15,7 @@ module Coupler
     end
 
     def rollback!
-      version = Sequel::Migrator.get_current_migration_version(@database)
+      version = @database[:schema_info].first[:version]
       migrate!(version - 1)
     end
 

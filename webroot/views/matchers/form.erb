@@ -23,22 +23,25 @@
       <%- @matcher.comparisons.each_with_index do |comparison, i| -%>
         <tr id="comparison-row-<%= i %>">
           <td><%= i + 1 %></td>
-          <td><%= (x = comparison.lhs_value).respond_to?(:name) ? x.name : x.inspect %></td>
+          <td><%= comparison.lhs_label %></td>
           <td><%= comparison.operator_symbol %></td>
-          <td><%= (x = comparison.rhs_value).respond_to?(:name) ? x.name : x.inspect %></td>
-          <td><a href="#" onclick="return deleteComparison(<%= i %>);">Delete</a></td>
+          <td><%= comparison.rhs_label %></td>
+          <td><a href="#" onclick="deleteComparison(<%= i %>); return false;">Delete</a></td>
         </tr>
       <%- end -%>
       </tbody>
     </table>
   <%- @matcher.comparisons.each_with_index do |comparison, i| -%>
-    <%# This could be done in one loop, but it's a lot less readable %>
+    <%-# This could be done in one loop, but it's a lot less readable -%>
     <div id='comparison-<%= i %>' style='display: none;'>
       <% if !comparison.new? %><input type='hidden' name='matcher[comparisons_attributes][<%= i %>][id]' value='<%= comparison.id %>' /><% end %>
       <input type='hidden' name='matcher[comparisons_attributes][<%= i %>][lhs_type]' value='<%= comparison.lhs_type %>' />
       <input type='hidden' name='matcher[comparisons_attributes][<%= i %>][lhs_value]' value='<%= comparison.raw_lhs_value %>' />
+      <input type='hidden' name='matcher[comparisons_attributes][<%= i %>][lhs_which]' value='<%= comparison.lhs_which %>' />
+      <input type='hidden' name='matcher[comparisons_attributes][<%= i %>][lhs_value]' value='<%= comparison.raw_lhs_value %>' />
       <input type='hidden' name='matcher[comparisons_attributes][<%= i %>][rhs_type]' value='<%= comparison.rhs_type %>' />
       <input type='hidden' name='matcher[comparisons_attributes][<%= i %>][rhs_value]' value='<%= comparison.raw_rhs_value %>' />
+      <input type='hidden' name='matcher[comparisons_attributes][<%= i %>][rhs_which]' value='<%= comparison.rhs_which %>' />
       <input type='hidden' name='matcher[comparisons_attributes][<%= i %>][operator]' value='<%= comparison.operator %>' />
     </div>
   <%- end -%>
@@ -63,17 +66,27 @@
         </tr>
       </thead>
       <tbody>
+      <%- %w{lhs rhs}.each do |name| -%>
         <tr>
           <td>
-            <select id="lhs_type">
+            <select id="<%= name %>_type">
             <%- Coupler::Models::Comparison::TYPES.each do |type| -%>
               <option value="<%= type %>"<%= ' selected="selected"' if type == 'field' %>><%= type.capitalize %></option>
             <%- end -%>
             </select>
           </td>
           <td>
-            <select id="lhs_value_select" style="width: 100%">
+            <select id="<%= name %>_value_select" style="width: 100%">
               <option></option>
+          <%- if @scenario.linkage_type == 'self-linkage' -%>
+            <%- (1..2).each do |i| -%>
+              <optgroup label="<%= @scenario.resource_1.name %> <%= i %>">
+              <%- @scenario.resource_1.selected_fields.each do |field| -%>
+                <option value="<%= i %>__<%= field.id %>"><%= field.name %></option>
+              <%- end -%>
+              </optgroup>
+            <%- end -%>
+          <%- else -%>
             <%- @scenario.resources.each do |resource| -%>
               <optgroup label="<%= resource.name %>">
               <%- resource.selected_fields.each do |field| -%>
@@ -81,32 +94,12 @@
               <%- end -%>
               </optgroup>
             <%- end -%>
+          <%- end -%>
             </select>
-            <input id="lhs_value_text" type="text" style="display: none;" />
+            <input id="<%= name %>_value_text" type="text" style="display: none;" />
           </td>
         </tr>
-        <tr>
-          <td>
-            <select id="rhs_type">
-            <%- Coupler::Models::Comparison::TYPES.each do |type| -%>
-              <option value="<%= type %>"<%= ' selected="selected"' if type == 'field' %>><%= type.capitalize %></option>
-            <%- end -%>
-            </select>
-          </td>
-          <td>
-            <select id="rhs_value_select" style="width: 100%">
-              <option></option>
-            <%- @scenario.resources.each do |resource| -%>
-              <optgroup label="<%= resource.name %>">
-              <%- resource.selected_fields.each do |field| -%>
-                <option value="<%= field.id %>"><%= field.name %></option>
-              <%- end -%>
-              </optgroup>
-            <%- end -%>
-            </select>
-            <input id="rhs_value_text" type="text" style="display: none;" />
-          </td>
-        </tr>
+      <%- end -%>
       </tbody>
     </table>
     <div style="padding-top: 1em">
@@ -124,6 +117,7 @@
   var totalComparisons = <%= @matcher.comparisons.length %>;
   var numComparisons = <%= @matcher.comparisons.length %>;
   var operators = <%= Coupler::Models::Comparison::OPERATORS.to_json %>;
+  var resources = <%= @scenario.resources.collect(&:name).to_json %>;
 
   function addComparison() {
     $('#add-comparison-dialog').dialog('open');
@@ -133,16 +127,32 @@
     container = $('#comparison-'+i);
     if (container.find('input[name$="[id]"]').length > 0) {
       container.append("<input type='hidden' name='matcher[comparisons_attributes]["+i+"][_delete]' value='true' />");
+      $('#comparison-row-'+i)
+        .addClass('strikethrough')
+        .find('td:last')
+        .html('<a href="#" onclick="undeleteComparison('+i+'); return false;">Undelete</a>')
+        .css('textDecoration', 'none');
     }
     else {
       container.remove();
+      $('#comparison-row-'+i).remove();
     }
-    $('#comparison-row-'+i).remove();
     if (--numComparisons == 0) {
       $('#no-finish').show();
       $('#finish').hide();
     }
-    return false;
+  }
+
+  function undeleteComparison(i) {
+    $('#comparison-'+i+' input[name*=delete]').remove();
+    $('#comparison-row-'+i)
+      .removeClass('strikethrough')
+      .find('td:last')
+      .html('<a href="#" onclick="deleteComparison('+i+'); return false;">Delete</a>');
+    if (++numComparisons == 1) {
+      $('#no-finish').hide();
+      $('#finish').show();
+    }
   }
 
   $(function() {
@@ -153,17 +163,30 @@
           var types = [];
           var values = [];
           var labels = [];
+          var whichs = [];
+          var operator = $('#operator').val();
           $('#lhs_type, #rhs_type').each(function() {
-            type = $(this);
+            var type = $(this);
             types.push(type.val());
-            which = type.attr('id').replace(/_type$/, "")
+            var name = type.attr('id').replace(/_type$/, "")
             if (type.val() == 'field') {
-              obj = $('#'+which+'_value_select :selected');
-              values.push(obj.val());
-              labels.push(obj.html());
+              var obj   = $('#'+name+'_value_select :selected');
+              var id    = obj.val();
+              var label = obj.html();
+              var which = '';
+
+              var md = id.match(/^([12])__(\d+)$/);
+              if (md != null) {
+                which = md[1]
+                id = md[2];
+                label += ' ('+resources[0]+' '+which+')';
+              }
+              values.push(id);
+              labels.push(label);
+              whichs.push(which);
             }
             else {
-              obj = $('#'+which+'_value_text');
+              var obj = $('#'+name+'_value_text');
               values.push(obj.val());
               if (type.val() == 'string') {
                 labels.push('"'+obj.val()+'"');
@@ -171,22 +194,24 @@
               else {
                 labels.push(obj.val());
               }
+              whichs.push('');
             }
           });
-          var operator = $('#operator').val();
 
           $("<tr id='comparison-row-"+totalComparisons+"'></tr>")
             .append("<td>"+(totalComparisons+1)+"</td>")
             .append("<td>"+labels[0]+"</td>")
             .append("<td>"+operators[operator]+"</td>")
             .append("<td>"+labels[1]+"</td>")
-            .append("<td><a href='#' onclick='return deleteComparison("+totalComparisons+");'>Delete</a></td>")
+            .append("<td><a href='#' onclick='deleteComparison("+totalComparisons+"); return false;'>Delete</a></td>")
             .appendTo($('#comparisons table tbody'));
           $("<div id='comparison-"+totalComparisons+"' style='display: none;'></div>")
             .append("<input type='hidden' name='matcher[comparisons_attributes]["+totalComparisons+"][lhs_type]' value='"+types[0]+"' />")
             .append("<input type='hidden' name='matcher[comparisons_attributes]["+totalComparisons+"][lhs_value]' value='"+values[0]+"' />")
+            .append("<input type='hidden' name='matcher[comparisons_attributes]["+totalComparisons+"][lhs_which]' value='"+whichs[0]+"' />")
             .append("<input type='hidden' name='matcher[comparisons_attributes]["+totalComparisons+"][rhs_type]' value='"+types[1]+"' />")
             .append("<input type='hidden' name='matcher[comparisons_attributes]["+totalComparisons+"][rhs_value]' value='"+values[1]+"' />")
+            .append("<input type='hidden' name='matcher[comparisons_attributes]["+totalComparisons+"][rhs_which]' value='"+whichs[1]+"' />")
             .append("<input type='hidden' name='matcher[comparisons_attributes]["+totalComparisons+"][operator]' value='"+operator+"' />")
             .appendTo($('#comparisons'));
           numComparisons++;
@@ -205,24 +230,30 @@
     });
     $('#lhs_type, #rhs_type').change(function() {
       obj = $(this);
-      which = obj.attr('id').replace(/_type$/, "")
+      name = obj.attr('id').replace(/_type$/, "")
       if (obj.val() == 'field') {
-        $("#"+which+"_value_select").show();
-        $("#"+which+"_value_text").hide();
+        $("#"+name+"_value_select").show();
+        $("#"+name+"_value_text").hide();
       }
       else {
-        $("#"+which+"_value_select").hide();
-        $("#"+which+"_value_text").show();
+        $("#"+name+"_value_select").hide();
+        $("#"+name+"_value_text").show();
       }
     });
     $('#lhs_value_select').change(function() {
       if ($("#rhs_type").val() == "field") {
         // try to select an analagous second field
         rhs_value_select = $('#rhs_value_select');
-        name = $(this).find(':selected').html();
-        option = rhs_value_select.find('option:contains('+name+')')
-        if (option.length > 0) {
-          rhs_value_select.val(option.attr('value'));
+        lhs_value = $(this).find(':selected');
+        if (lhs_value.val().match(/^1__/) != null) {
+          // field from first self-linkage table selected
+          rhs_value_select.val(lhs_value.val().replace(/^1__/, '2__'));
+        }
+        else {
+          option = rhs_value_select.find('option:contains('+lhs_value.html()+')')
+          if (option.length > 0) {
+            rhs_value_select.val(option.attr('value'));
+          }
         }
       }
     });

@@ -24,6 +24,19 @@ module Coupler
               raw_#{name}_value
             end
           end
+
+          def #{name}_label
+            case #{name}_type
+            when "field"
+              result = #{name}_value.name
+              if #{name}_which
+                result << " (\#{#{name}_value.resource.name\} \#{#{name}_which})"
+              end
+              result
+            else
+              raw_#{name}_value.inspect
+            end
+          end
         END
       end
 

@@ -236,6 +236,11 @@ tr.yellow.alt td {
 tr.green td {
   background-color: green;
 }
+tr.strikethrough td {
+  text-decoration: line-through;
+  color: gray;
+  background-color: lightgray;
+}
 
 input, select, textarea {
   border: 1px solid gray;

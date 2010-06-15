@@ -50,15 +50,16 @@ module Coupler
         score_set_id = nil
         ScoreSet.create do |score_set|
           score_set_id = score_set.id
-          score_set.insert(:first_id => 867, :second_id => 5309, :score => 123)
-          score_set.insert(:first_id => 13, :second_id => 37, :score => 456)
+          score_set.insert(:first_id => 13, :second_id => 37, :score => 456, :matcher_id => 1)
+          score_set.insert(:first_id => 867, :second_id => 5309, :score => 123, :matcher_id => 1)
+          score_set.insert(:first_id => 867, :second_id => 5309, :score => 321, :matcher_id => 2)
         end
         result = Factory(:result, :scenario => scenario, :score_set_id => score_set_id)
 
         expected = [
-          %w{uno_id dos_id score},
-          %w{867 5309 123},
-          %w{13 37 456}
+          %w{uno_id dos_id score matches},
+          %w{13 37 456 1},
+          %w{867 5309 444 1,2}
         ]
         arr = FasterCSV.parse(result.to_csv)
         assert_equal expected, arr

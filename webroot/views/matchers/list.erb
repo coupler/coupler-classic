@@ -17,17 +17,17 @@
     <%- comparisons = matcher.comparisons -%>
     <tr<%= " class='alt'" if i % 2 == 1 %>>
       <td rowspan="<%= comparisons.length %>"><%= i + 1 %></td>
-      <td><%= (x = comparisons[0].lhs_value).respond_to?(:name) ? x.name : x.inspect %></td>
+      <td><%= comparisons[0].lhs_label %></td>
       <td><%= comparisons[0].operator_symbol %></td>
-      <td><%= (x = comparisons[0].rhs_value).respond_to?(:name) ? x.name : x.inspect %></td>
+      <td><%= comparisons[0].rhs_label %></td>
       <td rowspan="<%= comparisons.length %>"><a href="/projects/<%= @project.id %>/scenarios/<%= @scenario.id %>/matchers/<%= matcher.id %>/edit">Edit</a></td>
       <td rowspan="<%= comparisons.length %>"><%= delete_link("Delete", "/projects/#{@project.id}/scenarios/#{@scenario.id}/matchers/#{matcher.id}") %></td>
     </tr>
     <%- comparisons[1..-1].each_with_index do |comparison, j| -%>
     <tr<%= " class='alt'" if i % 2 == 1 %>>
-      <td><%= (x = comparison.lhs_value).respond_to?(:name) ? x.name : x.inspect %></td>
+      <td><%= comparison.lhs_label %></td>
       <td><%= comparison.operator_symbol %></td>
-      <td><%= (x = comparison.rhs_value).respond_to?(:name) ? x.name : x.inspect %></td>
+      <td><%= comparison.rhs_label %></td>
     </tr>
     <%- end -%>
   <% end %>

@@ -22,7 +22,6 @@ module CouplerWorld
 
   def visit(url)
     browser.goto(url)
-    @page_changed = true
   end
 
   def current_url
@@ -46,21 +45,22 @@ module CouplerWorld
     elt = find_element_by_label_or_name(:text_field, label_or_name)
     if elt.exist?
       elt.value = options[:with]
-      @page_changed = true
     end
   end
 
   def select(option_text, options = {})
     elt = find_element_by_label_or_name(:select_list, options[:from])
     if elt.exist?
-      elt.select(option_text)
-      @page_changed = true
+      begin
+        elt.select(option_text)
+      rescue Celerity::Exception::CelerityException
+        elt.select_value(option_text)
+      end
     end
   end
 
   def click_button(button_value)
     browser.button(button_value).click
-    @page_changed = true
   end
 
   def find_element_by_label_or_name(type, label_or_name)

@@ -20,15 +20,23 @@ module Coupler
         def create_matcher_for(scenario, *comparisons)
           comparisons.collect! do |comparison|
             op = comparison.length == 3 ? comparison.pop : 'equals'
-            types = comparison.collect do |value|
-              case value
-              when Field then 'field'
-              when Fixnum then 'integer'
-              when String then 'string'
+            which = []; types = []; values = []
+            comparison.each do |value|
+              if value.is_a?(Array)
+                values << value[0]
+                which << value[1]
+              else
+                values << value
+                which << nil
+              end
+              types << case values[-1]
+                when Field then 'field'
+                when Fixnum then 'integer'
+                when String then 'string'
               end
             end
-            { 'lhs_type' => types[0], 'lhs_value' => types[0] == 'field' ? comparison[0].id : comparison[0],
-              'rhs_type' => types[1], 'rhs_value' => types[1] == 'field' ? comparison[1].id : comparison[1],
+            { 'lhs_type' => types[0], 'lhs_value' => types[0] == 'field' ? values[0].id : values[0], 'lhs_which' => which[0],
+              'rhs_type' => types[1], 'rhs_value' => types[1] == 'field' ? values[1].id : values[1], 'rhs_which' => which[1],
               'operator' => op }
           end
           Factory(:matcher, :scenario => scenario, :comparisons_attributes => comparisons)
@@ -163,6 +171,47 @@ module Coupler
           dataset.expects(:join).with(:people, [:t1__id < :t2__id, {:t1__first_name => :t2__last_name}], {:table_alias => :t2}).returns(joined_dataset)
           joined_dataset.expects(:select).with({:t1__id => :first_id, :t2__id => :second_id}).returns(joined_dataset)
           joined_dataset.expects(:filter).with(~{:t1__first_name => nil}, ~{:t2__last_name => nil}).returns(joined_dataset)
+          joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset)
+          joined_dataset.expects(:each).multiple_yields([{:first_id => 123, :second_id => 456}], [{:first_id => 789, :second_id => 369}])
+          joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
+
+          scenario.resource_1.stubs(:final_dataset).yields(dataset)
+
+          score_set = stub("ScoreSet")
+          score_set.expects(:import).with(
+            [:first_id, :second_id, :score, :matcher_id],
+            [[123, 456, 100, matcher_id], [789, 369, 100, matcher_id]]
+          )
+
+          runner = SingleRunner.new(scenario)
+          runner.run(score_set)
+        end
+
+        def test_single_dataset_with_ambiguous_fields
+          scenario = Factory(:scenario, :project => @project, :resource_1_id => @resource_1.id)
+          matcher = create_matcher_for(scenario,
+            [[@first_name, 1], [@first_name, 2]],
+            [[@first_name, 1], "Buddy", "does_not_equal"],
+            [[@first_name, 2], "Pal", "does_not_equal"]
+          )
+          matcher_id = matcher.id
+
+          dataset = mock("Dataset")
+          dataset.expects(:first_source_table).twice.returns(:people)
+          dataset.expects(:from).with({:people => :t1}).returns(dataset)
+
+          joined_dataset = mock("Joined dataset")
+          dataset.expects(:join).with(:people,
+            [:t1__id < :t2__id, {:t1__first_name => :t2__first_name}],
+            {:table_alias => :t2}
+          ).returns(joined_dataset)
+          joined_dataset.expects(:select).with({:t1__id => :first_id, :t2__id => :second_id}).returns(joined_dataset)
+          joined_dataset.expects(:filter).with(
+            ~{:t1__first_name => nil},
+            ~{:t2__first_name => nil},
+            ~{:t1__first_name => "Buddy"},
+            ~{:t2__first_name => "Pal"}
+          ).returns(joined_dataset)
           joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset)
           joined_dataset.expects(:each).multiple_yields([{:first_id => 123, :second_id => 456}], [{:first_id => 789, :second_id => 369}])
           joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)

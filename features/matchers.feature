@@ -10,11 +10,10 @@ Feature: managing matchers
     When I go to the scenario page
     And I click the "Add matcher" link
     And I click the "Add comparison" link
-    And I fill in the form:
-      | lhs_type         | Field     |
-      | lhs_value_select | last_name |
-      | rhs_type         | Field     |
-      | rhs_value_select | last_name |
+    And I select "Field" as the first type
+    And I select "last_name" for "People 1" as the first value
+    And I select "Field" as the second type
+    And I select "last_name" for "People 2" as the second value
     And I click the "Add" button
     And I click the "Submit" button
     Then it should take me back to the scenario page
@@ -26,11 +25,10 @@ Feature: managing matchers
     When I go to the scenario page
     And I click the "Add matcher" link
     And I click the "Add comparison" link
-    And I fill in the form:
-      | lhs_type         | Field           |
-      | lhs_value_select | last_name       |
-      | rhs_type         | Field           |
-      | rhs_value_select | owner_last_name |
+    And I select "Field" as the first type
+    And I select "last_name" for "People" as the first value
+    And I select "Field" as the second type
+    And I select "owner_last_name" for "Pets" as the second value
     And I click the "Add" button
     And I click the "Submit" button
     Then it should take me back to the scenario page
