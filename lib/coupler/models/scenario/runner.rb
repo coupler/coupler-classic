@@ -9,7 +9,13 @@ module Coupler
           @parent = parent
           @thread_pool = ThreadPool.new(10)
           setup_resources
-          @keys = @resources.collect { |r| r.primary_key_name.to_sym }
+
+          @keys = []
+          @databases = []
+          @resources.each do |resource|
+            @keys << resource.primary_key_name.to_sym
+            @databases << resource.database_name
+          end
         end
 
         def run(*args)
@@ -52,6 +58,7 @@ module Coupler
               join_array.push(:"t1__#{@keys[0]}" < :"t2__#{@keys[0]}")
               datasets[1] = datasets[0].clone
               @keys[1] = @keys[0]
+              @databases[1] = @databases[0]
             end
 
             matcher.comparisons.each do |comparison|
@@ -85,8 +92,9 @@ module Coupler
               end
             end
 
-            dataset = datasets[0].from(datasets[0].first_source_table => :t1).
-              join(datasets[1].first_source_table, join_array, :table_alias => :t2).
+            tables = (0..1).collect { |i| :"#{@databases[i]}__#{datasets[i].first_source_table}" }
+            dataset = datasets[0].from(tables[0] => :t1).
+              join(tables[1], join_array, :table_alias => :t2).
               select(:"t1__#{@keys[0]}" => :first_id, :"t2__#{@keys[1]}" => :second_id).
               filter(*filter_array).order(:"t1__#{@keys[0]}", :"t2__#{@keys[1]}")
             offset = 0

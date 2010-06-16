@@ -2,9 +2,8 @@ Major features/bugs:
 - Make the exact matcher threaded!
 - Database timeout issues (autoReconnect=true for MySQL)
 - Job management: canceling, etc.
-- Combine multiple matcher scores in scenario runs
 - JRuby/Java multi-processor use
-- Runner options
+- Add validation to scenario running to check resource status, connection, etc
 
 Fancy features for the future:
 - Do authorization on projects
