@@ -64,7 +64,7 @@ module Coupler
 
       def test_allows_valid_operators
         comparison = Factory.build(:comparison, :operator => nil)
-        %w{equals does_not_equal greater_than}.each do |op|
+        %w{equals does_not_equal greater_than less_than}.each do |op|
           comparison.operator = op
           assert comparison.valid?
         end
@@ -131,10 +131,12 @@ module Coupler
       def test_operator_symbol
         comparison = Comparison.new(:operator => 'equals')
         assert_equal "=", comparison.operator_symbol
-        comparison.operator = "greater_than"
-        assert_equal ">", comparison.operator_symbol
         comparison.operator = "does_not_equal"
         assert_equal "!=", comparison.operator_symbol
+        comparison.operator = "greater_than"
+        assert_equal ">", comparison.operator_symbol
+        comparison.operator = "less_than"
+        assert_equal "<", comparison.operator_symbol
       end
 
       %w{lhs rhs}.each do |name|
@@ -142,13 +144,13 @@ module Coupler
         define_method(:"test_#{name}_label") do
           field = @resource.fields[0]
           comparison = Comparison.new(:"#{name}_type" => 'field', :"#{name}_value" => field.id)
-          assert_equal field.name, comparison.send("#{name}_label")
+          assert_equal "#{field.name} (#{@resource.name})", comparison.send("#{name}_label")
 
           comparison.send("#{name}_which=", 1)
-          assert_equal "#{field.name} (#{@resource.name} 1)", comparison.send("#{name}_label")
+          assert_equal %{#{field.name} (#{@resource.name}<span class="sup">1</span>)}, comparison.send("#{name}_label")
 
           comparison.send("#{name}_which=", 2)
-          assert_equal "#{field.name} (#{@resource.name} 2)", comparison.send("#{name}_label")
+          assert_equal %{#{field.name} (#{@resource.name}<span class="sup">2</span>)}, comparison.send("#{name}_label")
 
           comparison.send("#{name}_type=", 'integer')
           comparison.send("#{name}_value=", 123)

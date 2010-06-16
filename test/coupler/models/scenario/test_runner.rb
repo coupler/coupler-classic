@@ -42,6 +42,10 @@ module Coupler
           Factory(:matcher, :scenario => scenario, :comparisons_attributes => comparisons)
         end
 
+        def expr(hash)
+          ::Sequel::SQL::BooleanExpression.from_value_pairs(hash)
+        end
+
         def test_single_dataset_and_one_field_to_field_equality_comparison
           scenario = Factory(:scenario, :project => @project, :resource_1_id => @resource_1.id)
           matcher = create_matcher_for(scenario, [@first_name, @first_name])
@@ -52,9 +56,15 @@ module Coupler
           dataset.expects(:from).with({:fake_data__people => :t1}).returns(dataset)
 
           joined_dataset = mock("Joined dataset")
-          dataset.expects(:join).with(:fake_data__people, [:t1__id < :t2__id, {:t1__first_name => :t2__first_name}], {:table_alias => :t2}).returns(joined_dataset)
+          dataset.expects(:join).with(:fake_data__people,
+            [:t1__id < :t2__id, expr(:t1__first_name => :t2__first_name)],
+            {:table_alias => :t2}
+          ).returns(joined_dataset)
           joined_dataset.expects(:select).with({:t1__id => :first_id, :t2__id => :second_id}).returns(joined_dataset)
-          joined_dataset.expects(:filter).with(~{:t1__first_name => nil}, ~{:t2__first_name => nil}).returns(joined_dataset)
+          joined_dataset.expects(:filter).with(
+            ~{:t1__first_name => nil},
+            ~{:t2__first_name => nil}
+          ).returns(joined_dataset)
           joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset)
           joined_dataset.expects(:each).multiple_yields([{:first_id => 123, :second_id => 456}], [{:first_id => 789, :second_id => 369}])
           joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
@@ -81,9 +91,15 @@ module Coupler
           dataset.expects(:from).with({:fake_data__people => :t1}).returns(dataset)
 
           joined_dataset = mock("Joined dataset")
-          dataset.expects(:join).with(:fake_data__people, [:t1__id < :t2__id, ~{:t1__first_name => :t2__first_name}], {:table_alias => :t2}).returns(joined_dataset)
+          dataset.expects(:join).with(:fake_data__people,
+            [:t1__id < :t2__id, ~{:t1__first_name => :t2__first_name}],
+            {:table_alias => :t2}
+          ).returns(joined_dataset)
           joined_dataset.expects(:select).with({:t1__id => :first_id, :t2__id => :second_id}).returns(joined_dataset)
-          joined_dataset.expects(:filter).with(~{:t1__first_name => nil}, ~{:t2__first_name => nil}).returns(joined_dataset)
+          joined_dataset.expects(:filter).with(
+            ~{:t1__first_name => nil},
+            ~{:t2__first_name => nil}
+          ).returns(joined_dataset)
           joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset)
           joined_dataset.expects(:each).multiple_yields([{:first_id => 123, :second_id => 456}], [{:first_id => 789, :second_id => 369}])
           joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
@@ -110,9 +126,17 @@ module Coupler
           dataset.expects(:from).with({:fake_data__people => :t1}).returns(dataset)
 
           joined_dataset = mock("Joined dataset")
-          dataset.expects(:join).with(:fake_data__people, [:t1__id < :t2__id, {:t1__first_name => :t2__first_name}], {:table_alias => :t2}).returns(joined_dataset)
+          dataset.expects(:join).with(:fake_data__people, 
+            [:t1__id < :t2__id, expr(:t1__first_name => :t2__first_name)],
+            {:table_alias => :t2}
+          ).returns(joined_dataset)
           joined_dataset.expects(:select).with({:t1__id => :first_id, :t2__id => :second_id}).returns(joined_dataset)
-          joined_dataset.expects(:filter).with(~{:t1__first_name => nil}, ~{:t2__first_name => nil}, ~{:t1__age => nil}, :t1__age > 30).returns(joined_dataset)
+          joined_dataset.expects(:filter).with(
+            ~{:t1__first_name => nil},
+            ~{:t2__first_name => nil},
+            ~{:t1__age => nil},
+            :t1__age > 30
+          ).returns(joined_dataset)
           joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset)
           joined_dataset.expects(:each).multiple_yields([{:first_id => 123, :second_id => 456}], [{:first_id => 789, :second_id => 369}])
           joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
@@ -139,9 +163,19 @@ module Coupler
           dataset.expects(:from).with({:fake_data__people => :t1}).returns(dataset)
 
           joined_dataset = mock("Joined dataset")
-          dataset.expects(:join).with(:fake_data__people, [:t1__id < :t2__id, {:t1__first_name => :t2__first_name}, {:t1__last_name => :t2__last_name}], {:table_alias => :t2}).returns(joined_dataset)
+          dataset.expects(:join).with(:fake_data__people,
+            [:t1__id < :t2__id,
+              expr(:t1__first_name => :t2__first_name),
+              expr(:t1__last_name => :t2__last_name)],
+            {:table_alias => :t2}
+          ).returns(joined_dataset)
           joined_dataset.expects(:select).with({:t1__id => :first_id, :t2__id => :second_id}).returns(joined_dataset)
-          joined_dataset.expects(:filter).with(~{:t1__first_name => nil}, ~{:t2__first_name => nil}, ~{:t1__last_name => nil}, ~{:t2__last_name => nil}).returns(joined_dataset)
+          joined_dataset.expects(:filter).with(
+            ~{:t1__first_name => nil},
+            ~{:t2__first_name => nil},
+            ~{:t1__last_name => nil},
+            ~{:t2__last_name => nil}
+          ).returns(joined_dataset)
           joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset)
           joined_dataset.expects(:each).multiple_yields([{:first_id => 123, :second_id => 456}], [{:first_id => 789, :second_id => 369}])
           joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
@@ -168,9 +202,15 @@ module Coupler
           dataset.expects(:from).with({:fake_data__people => :t1}).returns(dataset)
 
           joined_dataset = mock("Joined dataset")
-          dataset.expects(:join).with(:fake_data__people, [:t1__id < :t2__id, {:t1__first_name => :t2__last_name}], {:table_alias => :t2}).returns(joined_dataset)
+          dataset.expects(:join).with(:fake_data__people,
+            [:t1__id < :t2__id, expr(:t1__first_name => :t2__last_name)],
+            {:table_alias => :t2}
+          ).returns(joined_dataset)
           joined_dataset.expects(:select).with({:t1__id => :first_id, :t2__id => :second_id}).returns(joined_dataset)
-          joined_dataset.expects(:filter).with(~{:t1__first_name => nil}, ~{:t2__last_name => nil}).returns(joined_dataset)
+          joined_dataset.expects(:filter).with(
+            ~{:t1__first_name => nil},
+            ~{:t2__last_name => nil}
+          ).returns(joined_dataset)
           joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset)
           joined_dataset.expects(:each).multiple_yields([{:first_id => 123, :second_id => 456}], [{:first_id => 789, :second_id => 369}])
           joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
@@ -202,7 +242,7 @@ module Coupler
 
           joined_dataset = mock("Joined dataset")
           dataset.expects(:join).with(:fake_data__people,
-            [:t1__id < :t2__id, {:t1__first_name => :t2__first_name}],
+            [:t1__id < :t2__id, expr(:t1__first_name => :t2__first_name)],
             {:table_alias => :t2}
           ).returns(joined_dataset)
           joined_dataset.expects(:select).with({:t1__id => :first_id, :t2__id => :second_id}).returns(joined_dataset)
@@ -237,9 +277,15 @@ module Coupler
           dataset_2 = mock("Dataset 2", :first_source_table => :pets)
           joined_dataset = mock("Joined dataset")
           dataset_1.expects(:from).with({:fake_data__people => :t1}).returns(dataset_1)
-          dataset_1.expects(:join).with(:fake_data__pets, [{:t1__first_name => :t2__owner_first_name}], {:table_alias => :t2}).returns(joined_dataset)
+          dataset_1.expects(:join).with(:fake_data__pets,
+            [expr(:t1__first_name => :t2__owner_first_name)],
+            {:table_alias => :t2}
+          ).returns(joined_dataset)
           joined_dataset.expects(:select).with({:t1__id => :first_id, :t2__id => :second_id}).returns(joined_dataset)
-          joined_dataset.expects(:filter).with(~{:t1__first_name => nil}, ~{:t2__owner_first_name => nil}).returns(joined_dataset)
+          joined_dataset.expects(:filter).with(
+            ~{:t1__first_name => nil},
+            ~{:t2__owner_first_name => nil}
+          ).returns(joined_dataset)
           joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset)
           joined_dataset.expects(:each).multiple_yields([{:first_id => 123, :second_id => 456}], [{:first_id => 789, :second_id => 369}])
           joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
@@ -265,9 +311,18 @@ module Coupler
           dataset_2 = mock("Dataset 2", :first_source_table => :pets)
           joined_dataset = mock("Joined dataset")
           dataset_1.expects(:from).with({:fake_data__people => :t1}).returns(dataset_1)
-          dataset_1.expects(:join).with(:fake_data__pets, [{:t1__first_name => :t2__owner_first_name}, {:t1__last_name => :t2__owner_last_name}], {:table_alias => :t2}).returns(joined_dataset)
+          dataset_1.expects(:join).with(:fake_data__pets,
+            [expr(:t1__first_name => :t2__owner_first_name),
+              expr(:t1__last_name => :t2__owner_last_name)],
+            {:table_alias => :t2}
+          ).returns(joined_dataset)
           joined_dataset.expects(:select).with({:t1__id => :first_id, :t2__id => :second_id}).returns(joined_dataset)
-          joined_dataset.expects(:filter).with(~{:t1__first_name => nil}, ~{:t2__owner_first_name => nil}, ~{:t1__last_name => nil}, ~{:t2__owner_last_name => nil}).returns(joined_dataset)
+          joined_dataset.expects(:filter).with(
+            ~{:t1__first_name => nil},
+            ~{:t2__owner_first_name => nil},
+            ~{:t1__last_name => nil},
+            ~{:t2__owner_last_name => nil}
+          ).returns(joined_dataset)
           joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset)
           joined_dataset.expects(:each).multiple_yields([{:first_id => 123, :second_id => 456}], [{:first_id => 789, :second_id => 369}])
           joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)

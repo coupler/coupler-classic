@@ -5,6 +5,7 @@ module Coupler
         app.get "/projects/:project_id/scenarios/:scenario_id/matchers/new" do
           @project = Models::Project[:id => params[:project_id]]
           @scenario = @project.scenarios_dataset[:id => params[:scenario_id]]
+          @resources = @scenario.resources
           @matcher = Models::Matcher.new
           erb 'matchers/form'.to_sym
         end
@@ -12,6 +13,7 @@ module Coupler
         app.get "/projects/:project_id/scenarios/:scenario_id/matchers/:id/edit" do
           @project = Models::Project[:id => params[:project_id]]
           @scenario = @project.scenarios_dataset[:id => params[:scenario_id]]
+          @resources = @scenario.resources
           @matcher = @scenario.matchers_dataset[:id => params[:id]]
           erb 'matchers/form'.to_sym
         end
@@ -26,6 +28,7 @@ module Coupler
             flash[:notice] = "Matcher was successfully created."
             redirect "/projects/#{@project.id}/scenarios/#{@scenario.id}"
           else
+            @resources = @scenario.resources
             erb 'matchers/form'.to_sym
           end
         end
@@ -40,6 +43,7 @@ module Coupler
             @matcher.save
             redirect "/projects/#{@project.id}/scenarios/#{@scenario.id}"
           else
+            @resources = @scenario.resources
             erb 'matchers/form'.to_sym
           end
         end

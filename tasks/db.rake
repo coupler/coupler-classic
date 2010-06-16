@@ -43,10 +43,11 @@ namespace :db do
     scenario = Factory(:scenario, :name => "First to last", :project => project, :resource_1 => resource)
     matcher = Factory(:matcher, {
       :scenario => scenario,
-      :comparisons_attributes => [
-        {:field_1_id => resource.fields_dataset[:name => 'first_name'].id,
-         :field_2_id => resource.fields_dataset[:name => 'last_name'].id}
-      ]
+      :comparisons_attributes => [{
+        :lhs_type => 'field', :lhs_value => resource.fields_dataset[:name => 'first_name'].id, :lhs_which => 1,
+        :rhs_type => 'field', :rhs_value => resource.fields_dataset[:name => 'last_name'].id,  :rhs_which => 2,
+        :operator => 'equals'
+      }]
     })
   end
 

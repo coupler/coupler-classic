@@ -40,13 +40,8 @@ module Coupler
           end
 
           def add_condition(array, lhs, rhs, operator)
-            case operator
-            when "=", "!="
-              hash = {lhs => rhs}
-              array.push(operator == "=" ? hash : ~hash)
-            else
-              array.push(lhs.send(operator, rhs))
-            end
+            expr = Sequel::SQL::BooleanExpression.new(operator.to_sym, lhs, rhs)
+            array.push(expr)
           end
 
           def score(score_set, matcher, *datasets)
@@ -83,12 +78,8 @@ module Coupler
 
               if types[0] == 'field' && types[1] == 'field'
                 add_condition(join_array, lhs_value, rhs_value, operator)
-              elsif which = types.index("field")
-                if which == 0
-                  add_condition(filter_array, lhs_value, rhs_value, operator)
-                else
-                  # flip the operator
-                end
+              else
+                add_condition(filter_array, lhs_value, rhs_value, operator)
               end
             end
 

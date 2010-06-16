@@ -7,6 +7,7 @@ module Coupler
         "equals" => "=",
         "does_not_equal" => "!=",
         "greater_than" => ">",
+        "less_than" => "<",
       }
       TYPES = %w{field integer string}
 
@@ -29,10 +30,11 @@ module Coupler
             case #{name}_type
             when "field"
               result = #{name}_value.name
+              resource_name = #{name}_value.resource.name
               if #{name}_which
-                result << " (\#{#{name}_value.resource.name\} \#{#{name}_which})"
+                resource_name << %{<span class="sup">\#{#{name}_which}</span>}
               end
-              result
+              result << " (\#{resource_name})"
             else
               raw_#{name}_value.inspect
             end
