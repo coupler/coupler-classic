@@ -7,9 +7,11 @@ module Coupler
       def snapshot
         origin_scenario = Scenario.as_of_version(scenario_id, scenario_version)
         time = origin_scenario[:updated_at]
+        project = Project.as_of_time(origin_scenario[:project_id], time)
         resource_1 = Resource.as_of_time(origin_scenario[:resource_1_id], time)
         resource_2 = Resource.as_of_time(origin_scenario[:resource_2_id], time)
         {
+          :project => project,
           :scenario => origin_scenario,
           :resource_1 => resource_1,
           :resource_2 => resource_2

@@ -18,6 +18,16 @@ module Coupler
         assert_equal scenario.version, result.scenario_version
       end
 
+      def test_snapshot_gets_originating_project
+        project = Factory(:project, :name => "Blah")
+        resource = Factory(:resource, :project => project)
+        scenario = Factory(:scenario, :project => project, :resource_1_id => resource.id)
+        result = Factory(:result, :scenario => scenario)
+        project.update(:name => "Blah blah")
+
+        assert_equal "Blah", result.snapshot[:project][:name]
+      end
+
       def test_snapshot_gets_originating_scenario
         scenario = Factory(:scenario, :name => "Bar Scenario")
         result = Factory(:result, :scenario => scenario)

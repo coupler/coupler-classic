@@ -13,10 +13,11 @@ module Coupler
           @project = Models::Project[:id => params[:project_id]]
           @scenario = @project.scenarios_dataset[:id => params[:scenario_id]]
           @result = @scenario.results_dataset[:id => params[:id]]
+          @snapshot = @result.snapshot
 
-          filename = "#{@scenario.slug}-run-#{@result.created_at.strftime('%Y%m%d%H%M')}.csv"
+          filename = "#{@scenario.slug}-run-#{@result.created_at.strftime('%Y%m%d-%H%M')}.txt"
           attachment(filename)
-          @result.to_csv
+          erb :'results/show', :layout => false
         end
       end
     end
