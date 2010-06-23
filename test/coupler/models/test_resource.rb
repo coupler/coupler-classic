@@ -194,7 +194,7 @@ module Coupler
         transformer = Factory(:transformer)
         transformation = Factory(:transformation, {
           :resource => resource, :transformer => transformer,
-          :field => field
+          :source_field => field
         })
 
         resource.local_dataset do |dataset|
@@ -216,7 +216,7 @@ module Coupler
         })
         transformation_1 = Factory(:transformation, {
           :resource => resource, :transformer => transformer_1,
-          :field => first_name
+          :source_field => first_name
         })
         transformer_2 = Factory(:transformer, {
           :name => "random", :allowed_types => %w{string},
@@ -224,7 +224,7 @@ module Coupler
         })
         transformation_2 = Factory(:transformation, {
           :resource => resource, :transformer => transformer_2,
-          :field => last_name
+          :source_field => last_name
         })
         #transformer_3 = Factory(:transformer, {
           #:name => "timeify", :allowed_types => %w{integer},
@@ -254,7 +254,7 @@ module Coupler
         transformer = Factory(:transformer, :allowed_types => %w{string}, :code => 'value.downcase')
         transformation = Factory(:transformation, {
           :resource => resource, :transformer => transformer,
-          :field => resource.fields_dataset[:name => 'first_name']
+          :source_field => resource.fields_dataset[:name => 'first_name']
         })
 
         original_row = nil
@@ -389,7 +389,7 @@ module Coupler
         transformer = Factory(:transformer)
         transformation = Factory(:transformation, {
           :resource => resource, :transformer => transformer,
-          :field => resource.fields_dataset[:name => 'first_name']
+          :source_field => resource.fields_dataset[:name => 'first_name']
         })
         resource.transform!
         project.local_database do |db|
@@ -403,7 +403,7 @@ module Coupler
         transformer = Factory(:transformer)
         transformation = Factory(:transformation, {
           :resource => resource, :transformer => transformer,
-          :field => resource.fields_dataset[:name => 'first_name']
+          :source_field => resource.fields_dataset[:name => 'first_name']
         })
         resource.destroy
         assert_equal 0, Field.filter(:resource_id => resource.id).count
@@ -416,7 +416,7 @@ module Coupler
         transformer = Factory(:transformer)
         transformation = Factory(:transformation, {
           :resource => resource, :transformer => transformer,
-          :field => resource.fields_dataset[:name => 'first_name']
+          :source_field => resource.fields_dataset[:name => 'first_name']
         })
         resource.transform!
         resource.destroy
@@ -431,7 +431,7 @@ module Coupler
         transformer = Factory(:transformer)
         transformation = Factory(:transformation, {
           :resource => resource, :transformer => transformer,
-          :field => resource.fields_dataset[:name => 'first_name']
+          :source_field => resource.fields_dataset[:name => 'first_name']
         })
         resource.destroy
         assert_equal 1, Database.instance[:resources_versions].filter(:current_id => resource.id).count
@@ -445,7 +445,7 @@ module Coupler
         transformer = Factory(:transformer)
         transformation = Factory(:transformation, {
           :resource => resource, :transformer => transformer,
-          :field => resource.fields_dataset[:name => 'first_name']
+          :source_field => resource.fields_dataset[:name => 'first_name']
         })
         resource.delete_versions_on_destroy = true
         resource.destroy

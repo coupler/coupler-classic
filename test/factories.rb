@@ -24,7 +24,7 @@ end
 Factory.define :transformation, :class => Coupler::Models::Transformation do |t|
   t.association :transformer
   t.association :resource
-  t.field do |record|
+  t.source_field do |record|
     record.resource.fields_dataset.first rescue nil
   end
 end

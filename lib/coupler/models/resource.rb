@@ -82,11 +82,11 @@ module Coupler
 
       def update_fields
         transformations_dataset.order(:id).each do |transformation|
-          field = transformation.field
-          changes = transformation.field_changes[field.id]
-          field.local_db_type = changes[:db_type] || field[:db_type]
-          field.local_type = changes[:type] || field[:type]
-          field.save
+          source_field = transformation.source_field
+          changes = transformation.field_changes[source_field.id]
+          source_field.local_db_type = changes[:db_type] || source_field[:db_type]
+          source_field.local_type = changes[:type] || source_field[:type]
+          source_field.save
         end
       end
 

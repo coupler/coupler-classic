@@ -13,7 +13,7 @@ module Coupler
       end
 
       def test_many_to_one_field
-        assert_respond_to Transformation.new, :field
+        assert_respond_to Transformation.new, :source_field
       end
 
       def test_requires_resource_id
@@ -30,12 +30,12 @@ module Coupler
         transformer = Factory(:transformer, :allowed_types => %w{integer})
         resource = Factory(:resource)
         field = resource.fields_dataset.first
-        transformation = Factory.build(:transformation, :transformer => transformer, :field => field)
+        transformation = Factory.build(:transformation, :transformer => transformer, :source_field => field)
         assert !transformation.valid?
       end
 
       def test_requires_existing_field
-        transformation = Factory.build(:transformation, :field => nil, :field_id => 1337)
+        transformation = Factory.build(:transformation, :source_field => nil, :source_field_id => 1337)
         assert !transformation.valid?
       end
 
@@ -45,7 +45,7 @@ module Coupler
         transformation = Factory(:transformation, {
           :transformer => transformer,
           :resource => resource,
-          :field => resource.fields_dataset[:name => 'first_name']
+          :source_field => resource.fields_dataset[:name => 'first_name']
         })
 
         data = {:id => 1, :first_name => "Peter"}
@@ -61,11 +61,11 @@ module Coupler
         field = resource.fields_dataset.first
         transformation = Factory(:transformation, {
           :transformer => transformer, :resource => resource,
-          :field => field
+          :source_field => field
         })
 
         result = stub('result')
-        transformation.transformer.expects(:field_changes).with(transformation.field).returns(result)
+        transformation.transformer.expects(:field_changes).with(transformation.source_field).returns(result)
         assert_equal result, transformation.field_changes
       end
 
@@ -78,7 +78,7 @@ module Coupler
         end
         field = resource.fields_dataset.first
         time = field.updated_at
-        transformation = Factory(:transformation, :resource => resource, :transformer => transformer, :field => field)
+        transformation = Factory(:transformation, :resource => resource, :transformer => transformer, :source_field => field)
         field.refresh
         assert field.updated_at > time, "#{field.updated_at} isn't more recent than #{time}"
       end

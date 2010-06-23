@@ -26,7 +26,7 @@ module Coupler
       def test_successfully_creating_transformation
         attribs = Factory.attributes_for(:transformation, {
           :transformer_id => @transformer.id,
-          :field_id => @resource.fields.first.id
+          :source_field_id => @resource.fields.first.id
         })
         post("/projects/#{@project.id}/resources/#{@resource.id}/transformations", { 'transformation' => attribs })
         transformation = @resource.transformations_dataset.first
@@ -49,7 +49,7 @@ module Coupler
 
       def test_for
         field = @resource.fields.first
-        t12n = Factory(:transformation, :resource => @resource, :field => field, :transformer => @transformer)
+        t12n = Factory(:transformation, :resource => @resource, :source_field => field, :transformer => @transformer)
 
         get "/projects/#{@project.id}/resources/#{@resource.id}/transformations/for/#{field.name}"
         assert_match /#{@transformer.name}/, last_response.body
@@ -57,7 +57,7 @@ module Coupler
 
       def test_index
         field = @resource.fields.first
-        t12n = Factory(:transformation, :resource => @resource, :field => field)
+        t12n = Factory(:transformation, :resource => @resource, :source_field => field)
         get "/projects/#{@project.id}/resources/#{@resource.id}/transformations"
         assert last_response.ok?
       end

@@ -3,7 +3,7 @@ module Coupler
     class Field < Sequel::Model
       include CommonModel
       many_to_one :resource
-      one_to_many :transformations
+      one_to_many :transformations, :key => :source_field_id
 
       def original_column_options
         { :name => name, :type => db_type, :primary_key => is_primary_key }
