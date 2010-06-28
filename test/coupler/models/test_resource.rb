@@ -226,14 +226,14 @@ module Coupler
           :resource => resource, :transformer => transformer_2,
           :source_field => last_name
         })
-        #transformer_3 = Factory(:transformer, {
-          #:name => "timeify", :allowed_types => %w{integer},
-          #:result_type => 'datetime', :code => 'Time.at(value)'
-        #})
-        #transformation_3 = Factory(:transformation, {
-          #:resource => resource, :transformer => transformer_3,
-          #:field => last_name
-        #})
+        transformer_3 = Factory(:transformer, {
+          :name => "timeify", :allowed_types => %w{integer},
+          :result_type => 'datetime', :code => 'Time.at(value)'
+        })
+        transformation_3 = Factory(:transformation, {
+          :resource => resource, :transformer => transformer_3,
+          :source_field => last_name
+        })
 
         resource.update_fields
 
@@ -242,8 +242,34 @@ module Coupler
         assert_equal 'integer', first_name.local_type
 
         last_name.refresh
-        assert_equal 'int(11)', last_name.local_db_type
-        assert_equal 'integer', last_name.local_type
+        assert_equal 'datetime', last_name.local_db_type
+        assert_equal 'datetime', last_name.local_type
+      end
+
+      def test_update_fields_does_not_change_newly_created_result_field
+        project = Factory(:project, :name => "local_dataset test")
+        resource = Factory(:resource, :project => project)
+        first_name = resource.fields_dataset[:name => 'first_name']
+
+        transformer = Factory(:transformer, {
+          :name => "strlen", :allowed_types => %w{string},
+          :result_type => 'integer', :code => 'value.length'
+        })
+        transformation = Factory(:transformation, {
+          :resource => resource, :transformer => transformer,
+          :source_field => first_name,
+          :result_field_attributes => { :name => "first_name_2" }
+        })
+
+        resource.update_fields
+
+        first_name.refresh
+        assert_nil first_name.local_db_type
+        assert_nil first_name.local_type
+
+        first_name_2 = resource.fields_dataset[:name => 'first_name_2']
+        assert_nil first_name_2.local_db_type
+        assert_nil first_name_2.local_type
       end
 
       def test_transform
@@ -277,6 +303,36 @@ module Coupler
 
         assert_equal "ok", resource.status
         assert_equal database_count, Sequel::DATABASES.length
+      end
+
+      def test_transform_goes_in_order_of_position
+        resource = Factory(:resource)
+        first_name = resource.fields_dataset[:name => 'first_name']
+        transformer_1 = Factory(:transformer, :allowed_types => %w{string}, :code => 'value.upcase')
+        transformer_2 = Factory(:transformer, :allowed_types => %w{string}, :code => '"foo"')
+        xformation_1 = Factory(:transformation, { :resource => resource, :transformer => transformer_1, :source_field => first_name })
+        xformation_2 = Factory(:transformation, { :resource => resource, :transformer => transformer_2, :source_field => first_name })
+        xformation_1.update(:position => 2)
+        xformation_2.update(:position => 1)
+
+        resource.transform!
+        resource.local_dataset do |ds|
+          ds.each { |r| assert_equal "FOO", r[:first_name] }
+        end
+      end
+
+      def test_transform_into_new_result_field
+        resource = Factory(:resource)
+        transformer = Factory(:transformer, :allowed_types => %w{string}, :result_type => 'string', :code => 'value.upcase')
+        transformation = Factory(:transformation, {
+          :resource => resource, :transformer => transformer,
+          :source_field => resource.fields_dataset[:name => 'first_name'],
+          :result_field_attributes => { :name => 'upcased_first_name' }
+        })
+        resource.transform!
+        resource.local_dataset do |ds|
+          ds.each { |r| assert_equal r[:first_name].upcase, r[:upcased_first_name] }
+        end
       end
 
       def test_initial_status

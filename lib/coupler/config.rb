@@ -5,7 +5,7 @@ module Coupler
         :port => 12345,
         :user => 'coupler',
         :password => 'cupla',
-        :conn_str => 'jdbc:mysql://localhost:%d/%s?user=%s&password=%s'
+        :connection_string => 'jdbc:mysql://localhost:%d/%s?user=%s&password=%s'
       }
     }
 
@@ -107,7 +107,7 @@ module Coupler
     end
 
     def self.connection_string(database, options = {})
-      retval = self.get(:database, :conn_str) % [self.get(:database, :port), database, self.get(:database, :user), self.get(:database, :password)]
+      retval = self.get(:database, :connection_string) % [self.get(:database, :port), database, self.get(:database, :user), self.get(:database, :password)]
       retval += "&createDatabaseIfNotExist=true"  if options[:create_database]
       case options[:zero_date_time_behavior]
       when :convert_to_null

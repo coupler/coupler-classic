@@ -16,6 +16,18 @@ module Coupler
         assert_respond_to Field.new, :transformations
       end
 
+      def test_requires_unique_name_across_resources
+        resource_1 = Factory(:resource)
+        resource_2 = Factory(:resource)
+
+        field_1 = Factory(:field, :name => 'foobar', :resource => resource_1)
+        field_2 = Factory.build(:field, :name => 'foobar', :resource => resource_1)
+        assert !field_2.valid?
+
+        field_3 = Factory.build(:field, :name => 'foobar', :resource => resource_2)
+        assert field_3.valid?, field_3.errors.full_messages.join("; ")
+      end
+
       def test_force_selected_on_primary_key_fields
         field = Factory(:field, :is_primary_key => 0, :is_selected => 0)
         assert !field.is_selected
@@ -55,6 +67,23 @@ module Coupler
           :name => 'foo', :type => 'int(11)',
           :primary_key => false
         }, field_2.local_column_options)
+      end
+
+      def test_final_type_and_final_db_type_uses_local_if_exists
+        field_1 = Factory(:field, {
+          :name => 'foo', :type => 'integer', :db_type => 'int(11)',
+          :local_type => 'string', :local_db_type => 'varchar(255)',
+          :is_primary_key => 0
+        })
+        field_2 = Factory(:field, {
+          :name => 'foo', :type => 'integer', :db_type => 'int(11)',
+          :local_type => nil, :local_db_type => nil,
+          :is_primary_key => 0
+        })
+        assert_equal 'string', field_1.final_type
+        assert_equal 'varchar(255)', field_1.final_db_type
+        assert_equal 'integer', field_2.final_type
+        assert_equal 'int(11)', field_2.final_db_type
       end
     end
   end

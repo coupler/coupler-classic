@@ -49,6 +49,7 @@ namespace :db do
         :operator => 'equals'
       }]
     })
+    transformer = Factory(:transformer, :name => 'noop')
   end
 
   desc "Start server daemon"

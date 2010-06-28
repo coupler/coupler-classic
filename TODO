@@ -4,6 +4,8 @@ Major features/bugs:
 - Job management: canceling, etc.
 - JRuby/Java multi-processor use
 - Add validation to scenario running to check resource status, connection, etc
+- Allow fine grained control of transformation order; need to revalidate
+  when positions change
 
 Fancy features for the future:
 - Do authorization on projects

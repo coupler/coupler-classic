@@ -70,6 +70,7 @@ module Coupler
 
       private
         def validate
+          super
           if name.nil? || name == ""
             errors[:name] << "is required"
           else

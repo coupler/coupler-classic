@@ -8,7 +8,7 @@ module Coupler
           @thread_pool = ThreadPool.new(10)
           @mutex = Mutex.new
           @fields = @parent.selected_fields_dataset.order(:id).all
-          @transformations = @parent.transformations
+          @transformations = @parent.transformations_dataset.order(:position).all
           create_local_table
         end
 
