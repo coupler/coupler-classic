@@ -100,4 +100,4 @@ class Array
 end
 
 require 'factory_girl'
-Factory.definition_file_paths = [ File.dirname(__FILE__) + "/factories" ]
+Factory.find_definitions
