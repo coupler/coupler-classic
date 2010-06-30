@@ -209,3 +209,4 @@ module Coupler
 end
 
 require File.join(File.dirname(__FILE__), 'resource', 'runner')
+require File.join(File.dirname(__FILE__), 'resource', 'importer')

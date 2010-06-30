@@ -118,6 +118,11 @@ module Coupler
       def test_delete
         flunk
       end
+
+      def test_upload_csv
+        post "/projects/#{@project[:id]}/resources/upload", :file => fixture_file_upload("people.csv")
+        assert last_response.ok?
+      end
     end
   end
 end

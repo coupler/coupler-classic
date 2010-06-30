@@ -1,6 +1,5 @@
 <%- @breadcrumbs = [@project, @scenario, @matcher.new? ? "New Matcher" : "Edit Matcher"] -%>
 <%- add_javascript('jquery-ui.min.js') -%>
-<%- add_stylesheet('jquery-ui.css') -%>
 <%= error_messages_for @matcher %>
 <%= form_tag_for(@matcher, :base_url => "/projects/#{@project.id}/scenarios/#{@scenario.id}/matchers") %>
   <h3>Comparisons</h3>
