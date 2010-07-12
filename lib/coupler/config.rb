@@ -88,7 +88,12 @@ module Coupler
           end
           @@config[:data_path] = File.expand_path(dir)
         end
-        Dir.mkdir(@@config[:data_path])  if !File.exist?(@@config[:data_path])
+        Dir.mkdir(@@config[:data_path])   if !File.exist?(@@config[:data_path])
+      elsif keys == [:upload_path]
+        if !@@config.has_key?(keys[0])
+          @@config[:upload_path] = path = File.join(get(:data_path), "uploads")
+        end
+        Dir.mkdir(@@config[:upload_path]) if !File.exist?(@@config[:upload_path])
       end
 
       keys.inject(@@config) { |hash, key| hash[key] }

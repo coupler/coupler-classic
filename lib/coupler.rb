@@ -16,6 +16,7 @@ require 'sequel'
 require 'sequel/extensions/migration'
 require 'json'
 require 'fastercsv'
+require 'carrierwave'
 
 # vendored stuff
 require File.dirname(__FILE__) + "/coupler/config"
@@ -51,6 +52,7 @@ require File.dirname(__FILE__) + "/coupler/logger"
 require File.dirname(__FILE__) + "/coupler/server"
 require File.dirname(__FILE__) + "/coupler/database"
 require File.dirname(__FILE__) + "/coupler/scheduler"
+require File.dirname(__FILE__) + "/coupler/data_uploader"
 require File.dirname(__FILE__) + "/coupler/models"
 require File.dirname(__FILE__) + "/coupler/jobs"
 require File.dirname(__FILE__) + "/coupler/score_set"

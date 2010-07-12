@@ -9,7 +9,8 @@ module Coupler
 
     NAMES = [
       :Connection, :Project, :Resource, :Field, :Transformer,
-      :Transformation, :Scenario, :Matcher, :Job, :Result, :Comparison
+      :Transformation, :Scenario, :Matcher, :Job, :Result, :Comparison,
+      :Import
     ]
     def self.const_missing(name)
       name = name.to_sym

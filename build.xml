@@ -3,7 +3,7 @@
   <property name="coupler.home" location="${build}/root/META-INF/coupler.home" />
 
   <!-- 3rd party gems -->
-  <property name="gems.needed" value="sinatra rack-flash sequel json-jruby fastercsv" />
+  <property name="gems.needed" value="sinatra rack-flash sequel json-jruby fastercsv carrierwave" />
 
   <!-- 3rd party java libs -->
   <property name="quartz.version" value="1.6.6"/>
