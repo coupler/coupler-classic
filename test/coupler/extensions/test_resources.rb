@@ -120,7 +120,11 @@ module Coupler
       end
 
       def test_upload_csv
-        post "/projects/#{@project[:id]}/resources/upload", :file => fixture_file_upload("people.csv")
+        # Not stubbing this is probably not the best way to do this
+        file = fixture_file_upload("people.csv")
+        importer = Models::Resource::Importer.new(file, "people.csv")
+        Models::Resource::Importer.expects(:new).with(kind_of(File), "people.csv").returns(importer)
+        post "/projects/#{@project[:id]}/resources/upload", :file => file
         assert last_response.ok?
       end
     end
