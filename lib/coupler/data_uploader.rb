@@ -4,6 +4,10 @@ module Coupler
       Coupler::Config.get(:upload_path)
     end
 
+    def cache_dir
+      File.join(Coupler::Config.get(:upload_path), 'tmp')
+    end
+
     def filename
       if @filename
         @stored_filename ||= Digest::SHA1.hexdigest([@filename,

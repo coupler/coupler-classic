@@ -12,6 +12,12 @@ module Coupler
       assert_equal "/path/to/uploads", uploader.store_dir
     end
 
+    def test_cache_dir_uses_upload_path
+      Coupler::Config.expects(:get).with(:upload_path).returns("/path/to/uploads")
+      uploader = DataUploader.new
+      assert_equal "/path/to/uploads/tmp", uploader.cache_dir
+    end
+
     def test_filename_uniqueness
       uploader = DataUploader.new
       uploader.store!(fixture_file('people.csv'))

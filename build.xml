@@ -46,7 +46,11 @@
   <target name="install-gems" depends="init" description="install needed gems">
     <java classname="org.jruby.Main">
       <classpath refid="jruby-jar"/>
-      <arg line="-e &quot;ENV['GEM_HOME'] = '${build}/gems'&quot; -S maybe_install_gems ${gems.needed}" />
+      <arg value="-e" />
+      <arg value="%w{HOME PATH}.each { |x| ENV[&quot;GEM_#{x}&quot;] = '${build}/gems' }" />
+      <arg value="-S" />
+      <arg value="maybe_install_gems" />
+      <arg line="${gems.needed}" />
     </java>
   </target>
 
