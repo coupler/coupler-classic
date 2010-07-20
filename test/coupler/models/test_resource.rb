@@ -526,6 +526,8 @@ module Coupler
         assert resource.valid?
         assert_equal "People", resource.name
         assert_equal project, resource.project
+        assert_equal "import_#{import.id}", resource.table_name
+        assert_equal "project_#{project.id}", resource.database_name
       end
     end
   end

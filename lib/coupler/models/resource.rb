@@ -130,6 +130,7 @@ module Coupler
             self.project = import.project
             self.name = import.name
             self.table_name = "import_#{import.id}"
+            self.database_name = "project_#{import.project.id}"
           end
         end
 
