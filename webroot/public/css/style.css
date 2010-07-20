@@ -262,6 +262,7 @@ input, select, textarea {
 .pointer { cursor: pointer; }
 .inline { display: inline; }
 .strong { font-weight: bold; }
+.centered { text-align: center; }
 div.p { margin-bottom: 20px; }
 
 span.sup { font-size: smaller; vertical-align: super; }

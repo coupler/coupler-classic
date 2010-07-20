@@ -1,0 +1,75 @@
+<% @breadcrumbs = [@project, "CSV Import"] %>
+<%- add_javascript('jquery.dataTables.min.js', 'jquery-ui.min.js') -%>
+<%- add_stylesheet('dataTables.css') -%>
+<%= error_messages_for @resource %>
+
+<form action="/projects/<%= @project.id %>/imports/<%= @import.id %>" method="post">
+  <div style="display: none;"><input type="hidden" name="_method" value="put" /></div>
+  <p>
+    <label for="name"><strong>Name:</strong></label>
+    <input id="name" type="text" name="import[name]" value="<%= @import.name %>" />
+  </p>
+
+  <h3>Fields</h3>
+  <div class="section">
+    <p>
+      Change the field types below if they are incorrect, then click the <strong>Begin Importing</strong> button.
+    </p>
+    <table class="list">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Key</th>
+        </tr>
+      </thead>
+      <tbody>
+      <%- @import.fields.each_with_index do |(name, info), i| -%>
+        <tr<%= " class='alt'" if i % 2 == 1 %>>
+          <td><%= name %></td>
+          <td>
+            <select name="import[field_types][<%= name %>][type]">
+            <%- %w{string integer datetime boolean float enum}.each do |type| -%>
+              <option<%= ' selected="selected"'   if type == info[:type].to_s %>><%= type %></option>
+            <%- end -%>
+            </select>
+          </td>
+          <td>
+            <input type="radio" name="import[primary_key]" value="<%= name %>" <%= 'checked="checked"' if info[:primary_key] %> />
+          </td>
+        </tr>
+      <%- end -%>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Data Preview</h3>
+  <div class="section">
+    <table id="data-preview" class="dataTable">
+      <thead>
+        <tr>
+        <%- @import.preview[0].headers.each do |name| -%>
+          <th><%= name %></th>
+        <%- end -%>
+        </tr>
+      </thead>
+      <tbody>
+      <%- @import.preview.each_with_index do |row, i| -%>
+        <tr>
+        <%- row.each do |_, value| -%>
+          <td><%=h value %></td>
+        <%- end -%>
+      <%- end -%>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    <input type="submit" value="Begin Importing" />
+  </p>
+</form>
+
+<script type="text/javascript">
+  $(function() {
+    $('#data-preview').dataTable({ bJQueryUI: true });
+  });
+</script>

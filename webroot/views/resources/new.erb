@@ -1,26 +1,23 @@
 <% @breadcrumbs = [@project, @resource] %>
-<%- add_javascript("ajaxupload.js", 'jquery.dataTables.min.js', 'jquery-ui.min.js') -%>
-<%- add_stylesheet('dataTables.css') -%>
+<%- add_javascript('jquery-ui.min.js') -%>
 <%= error_messages_for @resource %>
-<form method="post" action="/projects/<%= @project.id %>/resources">
-  <p>
-    <label for="name" class="strong">Name:</label>
-    <input id="name" name="resource[name]" type="text" value="<%= @resource.name %>" />
-  </p>
-  <div id="resource-type">
-    <strong>Resource type</strong>
-    <div style="padding-left: 1em">
-      <input id="type-database" name="resource[type]" type="radio" value="database" />
-      <label for="type-database">Database</label>
-      <input id="type-csv" name="resource[type]" type="radio" value="csv" />
-      <label for="type-csv">CSV</label>
-    </div>
-  </div>
 
-  <div id="resource-database" style="display: none">
+<div class="strong">Choose a resource type:</div>
+<div id="resource-type-buttons" style="padding: 1em 0 2em 2em">
+  <input id="type-database" name="resource[type]" type="radio" value="database" /><label for="type-database">Database</label>
+  <input id="type-csv" name="resource[type]" type="radio" value="csv" /><label for="type-csv">CSV</label>
+</div>
+
+<div id="resource-database" style="display: none">
+  <form method="post" action="/projects/<%= @project.id %>/resources">
     <h2>Database</h2>
     <table class="form">
       <tr>
+        <td class="left"><label for="name" class="strong">Name</label></td>
+        <td>
+          <input id="name" name="resource[name]" type="text" />
+        </td>
+      <tr class="alt">
         <td class="left"><label for="connection_id" class="strong">Connection</label></td>
         <td>
           <select id="connection_id" name="resource[connection_id]">
@@ -29,13 +26,13 @@
           <%- end -%>
           </select>
       </tr>
-      <tr class="alt">
+      <tr>
         <td class="left"><label for="database_name" class="strong">Database</label></td>
         <td>
           <input id="database_name" name="resource[database_name]" type="text" value="<%= @resource.database_name %>" />
         </td>
       </tr>
-      <tr>
+      <tr class="alt">
         <td class="left"><label for="table_name" class="strong">Table</label></td>
         <td>
           <input id="table_name" name="resource[table_name]" type="text" value="<%= @resource.table_name %>" />
@@ -46,58 +43,35 @@
       <input type="submit" value="Submit" /> or <a href="/projects/<%= @project.id %>">Cancel</a>
     </p>
   </div>
-
-  <div id="resource-csv" style="display: none;">
-    <h2>CSV Import</h2>
-    <button id="upload-button">Upload</button>
-    <div id="file-uploading" style="display: none;">
-      Upload in progress...
-      <img id="spinner" src="/images/ui-anim_basic_16x16.gif" />
-    </div>
-    <div id="csv-preview" style="display: none;">
-    </div>
-  </div>
 </form>
+
+<div id="resource-csv" style="display: none;">
+  <form id="new-import" method="post" action="/projects/<%= @project.id %>/imports" enctype="multipart/form-data">
+    <h2>CSV Import</h2>
+    <p>
+      <input type="file" name="import[data]" />
+    </p>
+  </form>
+</div>
 
 <script type="text/javascript">
   $(function() {
+    $('#resource-type-buttons').buttonset();
     $('input[name="resource[type]"]').change(function() {
       val = $(this).val();
       if (val == "database") {
-        $('#resource-type').slideUp('fast', function() {
+        $('#resource-csv').fadeOut('fast', function() {
           $('#resource-database').fadeIn('fast');
         });
       }
       else if (val == "csv") {
-        $('#resource-type').slideUp('fast', function() {
+        $('#resource-database').fadeOut('fast', function() {
           $('#resource-csv').fadeIn('fast');
         });
       }
     });
-    $('#upload-button').button({
-      icons: { primary: 'ui-icon-folder-open' }
-    });
-    new AjaxUpload('upload-button', {
-      action: './upload',
-      name: 'file',
-      autoSubmit: true,
-      onSubmit: function(file, ext) {
-        $(document).queue(function(next) {
-          $('#upload-button').fadeOut('fast', function() { next(); });
-        });
-        $(document).queue(function(next) {
-          $('#file-uploading').fadeIn('fast', function() { next(); });
-        });
-        return true;
-      },
-      onComplete: function(file, response) {
-        $(document).queue(function(next) {
-          $('#file-uploading').fadeOut(function() { next(); });
-        });
-        $(document).queue(function(next) {
-          $('#csv-preview').html(response).slideDown('slow');
-        });
-      }
+    $('input:file').change(function() {
+      $('#new-import').submit();
     });
   });
 </script>

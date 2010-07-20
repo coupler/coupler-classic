@@ -47,7 +47,7 @@ module Coupler
         end
 
         def test_single_dataset_and_one_field_to_field_equality_comparison
-          scenario = Factory(:scenario, :project => @project, :resource_1_id => @resource_1.id)
+          scenario = Factory(:scenario, :project => @project, :resource_1 => @resource_1)
           matcher = create_matcher_for(scenario, [@first_name, @first_name])
           matcher_id = matcher.id
 
@@ -82,7 +82,7 @@ module Coupler
         end
 
         def test_single_dataset_and_one_field_to_field_inequality_comparison
-          scenario = Factory(:scenario, :project => @project, :resource_1_id => @resource_1.id)
+          scenario = Factory(:scenario, :project => @project, :resource_1 => @resource_1)
           matcher = create_matcher_for(scenario, [@first_name, @first_name, 'does_not_equal'])
           matcher_id = matcher.id
 
@@ -117,7 +117,7 @@ module Coupler
         end
 
         def test_single_dataset_with_a_greater_than_comparison
-          scenario = Factory(:scenario, :project => @project, :resource_1_id => @resource_1.id)
+          scenario = Factory(:scenario, :project => @project, :resource_1 => @resource_1)
           matcher = create_matcher_for(scenario, [@first_name, @first_name], [@age, 30, 'greater_than'])
           matcher_id = matcher.id
 
@@ -154,7 +154,7 @@ module Coupler
         end
 
         def test_single_dataset_and_two_field_to_field_equality_comparisons
-          scenario = Factory(:scenario, :project => @project, :resource_1_id => @resource_1.id)
+          scenario = Factory(:scenario, :project => @project, :resource_1 => @resource_1)
           matcher = create_matcher_for(scenario, [@first_name, @first_name], [@last_name, @last_name])
           matcher_id = matcher.id
 
@@ -193,7 +193,7 @@ module Coupler
         end
 
         def test_single_dataset_and_cross_matching
-          scenario = Factory(:scenario, :project => @project, :resource_1_id => @resource_1.id)
+          scenario = Factory(:scenario, :project => @project, :resource_1 => @resource_1)
           matcher = create_matcher_for(scenario, [@first_name, @last_name])
           matcher_id = matcher.id
 
@@ -228,7 +228,7 @@ module Coupler
         end
 
         def test_single_dataset_with_ambiguous_fields
-          scenario = Factory(:scenario, :project => @project, :resource_1_id => @resource_1.id)
+          scenario = Factory(:scenario, :project => @project, :resource_1 => @resource_1)
           matcher = create_matcher_for(scenario,
             [[@first_name, 1], [@first_name, 2]],
             [[@first_name, 1], "Buddy", "does_not_equal"],
@@ -269,7 +269,7 @@ module Coupler
         end
 
         def test_two_datasets_with_one_field_to_field_equality_comparison
-          scenario = Factory(:scenario, :project => @project, :resource_1_id => @resource_1.id, :resource_2_id => @resource_2.id)
+          scenario = Factory(:scenario, :project => @project, :resource_1 => @resource_1, :resource_2 => @resource_2)
           matcher = create_matcher_for(scenario, [@first_name, @owner_first_name])
           matcher_id = matcher.id
 
@@ -303,7 +303,7 @@ module Coupler
         end
 
         def test_two_datasets_with_two_field_to_field_equality_comparisons
-          scenario = Factory(:scenario, :project => @project, :resource_1_id => @resource_1.id, :resource_2_id => @resource_2.id)
+          scenario = Factory(:scenario, :project => @project, :resource_1 => @resource_1, :resource_2 => @resource_2)
           matcher = create_matcher_for(scenario, [@first_name, @owner_first_name], [@last_name, @owner_last_name])
           matcher_id = matcher.id
 
@@ -340,7 +340,7 @@ module Coupler
         end
 
         def test_single_dataset_uses_limit_correctly
-          scenario = Factory(:scenario, :project => @project, :resource_1_id => @resource_1.id)
+          scenario = Factory(:scenario, :project => @project, :resource_1 => @resource_1)
           matcher = create_matcher_for(scenario, [@first_name, @first_name])
           matcher_id = matcher.id
 
@@ -367,7 +367,7 @@ module Coupler
         end
 
         def test_score_with_two_datasets_uses_limit_correctly
-          scenario = Factory(:scenario, :project => @project, :resource_1_id => @resource_1.id, :resource_2_id => @resource_2.id)
+          scenario = Factory(:scenario, :project => @project, :resource_1 => @resource_1, :resource_2 => @resource_2)
           matcher = create_matcher_for(scenario, [@first_name, @owner_first_name])
           matcher_id = matcher.id
 

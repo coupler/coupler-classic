@@ -20,7 +20,7 @@ module Coupler
         project = Factory(:project)
         resource = Factory(:resource, :project => project)
         fields = resource.fields
-        scenario = Factory(:scenario, :project => project, :resource_1_id => resource.id)
+        scenario = Factory(:scenario, :project => project, :resource_1 => resource)
         matcher = Factory(:matcher, {
           :scenario => scenario,
           :comparisons_attributes => {
@@ -51,7 +51,7 @@ module Coupler
         project = Factory(:project)
         resource = Factory(:resource, :project => project)
         fields = resource.fields
-        scenario = Factory(:scenario, :project => project, :resource_1_id => resource.id)
+        scenario = Factory(:scenario, :project => project, :resource_1 => resource)
         matcher = Factory(:matcher, {
           :scenario => scenario,
           :comparisons_attributes => {

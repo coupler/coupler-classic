@@ -6,6 +6,7 @@ module Coupler
 
       many_to_one :connection
       many_to_one :project
+      many_to_one :import
       one_to_many :transformations
       one_to_many :fields
       one_to_many :selected_fields, {
@@ -17,7 +18,11 @@ module Coupler
       nested_attributes(:fields, :destroy => false, :fields => [:is_selected]) { |h| !(h.has_key?('id') || h.has_key?(:id)) }
 
       def source_database(&block)
-        connection.database(database_name, &block)
+        if import
+          project.local_database(&block)
+        else
+          connection.database(database_name, &block)
+        end
       end
 
       def source_dataset
@@ -118,8 +123,23 @@ module Coupler
           end
         end
 
+        def before_validation
+          super
+
+          if import
+            self.project = import.project
+            self.name = import.name
+            self.table_name = "import_#{import.id}"
+          end
+        end
+
         def validate
           super
+
+          if project.nil?
+            errors[:project_id] << "is required"
+          end
+
           if self.name.nil? || self.name == ""
             errors[:name] << "is required"
           else
@@ -140,38 +160,40 @@ module Coupler
             errors[:slug] << "is already taken"   if count > 0
           end
 
-          if database_name.nil? || database_name == ""
-            errors[:database_name] << "is required"
-          else
-            begin
-              connection.database(database_name) { |db| db.test_connection }
-            rescue Sequel::DatabaseConnectionError, Sequel::DatabaseError => e
-              errors[:database_name] << "is not valid"
+          if import.nil?
+            if database_name.nil? || database_name == ""
+              errors[:database_name] << "is required"
+            else
+              begin
+                connection.database(database_name) { |db| db.test_connection }
+              rescue Sequel::DatabaseConnectionError, Sequel::DatabaseError => e
+                errors[:database_name] << "is not valid"
+              end
             end
-          end
 
-          if table_name.nil? || table_name == ""
-            errors[:table_name] << "is required"
-          elsif !errors.has_key?(:database_name)
-            #begin
-              source_database do |db|
-                sym = self.table_name.to_sym
-                if !db.tables.include?(sym)
-                  errors[:table_name] << "is invalid"
-                else
-                  keys = db.schema(sym).select { |info| info[1][:primary_key] }
-                  if keys.empty?
-                    errors[:table_name] << "doesn't have a primary key"
-                  elsif keys.length > 1
-                    errors[:table_name] << "has too many primary keys"
-                  elsif keys[0][1][:type] != :integer
-                    errors[:table_name] << "has non-integer primary key"
+            if table_name.nil? || table_name == ""
+              errors[:table_name] << "is required"
+            elsif !errors.has_key?(:database_name)
+              #begin
+                source_database do |db|
+                  sym = self.table_name.to_sym
+                  if !db.tables.include?(sym)
+                    errors[:table_name] << "is invalid"
+                  else
+                    keys = db.schema(sym).select { |info| info[1][:primary_key] }
+                    if keys.empty?
+                      errors[:table_name] << "doesn't have a primary key"
+                    elsif keys.length > 1
+                      errors[:table_name] << "has too many primary keys"
+                    elsif keys[0][1][:type] != :integer
+                      errors[:table_name] << "has non-integer primary key"
+                    end
                   end
                 end
-              end
-            #rescue Sequel::DatabaseConnectionError, Sequel::DatabaseError => e
-              #errors[:base] << "Couldn't connect to the database"
-            #end
+              #rescue Sequel::DatabaseConnectionError, Sequel::DatabaseError => e
+                #errors[:base] << "Couldn't connect to the database"
+              #end
+            end
           end
         end
 
@@ -180,6 +202,11 @@ module Coupler
             # NOTE: I'm doing this instead of using before_create because
             # serialization happens in before_save, which gets called before
             # the before_create hook
+            if import
+              self.name = import.name
+              self.project = import.project
+              import.import!
+            end
             self.slug ||= self.name.downcase.gsub(/\s+/, "_")
             source_database do |db|
               schema = db.schema(self.table_name)
@@ -209,4 +236,3 @@ module Coupler
 end
 
 require File.join(File.dirname(__FILE__), 'resource', 'runner')
-require File.join(File.dirname(__FILE__), 'resource', 'importer')

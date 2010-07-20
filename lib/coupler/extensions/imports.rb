@@ -1,0 +1,40 @@
+module Coupler
+  module Extensions
+    module Imports
+      def self.registered(app)
+        app.post "/projects/:project_id/imports" do
+          @project = Models::Project[:id => params[:project_id]]
+          @import = Models::Import.new(params[:import].merge(:project => @project))
+          if @import.valid?
+            @import.save
+            redirect "/projects/#{@project.id}/imports/#{@import.id}/edit"
+          else
+            # FIXME ;)
+          end
+        end
+
+        app.get "/projects/:project_id/imports/:id/edit" do
+          @project = Models::Project[:id => params[:project_id]]
+          @import = Models::Import[:id => params[:id], :project_id => @project.id]
+          @resource = Models::Resource.new
+          erb :'imports/edit'
+        end
+
+        app.put "/projects/:project_id/imports/:id" do
+          @project = Models::Project[:id => params[:project_id]]
+          @import = Models::Import[:id => params[:id], :project_id => @project.id]
+          @import.set(params[:import])
+          @import.save
+
+          @resource = Models::Resource.new(:import => @import)
+          if @resource.valid?
+            @resource.save
+            redirect "/projects/#{@project.id}/resources/#{@resource.id}"
+          else
+            erb :'imports/edit'
+          end
+        end
+      end
+    end
+  end
+end

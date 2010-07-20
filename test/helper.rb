@@ -38,14 +38,14 @@ class Test::Unit::TestCase
 
     assert_equal @original_database_count, Sequel::DATABASES.length
   end
+end
 
-  def fixture_file_upload(name, mime_type = "text/plain")
-    Rack::Test::UploadedFile.new(File.dirname(__FILE__) + "/fixtures/#{name}", mime_type)
-  end
+def fixture_file_upload(name, mime_type = "text/plain")
+  Rack::Test::UploadedFile.new(File.dirname(__FILE__) + "/fixtures/#{name}", mime_type)
+end
 
-  def fixture_file(name)
-    File.open(File.dirname(__FILE__) + "/fixtures/#{name}")
-  end
+def fixture_file(name)
+  File.open(File.dirname(__FILE__) + "/fixtures/#{name}")
 end
 
 module VerboseConnectionMessages

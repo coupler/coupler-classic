@@ -36,6 +36,10 @@ module Coupler
         assert_respond_to Resource.new, :selected_fields
       end
 
+      def test_many_to_one_import
+        assert_respond_to Resource.new, :import
+      end
+
       def test_nested_attributes_for_fields
         resource = Factory(:resource)
         field = resource.fields_dataset[:name => 'first_name']
@@ -49,6 +53,11 @@ module Coupler
         count = resource.fields_dataset.count
         resource.update(:fields_attributes => [{:is_selected => 0}])
         assert_equal count, resource.fields_dataset.count
+      end
+
+      def test_requires_project
+        resource = Factory.build(:resource, :project => nil)
+        assert !resource.valid?
       end
 
       def test_requires_name
@@ -508,6 +517,15 @@ module Coupler
         assert_equal 0, Database.instance[:resources_versions].filter(:current_id => resource.id).count
         assert_equal 0, Database.instance[:fields_versions].filter(:current_id => field.id).count
         assert_equal 0, Database.instance[:transformations_versions].filter(:current_id => transformation.id).count
+      end
+
+      def test_creating_resource_via_import
+        project = Factory(:project)
+        import = Factory(:import, :project => project)
+        resource = Resource.create(:import => import, :project => project)
+        assert resource.valid?
+        assert_equal "People", resource.name
+        assert_equal project, resource.project
       end
     end
   end

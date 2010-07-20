@@ -41,12 +41,6 @@ module Coupler
           end
         end
 
-        app.post "/projects/:project_id/resources/upload" do
-          @project = Models::Project[:id => params[:project_id]]
-          @importer = Models::Resource::Importer.new(params[:file][:tempfile], params[:file][:filename])
-          erb(:'resources/upload', :layout => false)
-        end
-
         app.get "/projects/:project_id/resources/:id" do
           @project = Models::Project[:id => params[:project_id]]
           @resource = @project.resources_dataset[:id => params[:id]]

@@ -32,9 +32,7 @@ end
 Factory.define :scenario, :class => Coupler::Models::Scenario do |s|
   s.sequence(:name) { |n| "Scenario #{n}" }
   s.association :project
-
-  # FIXME: this is kind of crappy
-  s.resource_1_id { |x| Factory(:resource, :project => x.project).id }
+  s.resource_1 { |x| x.project ? Factory(:resource, :project => x.project) : nil }
 end
 
 Factory.define :matcher, :class => Coupler::Models::Matcher do |m|
@@ -88,4 +86,9 @@ Factory.define :comparison, :class => Coupler::Models::Comparison do |c|
   c.rhs_type "integer"
   c.rhs_value { |x| 1 }
   c.operator "equals"
+end
+
+Factory.define :import, :class => Coupler::Models::Import do |i|
+  i.data { fixture_file_upload('people.csv') }
+  i.association :project
 end

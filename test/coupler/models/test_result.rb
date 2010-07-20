@@ -21,7 +21,7 @@ module Coupler
       def test_snapshot_gets_originating_project
         project = Factory(:project, :name => "Blah")
         resource = Factory(:resource, :project => project)
-        scenario = Factory(:scenario, :project => project, :resource_1_id => resource.id)
+        scenario = Factory(:scenario, :project => project, :resource_1 => resource)
         result = Factory(:result, :scenario => scenario)
         project.update(:name => "Blah blah")
 

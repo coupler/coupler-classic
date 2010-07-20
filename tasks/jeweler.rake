@@ -12,7 +12,6 @@ begin
     gem.executables = ["coupler"]
     gem.add_dependency "sinatra"
     gem.add_dependency "rack-flash"
-    gem.add_dependency "jdbc-mysql"
     gem.add_dependency "sequel"
     gem.add_dependency "json-jruby"
     gem.add_development_dependency "mocha"
@@ -20,7 +19,6 @@ begin
     gem.add_development_dependency "rack-test"
     gem.add_development_dependency "nokogiri"
     gem.add_development_dependency "timecop"
-    gem.add_development_dependency "butternut"
     gem.add_development_dependency "forgery"
     gem.add_development_dependency "factory_girl"
   end

@@ -11,12 +11,16 @@
     </tr>
   </thead>
   <tbody>
-  <% @resources.each do |resource| %>
-    <tr>
+  <% @resources.each_with_index do |resource, i| %>
+    <tr<%= ' class="alt"' if i % 2 == 1 %>>
       <td><a href="/projects/<%= @project.id %>/resources/<%= resource.id %>"><%= resource.name %></a></td>
-      <% unless @hide_connection %><td><%= resource.connection.name %></td><% end %>
-      <td><%= resource.database_name %></td>
-      <td><%= resource.table_name %></td>
+      <%- if resource.import_id -%>
+        <td colspan="3" class='centered'>(imported)</td>
+      <%- else -%>
+        <% unless @hide_connection %><td><%= resource.connection.name %></td><% end %>
+        <td><%= resource.database_name %></td>
+        <td><%= resource.table_name %></td>
+      <%- end -%>
     </tr>
   <% end %>
   </tbody>

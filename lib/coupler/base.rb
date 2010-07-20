@@ -21,6 +21,8 @@ module Coupler
     register Extensions::Results
     register Extensions::Jobs
     register Extensions::Transformers
+    register Extensions::Imports
+
     helpers do
       include Coupler::Helpers
       include Rack::Utils
