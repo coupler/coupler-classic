@@ -17,6 +17,11 @@ module Coupler
         "jdbc:mysql://localhost:12345/ponies?user=coupler&password=cupla&createDatabaseIfNotExist=true&zeroDateTimeBehavior=convertToNull",
         Config.connection_string("ponies", :create_database => true, :zero_date_time_behavior => :convert_to_null)
       )
+
+      assert_equal(
+        "jdbc:mysql://localhost:12345/ponies?user=coupler&password=cupla&autoReconnect=true",
+        Config.connection_string("ponies", :auto_reconnect => true)
+      )
     end
 
     def test_setting_options

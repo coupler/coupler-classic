@@ -212,6 +212,35 @@ module Coupler
         end
       end
 
+      def test_creates_score_set_with_string_keys
+        project = Factory(:project)
+        resource = Factory(:resource, :table_name => 'string_primary_key', :project => project)
+        foo = resource.fields_dataset[:name => 'foo']
+        scenario = Factory(:scenario, :project => project, :resource_1 => resource)
+        matcher = Factory(:matcher, {
+          :comparisons_attributes => [
+            {:lhs_type => 'field', :lhs_value => foo.id, :rhs_type => 'field', :rhs_value => foo.id, :operator => 'equals'},
+          ],
+          :scenario => scenario
+        })
+
+        score_set = stub("score set", :id => 123)
+        ScoreSet.expects(:create).with('string', 'string').yields(score_set)
+
+        runner = mock("single runner") do
+          expects(:run).with(score_set)
+        end
+        Scenario::SingleRunner.expects(:new).with(scenario).returns(runner)
+
+        result = mock("result", :[]= => nil, :save => true)
+        Result.expects(:new).with(:scenario => scenario).returns(result)
+
+        Timecop.freeze(Time.now) do
+          scenario.run!
+          assert_equal Time.now, scenario.last_run_at
+        end
+      end
+
       def test_running_jobs
         scenario = Factory(:scenario)
         job = Factory(:scenario_job, :scenario => scenario, :status => 'running')

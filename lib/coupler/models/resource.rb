@@ -186,8 +186,6 @@ module Coupler
                       errors[:table_name] << "doesn't have a primary key"
                     elsif keys.length > 1
                       errors[:table_name] << "has too many primary keys"
-                    elsif keys[0][1][:type] != :integer
-                      errors[:table_name] << "has non-integer primary key"
                     end
                   end
                 end
@@ -211,7 +209,9 @@ module Coupler
             self.slug ||= self.name.downcase.gsub(/\s+/, "_")
             source_database do |db|
               schema = db.schema(self.table_name)
-              self.primary_key_name = schema.detect { |x| x[1][:primary_key] }[0].to_s
+              info = schema.detect { |x| x[1][:primary_key] }
+              self.primary_key_name = info[0].to_s
+              self.primary_key_type = info[1][:type].to_s
             end
           end
           super

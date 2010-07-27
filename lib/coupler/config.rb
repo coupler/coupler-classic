@@ -24,19 +24,12 @@ module Coupler
       'mysql-connector-java' => {
         :type => 'java',
         :filetype => "tarball",
-        :version => '5.1.12',
+        :version => '5.1.13',
         :dir => "mysql-connector-java-%s",
         :url => "ftp://mirror.anl.gov/pub/mysql/Downloads/Connector-J/mysql-connector-java-%s.tar.gz",
         :libs => [
           "mysql-connector-java-%s-bin.jar",
         ]
-      },
-      'one-jar' => {
-        :type => 'java',
-        :filetype => "jar",
-        :version => '0.96',
-        :dir => "one-jar-%s",
-        :url => "http://downloads.sourceforge.net/one-jar/one-jar-sdk-%s.jar?modtime=1190046700&big_mirror=0"
       },
       'quartz' => {
         :type => 'java',
@@ -118,6 +111,7 @@ module Coupler
       when :convert_to_null
         retval += "&zeroDateTimeBehavior=convertToNull"
       end
+      retval += "&autoReconnect=true"  if options[:auto_reconnect]
       retval
     end
   end

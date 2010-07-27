@@ -13,16 +13,23 @@ module Coupler
       end
     end
 
-    def self.create
+    def self.create(type_1 = :integer, type_2 = :integer)
       self.database do |database|
-        housekeeping = database[:housekeeping]
+        type_1, type_2 = [type_1, type_2].collect do |type|
+          case type
+          when :integer, 'integer' then Integer
+          when :string,  'string'  then String
+          else type
+          end
+        end
 
+        housekeeping = database[:housekeeping]
         new_table_num = housekeeping.first[:last_table] + 1
         new_table_sym = new_table_num.to_s.to_sym
         database.create_table(new_table_sym) do
           primary_key :id
-          Integer :first_id
-          Integer :second_id
+          columns.push({:name => :first_id, :type => type_1})
+          columns.push({:name => :second_id, :type => type_2})
           Integer :score
           Integer :matcher_id
         end

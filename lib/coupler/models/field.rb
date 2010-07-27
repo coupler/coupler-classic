@@ -10,7 +10,7 @@ module Coupler
       end
 
       def local_column_options
-        { :name => name, :type => local_db_type || db_type,
+        { :name => name, :type => final_db_type,
           :primary_key => is_primary_key }
       end
 

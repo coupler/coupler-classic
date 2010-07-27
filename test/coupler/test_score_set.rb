@@ -42,7 +42,7 @@ module Coupler
       end
     end
 
-    def test_table_schema
+    def test_default_table_schema
       expected = [
         [:id, :integer],
         [:first_id, :integer],
@@ -51,6 +51,24 @@ module Coupler
         [:matcher_id, :integer]
       ]
       Coupler::ScoreSet.create do |set|
+        schema = set.db.schema(:'1')
+        expected.each do |(name, type)|
+          info = schema.assoc(name)
+          assert_not_nil info, "#{name} column doesn't exist"
+          assert_equal type, info[1][:type], "#{name} columns isn't the right type"
+        end
+      end
+    end
+
+    def test_table_schema_with_string_ids
+      expected = [
+        [:id, :integer],
+        [:first_id, :string],
+        [:second_id, :string],
+        [:score, :integer],
+        [:matcher_id, :integer]
+      ]
+      Coupler::ScoreSet.create(String, String) do |set|
         schema = set.db.schema(:'1')
         expected.each do |(name, type)|
           info = schema.assoc(name)

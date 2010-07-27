@@ -150,14 +150,21 @@ module Coupler
         assert !resource.valid?
       end
 
-      def test_requires_integer_primary_key
+      def test_does_not_requires_integer_primary_key
         resource = Factory.build(:resource, :table_name => "string_primary_key")
-        assert !resource.valid?
+        assert resource.valid?
       end
 
-      def test_sets_primary_key_field
+      def test_sets_primary_key_name
         resource = Factory(:resource, :table_name => "avast_ye")
         assert_equal "arrr", resource.primary_key_name
+      end
+
+      def test_sets_primary_key_type
+        resource_1 = Factory(:resource)
+        resource_2 = Factory(:resource, :table_name => "string_primary_key")
+        assert_equal "integer", resource_1.primary_key_type
+        assert_equal "string", resource_2.primary_key_type
       end
 
       def test_creates_fields
