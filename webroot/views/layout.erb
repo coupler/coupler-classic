@@ -19,7 +19,7 @@
 <%= breadcrumbs %>
 <div class="inner">
   <%- if flash[:notice] -%>
-  <div id="notice"><%= flash[:notice] %></div>
+  <div id="notice"<%= " class='#{flash[:notice_class]}'" if flash[:notice_class] %>><%= flash[:notice] %></div>
   <%- end -%>
   <%= yield %>
 </div>

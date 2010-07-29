@@ -17,6 +17,22 @@ module Coupler
         assert last_response.ok?
       end
 
+      def test_new_with_non_existant_project
+        get "/projects/8675309/scenarios/#{@scenario.id}/matchers/new"
+        assert last_response.redirect?
+        assert_equal "/projects", last_response['location']
+        follow_redirect!
+        assert_match /The project you were looking for doesn't exist/, last_response.body
+      end
+
+      def test_new_with_non_existant_scenario
+        get "/projects/#{@project.id}/scenarios/8675309/matchers/new"
+        assert last_response.redirect?
+        assert_equal "/projects/#{@project.id}/scenarios", last_response['location']
+        follow_redirect!
+        assert_match /The scenario you were looking for doesn't exist/, last_response.body
+      end
+
       def test_successfully_creating_matcher
         attribs = {
           'comparisons_attributes' => {
@@ -44,6 +60,14 @@ module Coupler
         })
         get "/projects/#{@project.id}/scenarios/#{@scenario.id}/matchers/#{matcher.id}/edit"
         assert last_response.ok?
+      end
+
+      def test_edit_with_non_existant_matcher
+        get "/projects/#{@project.id}/scenarios/#{@scenario.id}/matchers/8675309/edit"
+        assert last_response.redirect?
+        assert_equal "/projects/#{@project.id}/scenarios/#{@scenario.id}", last_response['location']
+        follow_redirect!
+        assert_match /The matcher you were looking for doesn't exist/, last_response.body
       end
 
       def test_updating_matcher

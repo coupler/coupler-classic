@@ -19,10 +19,26 @@ module Coupler
         assert_equal "/projects/#{@project[:id]}/imports/123/edit", last_response['location']
       end
 
+      def test_create_with_non_existant_project
+        post "/projects/8675309/imports"
+        assert last_response.redirect?
+        assert_equal "/projects", last_response['location']
+        follow_redirect!
+        assert_match /The project you were looking for doesn't exist/, last_response.body
+      end
+
       def test_edit
         import = Models::Import.create(:data => fixture_file_upload("people.csv"), :project => @project)
         get "/projects/#{@project.id}/imports/#{import.id}/edit"
         assert last_response.ok?
+      end
+
+      def test_edit_with_non_existant_import
+        get "/projects/#{@project.id}/imports/8675309/edit"
+        assert last_response.redirect?
+        assert_equal "/projects/#{@project.id}", last_response['location']
+        follow_redirect!
+        assert_match /The import you were looking for doesn't exist/, last_response.body
       end
 
       def test_update

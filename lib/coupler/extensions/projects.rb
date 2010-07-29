@@ -20,6 +20,7 @@ module Coupler
 
         app.get "/projects/:id" do
           @project = Models::Project[:id => params[:id]]
+          raise ProjectNotFound   unless @project
           @resources = @project.resources
           @scenarios = @project.scenarios
           erb 'projects/show'.to_sym
@@ -27,11 +28,13 @@ module Coupler
 
         app.get "/projects/:id/edit" do
           @project = Models::Project[:id => params[:id]]
+          raise ProjectNotFound   unless @project
           erb 'projects/form'.to_sym
         end
 
         app.put "/projects/:id" do
           @project = Models::Project[:id => params[:id]]
+          raise ProjectNotFound   unless @project
           @project.set(params[:project])
           if @project.valid?
             @project.save
@@ -43,6 +46,7 @@ module Coupler
 
         app.delete "/projects/:id" do
           @project = Models::Project[:id => params[:id]]
+          raise ProjectNotFound   unless @project
           @project.delete_versions_on_destroy = true  if params[:nuke] == "true"
           @project.destroy
           redirect '/projects'

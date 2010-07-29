@@ -14,6 +14,14 @@ module Coupler
         assert last_response.ok?
       end
 
+      def test_index_of_non_existant_project
+        get "/projects/8675309/scenarios"
+        assert last_response.redirect?
+        assert_equal "/projects", last_response['location']
+        follow_redirect!
+        assert_match /The project you were looking for doesn't exist/, last_response.body
+      end
+
       def test_show
         scenario = Factory(:scenario, :project => @project)
         get "/projects/#{@project.id}/scenarios/#{scenario.id}"

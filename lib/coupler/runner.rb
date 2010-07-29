@@ -11,6 +11,14 @@ module Coupler
         opts.on("--dir DIR", "Directory to use for Coupler's data") do |dir|
           Config.set(:data_path, dir)
         end
+        opts.on("-e", "--environment ENVIRONMENT", "Set the environment") do |env|
+          case env
+          when "production", "development", "test"
+            Base.set(:environment, env.to_sym)
+          else
+            raise "Invalid environment (must be production, development, or test)"
+          end
+        end
       end.parse!(argv)
 
       if !Server.instance.is_running?

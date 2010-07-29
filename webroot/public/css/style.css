@@ -110,6 +110,9 @@ body {
 #notice a:visited {
   color: white;
 }
+#notice.error {
+  background-color: #8B0000;
+}
 
 #tooltip {
   position: absolute;

@@ -4,7 +4,9 @@ module Coupler
       def self.registered(app)
         app.get "/projects/:project_id/scenarios/:scenario_id/matchers/new" do
           @project = Models::Project[:id => params[:project_id]]
+          raise ProjectNotFound   unless @project
           @scenario = @project.scenarios_dataset[:id => params[:scenario_id]]
+          raise ScenarioNotFound  unless @scenario
           @resources = @scenario.resources
           @matcher = Models::Matcher.new
           erb 'matchers/form'.to_sym
@@ -12,15 +14,20 @@ module Coupler
 
         app.get "/projects/:project_id/scenarios/:scenario_id/matchers/:id/edit" do
           @project = Models::Project[:id => params[:project_id]]
+          raise ProjectNotFound   unless @project
           @scenario = @project.scenarios_dataset[:id => params[:scenario_id]]
-          @resources = @scenario.resources
+          raise ScenarioNotFound  unless @scenario
           @matcher = @scenario.matchers_dataset[:id => params[:id]]
+          raise MatcherNotFound   unless @matcher
+          @resources = @scenario.resources
           erb 'matchers/form'.to_sym
         end
 
         app.post "/projects/:project_id/scenarios/:scenario_id/matchers" do
           @project = Models::Project[:id => params[:project_id]]
+          raise ProjectNotFound   unless @project
           @scenario = @project.scenarios_dataset[:id => params[:scenario_id]]
+          raise ScenarioNotFound  unless @scenario
           @matcher = Models::Matcher.new(params[:matcher])
           @matcher.scenario = @scenario
 
@@ -35,8 +42,11 @@ module Coupler
 
         app.put "/projects/:project_id/scenarios/:scenario_id/matchers/:id" do
           @project = Models::Project[:id => params[:project_id]]
+          raise ProjectNotFound   unless @project
           @scenario = @project.scenarios_dataset[:id => params[:scenario_id]]
+          raise ScenarioNotFound  unless @scenario
           @matcher = @scenario.matchers_dataset[:id => params[:id]]
+          raise MatcherNotFound   unless @matcher
           @matcher.set(params[:matcher])
 
           if @matcher.valid?
@@ -50,8 +60,11 @@ module Coupler
 
         app.delete "/projects/:project_id/scenarios/:scenario_id/matchers/:id" do
           @project = Models::Project[:id => params[:project_id]]
+          raise ProjectNotFound   unless @project
           @scenario = @project.scenarios_dataset[:id => params[:scenario_id]]
+          raise ScenarioNotFound  unless @scenario
           @matcher = @scenario.matchers_dataset[:id => params[:id]]
+          raise MatcherNotFound   unless @matcher
           @matcher.destroy
           redirect "/projects/#{@project.id}/scenarios/#{@scenario.id}"
         end

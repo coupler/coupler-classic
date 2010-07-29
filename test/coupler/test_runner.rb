@@ -62,5 +62,11 @@ module Coupler
       Config.expects(:set).with(:data_path, '/tmp/coupler')
       Runner.new(argv)
     end
+
+    def test_sets_environment
+      argv = %w{--environment=development}
+      Base.expects(:set).with(:environment, :development)
+      Runner.new(argv)
+    end
   end
 end

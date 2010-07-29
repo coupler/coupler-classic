@@ -9,25 +9,22 @@ module Coupler
 
         app.get "/projects/:project_id/resources" do
           @project = Models::Project[:id => params[:project_id]]
+          raise ProjectNotFound   unless @project
           @resources = @project.resources
           erb 'resources/index'.to_sym
         end
 
         app.get "/projects/:project_id/resources/new" do
+          @project = Models::Project[:id => params[:project_id]]
+          raise ProjectNotFound   unless @project
           @connections = Models::Connection.all
-          if @connections.empty?
-            session[:return_to] = "/projects/%s/resources/new" % params[:project_id]
-            flash[:notice] = "Before creating a resource, you must first create a connection."
-            redirect '/connections/new'
-          else
-            @project = Models::Project[:id => params[:project_id]]
-            @resource = Models::Resource.new
-            erb 'resources/new'.to_sym
-          end
+          @resource = Models::Resource.new
+          erb 'resources/new'.to_sym
         end
 
         app.post "/projects/:project_id/resources" do
           @project = Models::Project[:id => params[:project_id]]
+          raise ProjectNotFound   unless @project
 
           @resource = Models::Resource.new(params[:resource])
           @resource.project = @project
@@ -43,6 +40,7 @@ module Coupler
 
         app.get "/projects/:project_id/resources/:id" do
           @project = Models::Project[:id => params[:project_id]]
+          raise ProjectNotFound   unless @project
           @resource = @project.resources_dataset[:id => params[:id]]
           @fields = @resource.fields_dataset.filter(:is_selected => 1).all
           @transformers = Models::Transformer.all
@@ -55,6 +53,7 @@ module Coupler
 
         app.get "/projects/:project_id/resources/:id/transform" do
           @project = Models::Project[:id => params[:project_id]]
+          raise ProjectNotFound   unless @project
           @resource = @project.resources_dataset[:id => params[:id]]
           Scheduler.instance.schedule_transform_job(@resource)
           redirect "/projects/#{@project.id}/resources/#{@resource.id}"
@@ -62,6 +61,7 @@ module Coupler
 
         app.get "/projects/:project_id/resources/:id/edit" do
           @project = Models::Project[:id => params[:project_id]]
+          raise ProjectNotFound   unless @project
           @resource = @project.resources_dataset[:id => params[:id]]
           @fields = @resource.fields
           @selection_count = @resource.fields_dataset.filter(:is_selected => true).count
@@ -70,6 +70,7 @@ module Coupler
 
         app.put "/projects/:project_id/resources/:id" do
           @project = Models::Project[:id => params[:project_id]]
+          raise ProjectNotFound   unless @project
           @resource = @project.resources_dataset[:id => params[:id]]
 
           @resource.set(params[:resource])  if params[:resource]

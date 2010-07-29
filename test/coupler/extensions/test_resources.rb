@@ -15,11 +15,12 @@ module Coupler
         assert last_response.ok?
       end
 
-      def test_new_redirects_to_connections
-        Models::Connection.delete
-        get "/projects/#{@project.id}/resources/new"
+      def test_index_with_non_existant_project
+        get "/projects/8675309/resources"
         assert last_response.redirect?
-        assert_equal '/connections/new', last_response['location']
+        assert_equal "/projects", last_response['location']
+        follow_redirect!
+        assert_match /The project you were looking for doesn't exist/, last_response.body
       end
 
       def test_new_resource

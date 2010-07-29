@@ -1,11 +1,12 @@
 module Coupler
   class Base < Sinatra::Base
 
+    set :environment, ENV['COUPLER_ENV'] || :production
     set :root, File.expand_path(File.join(File.dirname(__FILE__), "..", "..", "webroot"))
     set :static, true
     set :erb, :trim => '-'
     set :raise_errors, Proc.new { test? }
-    set :show_exceptions, Proc.new { development? }
+    set :show_exceptions, false
     set :dump_errors, true
     set :logging, Proc.new { !test? }
     set :methodoverride, true
@@ -22,6 +23,7 @@ module Coupler
     register Extensions::Jobs
     register Extensions::Transformers
     register Extensions::Imports
+    register Extensions::Exceptions
 
     helpers do
       include Coupler::Helpers
