@@ -19,6 +19,9 @@ module Coupler
           raise ProjectNotFound   unless @project
           @connections = Models::Connection.all
           @resource = Models::Resource.new
+          if @connections.empty?
+            @resource.connection_attributes = {}
+          end
           erb 'resources/new'.to_sym
         end
 

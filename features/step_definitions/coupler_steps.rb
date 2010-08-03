@@ -95,9 +95,13 @@ end
 When /^I fill in the form:$/ do |table|
   table.raw.each do |(label_or_name, value)|
     elt = nil
-    [:text_field, :select_list].each do |type|
-      elt = find_element_by_label_or_name(type, label_or_name)
-      break if elt.exist?
+    if md = label_or_name.match(/\s*\((\d+)\)\s*$/)
+      elt = find_numbered_element_by_label(md.pre_match, md[1].to_i - 1)
+    else
+      [:text_field, :select_list].each do |type|
+        elt = find_element_by_label_or_name(type, label_or_name)
+        break if elt.exist?
+      end
     end
     assert elt.exist?, "can't find element with label or name of '#{label_or_name}'"
 

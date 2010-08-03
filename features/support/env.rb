@@ -72,6 +72,18 @@ module CouplerWorld
     elt
   end
 
+  def find_numbered_element_by_label(label, which)
+    labels = browser.labels.select { |l| l.object.textContent == label }
+    return nil  if labels[which].nil?
+
+    elt = nil
+    [:text_field, :select_list].each do |type|
+      elt = browser.send(type, :id, labels[which].for)
+      break if elt.exist?
+    end
+    elt
+  end
+
   private
     # NOTE: I have to do this because HtmlUnit's asXml likes to put spaces
     #       and newlines in the middle of whitespace-sensitive tags (like

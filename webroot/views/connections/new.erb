@@ -12,7 +12,7 @@
       <td class="left"><label for="adapter">Type</label></td>
       <td>
         <select id="adapter" name="connection[adapter]">
-          <% [%w{mysql MySQL}].each do |(value, label)| %>
+          <% Coupler::Models::Connection::ADAPTERS.each do |(value, label)| %>
             <option value="<%= value %>"<%= ' selected="selected"' if @connection.adapter == value %>><%= label %></option>
           <% end %>
         </select>

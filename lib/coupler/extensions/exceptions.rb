@@ -14,7 +14,7 @@ module Coupler
         app.error ProjectNotFound do
           flash[:notice] = "The project you were looking for doesn't exist."
           flash[:notice_class] = 'error'
-          redirect '/projects'
+          redirect(Models::Project.count > 0 ? '/projects' : '/')
         end
 
         app.error ResourceNotFound do

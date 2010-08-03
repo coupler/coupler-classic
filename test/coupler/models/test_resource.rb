@@ -40,6 +40,26 @@ module Coupler
         assert_respond_to Resource.new, :import
       end
 
+      def test_nested_attributes_for_connection
+        count = Connection.count
+        resource = Factory.build(:resource, :connection => nil)
+        resource.connection_attributes = Factory.attributes_for(:connection)
+        resource.save
+        assert_equal count + 1, Connection.count
+      end
+
+      def test_invalid_nested_attributes_for_connection
+        connection_count = Connection.count
+        resource_count = Resource.count
+
+        resource = Factory.build(:resource, :connection => nil)
+        resource.connection_attributes = Factory.attributes_for(:connection, :name => nil, :host => nil)
+        resource.save
+
+        assert_equal resource_count, Resource.count
+        assert_equal connection_count, Connection.count
+      end
+
       def test_nested_attributes_for_fields
         resource = Factory(:resource)
         field = resource.fields_dataset[:name => 'first_name']

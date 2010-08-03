@@ -15,6 +15,7 @@ module Coupler
       }
 
       plugin :nested_attributes
+      nested_attributes(:connection, :destroy => false)
       nested_attributes(:fields, :destroy => false, :fields => [:is_selected]) { |h| !(h.has_key?('id') || h.has_key?(:id)) }
 
       def source_database(&block)

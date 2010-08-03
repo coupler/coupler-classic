@@ -108,5 +108,9 @@ module Coupler
     ensure
       Socket.do_not_reverse_lookup = orig
     end
+
+    def cycle(even, odd)
+      (@_cycle = !@_cycle) ? even : odd
+    end
   end
 end

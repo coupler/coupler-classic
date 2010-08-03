@@ -3,6 +3,8 @@ module Coupler
     class Connection < Sequel::Model
       include CommonModel
 
+      ADAPTERS = [%w{mysql MySQL}]
+
       one_to_many :resources
 
       def database(database_name, &block)

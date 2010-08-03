@@ -41,7 +41,8 @@ module Coupler
         assert_match /Blah blah/, last_response.body
       end
 
-      def test_showing_invalid_project
+      def test_showing_invalid_project_when_projects_exist
+        some_project = Factory(:project)
         get "/projects/8675309"
         assert last_response.redirect?
         assert_equal "/projects", last_response['location']

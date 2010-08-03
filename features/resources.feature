@@ -1,10 +1,10 @@
 Feature: managing resources
   Background:
-    Given that I have created a connection called "My Connection"
-    And that I have created a project called "My Project"
+    Given that I have created a project called "My Project"
     And that I have created a transformer called "My Transformer"
 
   Scenario: adding a resource
+    Given that I have created a connection called "My Connection"
     When I go to the project page
     And I click the "Add resource" link
     And I fill in the form:
@@ -16,8 +16,25 @@ Feature: managing resources
     Then it should show me a confirmation notice
     And ask me to choose which fields I wish to select
 
+  Scenario: adding a resource and connection at the same time
+    When I go to the project page
+    And I click the "Add resource" link
+    And I fill in the form:
+       | Name (1)   | Fake data     |
+       | Type       | MySQL         |
+       | Host       | localhost     |
+       | Port       | 12345         |
+       | Username   | coupler       |
+       | Password   | cupla         |
+       | Name (2)   | People        |
+       | Database   | fake_data     |
+       | Table      | people        |
+    And I click the "Submit" button
+    Then it should show me a confirmation notice
+
   Scenario: adding a transformation
-    Given that I have added the "People" resource
+    Given that I have created a connection called "My Connection"
+    And that I have added the "People" resource
     When I go to the resource page
     And I click on the hammer icon next to the "first_name" field
     And I fill in the form:
@@ -26,7 +43,8 @@ Feature: managing resources
     Then it should show me a confirmation notice
 
   Scenario: deleting a transformation
-    Given that I have added the "People" resource
+    Given that I have created a connection called "My Connection"
+    And that I have added the "People" resource
     And that I have added a transformation for "first_name"
     When I go to the resource page
     And I click on the cog icon next to the "first_name" field
@@ -34,7 +52,8 @@ Feature: managing resources
     Then there should be no more transformations
 
   Scenario: transforming a resource
-    Given that I have added the "People" resource
+    Given that I have created a connection called "My Connection"
+    And that I have added the "People" resource
     And that I have added a transformation for "first_name"
     When I go to the resource page
     And I click the "Transform now" button with confirmation

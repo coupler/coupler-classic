@@ -10,14 +10,61 @@
 
 <div id="resource-database" style="display: none">
   <form method="post" action="/projects/<%= @project.id %>/resources">
-    <h2>Database</h2>
+    <%- if @connections.empty? -%>
+    <h2>Connection</h2>
     <table class="form">
       <tr>
+        <td class="left"><label for="connection_name" class="strong">Name</label></td>
+        <td>
+          <input id="connection_name" name="resource[connection_attributes][name]" type="text" value="<%=h @resource.connection.name %>" />
+        </td>
+      </tr>
+      <tr class="alt">
+        <td class="left"><label for="adapter" class="strong">Type</label></td>
+        <td>
+          <select id="adapter" name="resource[connection_attributes][adapter]">
+          <%- Coupler::Models::Connection::ADAPTERS.each do |(value, label)| -%>
+            <option value="<%= value %>"<%= ' selected="selected"' if @resource.connection.adapter == value %>><%= label %></option>
+          <%- end -%>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td class="left"><label for="host" class="strong">Host</label></td>
+        <td>
+          <input id="host" name="resource[connection_attributes][host]" type="text" value="<%=h @resource.connection.host %>" />
+        </td>
+      </tr>
+      <tr class="alt">
+        <td class="left"><label for="port" class="strong">Port</label></td>
+        <td>
+          <input id="port" name="resource[connection_attributes][port]" type="text" value="<%=h @resource.connection.port %>" />
+        </td>
+      </tr>
+      <tr>
+        <td class="left"><label for="username" class="strong">Username</label></td>
+        <td>
+          <input id="username" name="resource[connection_attributes][username]" type="text" value="<%=h @resource.connection.username %>" />
+        </td>
+      </tr>
+      <tr class="alt">
+        <td class="left"><label for="password" class="strong">Password</label><br/></td>
+        <td>
+          <input id="password" name="resource[connection_attributes][password]" type="password" />
+        </td>
+      </tr>
+    </table>
+    <%- end -%>
+    <h2>Database</h2>
+    <table class="form">
+      <tr<%= cycle("", ' class="alt"') %>>
         <td class="left"><label for="name" class="strong">Name</label></td>
         <td>
           <input id="name" name="resource[name]" type="text" />
         </td>
-      <tr class="alt">
+      </tr>
+      <%- if !@connections.empty? -%>
+      <tr<%= cycle("", ' class="alt"') %>>
         <td class="left"><label for="connection_id" class="strong">Connection</label></td>
         <td>
           <select id="connection_id" name="resource[connection_id]">
@@ -25,14 +72,16 @@
             <option value="<%= connection.id %>"><%= connection.name %></option>
           <%- end -%>
           </select>
+        </td>
       </tr>
-      <tr>
+      <%- end -%>
+      <tr<%= cycle("", ' class="alt"') %>>
         <td class="left"><label for="database_name" class="strong">Database</label></td>
         <td>
           <input id="database_name" name="resource[database_name]" type="text" value="<%= @resource.database_name %>" />
         </td>
       </tr>
-      <tr class="alt">
+      <tr<%= cycle("", ' class="alt"') %>>
         <td class="left"><label for="table_name" class="strong">Table</label></td>
         <td>
           <input id="table_name" name="resource[table_name]" type="text" value="<%= @resource.table_name %>" />
@@ -57,7 +106,7 @@
 <script type="text/javascript">
   $(function() {
     $('#resource-type-buttons').buttonset();
-    $('input[name="resource[type]"]').change(function() {
+    $('input[name=resource\\[type\\]]').change(function() {
       val = $(this).val();
       if (val == "database") {
         $('#resource-csv').fadeOut('fast', function() {
