@@ -25,13 +25,7 @@ module Coupler
       private
         def validate
           super
-
-          # require unique name across resources
-          ary = [{:name => name, :resource_id => resource_id}]
-          ary << ~{:id => id}   if !new?
-          if self.class.filter(*ary).count > 0
-            errors[:name] << "is already taken"
-          end
+          validates_unique [:name, :resource_id]
         end
 
         def before_save

@@ -27,30 +27,14 @@ module Coupler
         end
 
         def validate
-          if self.name.nil? || self.name == ""
-            errors[:name] << "is required"
-          else
-            if self.new?
-              count = self.class.filter(:name => self.name).count
-              errors[:name] << "is already taken"   if count > 0
-            else
-              count = self.class.filter(["name = ? AND id != ?", self.name, self.id]).count
-              errors[:name] << "is already taken"   if count > 0
-            end
-          end
-
-          if self.new?
-            count = self.class.filter(:slug => self.slug).count
-            errors[:slug] << "is already taken"   if count > 0
-          else
-            count = self.class.filter(["slug = ? AND id != ?", self.slug, self.id]).count
-            errors[:slug] << "is already taken"   if count > 0
-          end
+          super
+          validates_presence :name
+          validates_unique :name, :slug
 
           begin
             database("") { |db| db.test_connection }
           rescue Sequel::DatabaseConnectionError, Sequel::DatabaseError => e
-            errors[:base] << "Couldn't connect to the database"
+            errors.add(:base, "Couldn't connect to the database")
           end
         end
     end

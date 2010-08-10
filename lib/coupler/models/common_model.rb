@@ -27,6 +27,7 @@ module Coupler
       def self.included(base)
         base.extend(ClassMethods)
         base.raise_on_save_failure = false
+        base.plugin :validation_helpers
 
         # decide whether or not to version this model
         versions_table_name = base.versions_table_name

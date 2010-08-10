@@ -51,7 +51,7 @@ module Coupler
           'scenario' => Factory.attributes_for(:scenario, :name => nil)
         }
         assert last_response.ok?
-        assert_match /Name is required/, last_response.body
+        assert_match /Name is not present/, last_response.body
       end
 
       def test_run_scenario

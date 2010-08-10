@@ -52,7 +52,7 @@ module Coupler
           'resource' => Factory.attributes_for(:resource, :name => nil, :connection_id => connection.id)
         }
         assert last_response.ok?
-        assert_match /Name is required/, last_response.body
+        assert_match /Name is not present/, last_response.body
       end
 
       def test_show_resource

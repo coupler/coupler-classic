@@ -15,7 +15,7 @@ module Coupler
         assert last_response.ok?
 
         doc = Nokogiri::HTML(last_response.body)
-        fields = doc.at('select[name="transformation[field_id]"]')
+        fields = doc.at('select[name="transformation[source_field_id]"]')
         assert_equal %w{id first_name last_name age}, fields.css('option').collect(&:inner_html)
 
         transformers = doc.at('select[name="transformation[transformer_id]"]')

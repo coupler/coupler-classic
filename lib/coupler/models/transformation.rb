@@ -56,28 +56,21 @@ module Coupler
 
         def validate
           super
-          if resource_id.nil?
-            errors[:resource_id] << "is required"
-          end
-
-          if transformer_id.nil?
-            errors[:transformer_id] << "is required"
-          end
-
-          if resource && transformer
-            source_field = source_field_id ? resource.fields_dataset[:id => source_field_id] : nil
+          validates_presence [:resource_id, :transformer_id, :source_field_id]
+          if errors.empty?
+            source_field = resource.fields_dataset[:id => source_field_id]
             if source_field.nil?
-              errors[:source_field_id] << "is invalid"
+              errors.add(:source_field_id, "is invalid")
             else
               if !transformer.allowed_types.include?(source_field.final_type)
-                errors[:base] << "#{transformer.name} cannot transform type '#{source_field.final_type}'"
+                errors.add(:base, "#{transformer.name} cannot transform type '#{source_field.final_type}'")
               end
             end
 
             if !@staged_result_field
               result_field = result_field_id ? resource.fields_dataset[:id => result_field_id] : nil
               if result_field.nil?
-                errors[:result_field_id] << "is invalid"
+                errors.add(:result_field_id, "is invalid")
               end
             end
           end

@@ -126,8 +126,7 @@ module Coupler
 
         def before_validation
           super
-
-          if import
+          if new? && import
             self.project = import.project
             self.name = import.name
             self.table_name = "import_#{import.id}"
@@ -137,62 +136,38 @@ module Coupler
 
         def validate
           super
-
-          if project.nil?
-            errors[:project_id] << "is required"
+          validates_presence [:project_id, :name]
+          if new? && errors.on(:name).nil?
+            self.slug ||= name.downcase.gsub(/\s+/, "_")
           end
-
-          if self.name.nil? || self.name == ""
-            errors[:name] << "is required"
-          else
-            if self.new?
-              count = self.class.filter(:name => name, :project_id => project_id).count
-              errors[:name] << "is already taken"   if count > 0
-            else
-              count = self.class.filter({:name => name, :project_id => project_id}, ~{:id => id}).count
-              errors[:name] << "is already taken"   if count > 0
-            end
-          end
-
-          if self.new?
-            count = self.class.filter(:slug => slug, :project_id => project_id).count
-            errors[:slug] << "is already taken"   if count > 0
-          else
-            count = self.class.filter({:slug => slug, :project_id => project_id}, ~{:id => id}).count
-            errors[:slug] << "is already taken"   if count > 0
-          end
+          validates_presence :slug
+          validates_unique [:name, :project_id], [:slug, :project_id]
 
           if import.nil?
-            if database_name.nil? || database_name == ""
-              errors[:database_name] << "is required"
-            else
+            validates_presence [:database_name, :table_name]
+
+            if errors.on(:database_name).nil?
               begin
                 connection.database(database_name) { |db| db.test_connection }
               rescue Sequel::DatabaseConnectionError, Sequel::DatabaseError => e
-                errors[:database_name] << "is not valid"
+                errors.add(:database_name, "is not valid")
               end
             end
 
-            if table_name.nil? || table_name == ""
-              errors[:table_name] << "is required"
-            elsif !errors.has_key?(:database_name)
-              #begin
-                source_database do |db|
-                  sym = self.table_name.to_sym
-                  if !db.tables.include?(sym)
-                    errors[:table_name] << "is invalid"
-                  else
-                    keys = db.schema(sym).select { |info| info[1][:primary_key] }
-                    if keys.empty?
-                      errors[:table_name] << "doesn't have a primary key"
-                    elsif keys.length > 1
-                      errors[:table_name] << "has too many primary keys"
-                    end
+            if errors.on(:database_name).nil? && errors.on(:table_name).nil?
+              source_database do |db|
+                sym = self.table_name.to_sym
+                if !db.tables.include?(sym)
+                  errors.add(:table_name, "is invalid")
+                else
+                  keys = db.schema(sym).select { |info| info[1][:primary_key] }
+                  if keys.empty?
+                    errors.add(:table_name, "doesn't have a primary key")
+                  elsif keys.length > 1
+                    errors.add(:table_name, "has too many primary keys")
                   end
                 end
-              #rescue Sequel::DatabaseConnectionError, Sequel::DatabaseError => e
-                #errors[:base] << "Couldn't connect to the database"
-              #end
+              end
             end
           end
         end
@@ -203,11 +178,8 @@ module Coupler
             # serialization happens in before_save, which gets called before
             # the before_create hook
             if import
-              self.name = import.name
-              self.project = import.project
               import.import!
             end
-            self.slug ||= self.name.downcase.gsub(/\s+/, "_")
             source_database do |db|
               schema = db.schema(self.table_name)
               info = schema.detect { |x| x[1][:primary_key] }

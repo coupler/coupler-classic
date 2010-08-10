@@ -25,14 +25,9 @@ module Coupler
         end
 
         def validate
-          errors[:name] << "is required"  if name.nil? || name == ""
-
-          obj = self.class[:slug => slug]
-          if self.new?
-            errors[:slug] << "is already taken"   if obj
-          else
-            errors[:slug] << "is already taken"   if obj.id != id
-          end
+          super
+          validates_presence :name
+          validates_unique :name, :slug
         end
 
         def after_destroy

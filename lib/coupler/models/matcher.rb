@@ -15,7 +15,7 @@ module Coupler
             comparison.lhs_type == "field" && comparison.rhs_type == "field"
           end
           if !result
-            errors[:base] << "At least one field-to-field comparison is required."
+            errors.add(:base, "At least one field-to-field comparison is required.")
           end
         end
     end

@@ -50,12 +50,30 @@ module Coupler
       end
 
       private
+        def set_linkage_type
+          self.linkage_type =
+            if resource_1
+              resource_2 ? "dual-linkage" : "self-linkage"
+            else
+              "N/A"
+            end
+        end
+
         def before_validation
           super
           if @resource_ids.is_a?(Array)
             objects = project.resources_dataset.filter(:id => @resource_ids[0..1].compact).all
             self.resource_1_id = objects[0].nil? ? nil : objects[0].id
             self.resource_2_id = objects[1].nil? ? nil : objects[1].id
+          end
+        end
+
+        def validate
+          super
+          validates_presence :name
+          validates_unique [:name, :project_id]
+          if resource_1_id.nil?
+            errors.add(:base, "At least one resource is required")
           end
         end
 
@@ -68,32 +86,6 @@ module Coupler
         def before_update
           super
           set_linkage_type
-        end
-
-        def set_linkage_type
-          self.linkage_type = if resource_1
-                                resource_2 ? "dual-linkage" : "self-linkage"
-                              else
-                                "N/A"
-                              end
-        end
-
-        def validate
-          if name.nil? || name == ""
-            errors[:name] << "is required"
-          else
-            if new?
-              count = self.class.filter(:name => name).count
-              errors[:name] << "is already taken"   if count > 0
-            else
-              count = self.class.filter(["name = ? AND id != ?", name, id]).count
-              errors[:name] << "is already taken"   if count > 0
-            end
-          end
-
-          if resource_1_id.nil?
-            errors[:base] << "At least one resource is required"
-          end
         end
     end
   end

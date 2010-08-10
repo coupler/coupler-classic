@@ -71,16 +71,9 @@ module Coupler
             if value.nil? || value == ''
               errors.add(attr, "is required")
             end
-
-            attr = :"#{name}_type"
-            value = send(attr)
-            if !TYPES.include?(value)
-              errors.add(attr, "is not valid")
-            end
           end
-          if !OPERATORS.keys.include?(operator)
-            errors.add(:operator, "is not valid")
-          end
+          validates_includes TYPES, [:lhs_type, :rhs_type]
+          validates_includes OPERATORS, :operator
         end
 
         def before_save

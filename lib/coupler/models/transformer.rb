@@ -71,46 +71,30 @@ module Coupler
       private
         def validate
           super
-          if name.nil? || name == ""
-            errors[:name] << "is required"
-          else
-            if new?
-              count = self.class.filter(:name => name).count
-              errors[:name] << "is already taken"   if count > 0
-            else
-              count = self.class.filter(["name = ? AND id != ?", name, id]).count
-              errors[:name] << "is already taken"   if count > 0
+          validates_presence [:name, :allowed_types, :result_type, :code]
+          validates_unique :name
+          validates_includes TYPES + ['same'], :result_type
+
+          if errors.on(:allowed_types).nil?
+            bad = (allowed_types - TYPES).uniq
+            if !bad.empty?
+              errors.add(:allowed_types, "has invalid type(s): #{bad.join(', ')}")
             end
           end
 
-          if allowed_types.nil? || allowed_types.empty?
-            errors[:allowed_types] << "cannot be empty"
-          else
-            bad = (allowed_types - TYPES).uniq
-            errors[:allowed_types] << "has invalid type(s): #{bad.join(', ')}"   if !bad.empty?
-          end
-
-          if result_type.nil? || result_type == ""
-            errors[:result_type] << "is required"
-          elsif !TYPES.include?(result_type) && result_type != "same"
-            errors[:result_type] << "is invalid"
-          end
-
-          if code.nil? || code == ""
-            errors[:code] << "is required"
-          else
+          if errors.on(:code).nil?
             io = java.io.ByteArrayInputStream.new(code.to_java_bytes)
             begin
               JRuby.runtime.parseInline(io, "line", nil)
             rescue Exception => e
-              errors[:code] << "has errors: #{e.to_s}"
+              errors.add(:code, "has errors: #{e.to_s}")
             end
           end
 
           if errors.empty?
             result = preview
             if !(result && result['success'])
-              errors[:code] << "has errors"
+              errors.add(:code, "has errors")
             end
           end
         end

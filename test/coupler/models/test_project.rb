@@ -28,6 +28,12 @@ module Coupler
         assert !project.valid?
       end
 
+      def test_requires_unique_name
+        project_1 = Factory(:project)
+        project_2 = Factory.build(:project, :name => project_1.name)
+        assert !project_2.valid?
+      end
+
       def test_sets_slug_from_name
         project = Project.create('name' => 'Foo bar')
         assert_equal "foo_bar", project.slug

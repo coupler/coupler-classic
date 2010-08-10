@@ -52,7 +52,7 @@ module Coupler
           'connection' => Factory.attributes_for(:connection, :name => nil)
         }
         assert last_response.ok?
-        assert_match /Name is required/, last_response.body
+        assert_match /Name is not present/, last_response.body
       end
 
       def test_show
