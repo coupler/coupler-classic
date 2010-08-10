@@ -7,11 +7,12 @@ Feature: managing resources
     Given that I have created a connection called "My Connection"
     When I go to the project page
     And I click the "Add resource" link
+    And I choose a "Database" resource
     And I fill in the form:
-      | Name       | People        |
-      | Connection | My Connection |
-      | Database   | fake_data     |
-      | Table      | people        |
+      | Name         | People        |
+      | Connection   | My Connection |
+      | Database (2) | fake_data     |
+      | Table        | people        |
     And I click the "Submit" button
     Then it should show me a confirmation notice
     And ask me to choose which fields I wish to select
@@ -19,16 +20,17 @@ Feature: managing resources
   Scenario: adding a resource and connection at the same time
     When I go to the project page
     And I click the "Add resource" link
+    And I choose a "Database" resource
     And I fill in the form:
-       | Name (1)   | Fake data     |
-       | Type       | MySQL         |
-       | Host       | localhost     |
-       | Port       | 12345         |
-       | Username   | coupler       |
-       | Password   | cupla         |
-       | Name (2)   | People        |
-       | Database   | fake_data     |
-       | Table      | people        |
+      | Name (1)     | Fake data |
+      | Type         | MySQL     |
+      | Host         | localhost |
+      | Port         | 12345     |
+      | Username     | coupler   |
+      | Password     | cupla     |
+      | Name (2)     | People    |
+      | Database (2) | fake_data |
+      | Table        | people    |
     And I click the "Submit" button
     Then it should show me a confirmation notice
 
@@ -39,7 +41,7 @@ Feature: managing resources
     And I click on the hammer icon next to the "first_name" field
     And I fill in the form:
       | Transformer | My Transformer |
-    And I click the "Create" button
+    And I click the "Finish" button
     Then it should show me a confirmation notice
 
   Scenario: deleting a transformation

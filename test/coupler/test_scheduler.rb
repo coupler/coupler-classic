@@ -28,7 +28,7 @@ module Coupler
     end
 
     def test_schedule_transform_job
-      resource = stub("resource", :slug => "pants") do
+      resource = stub("resource") do
         stubs(:[]).with(:id).returns(123)
       end
       job_model = stub("job model") do
@@ -41,14 +41,14 @@ module Coupler
       }).returns(job_model)
 
       scheduler = Scheduler.instance
-      @java_scheduler.expects(:schedule_job) do |job, trigger|
-        assert_equal "transform_pants", job.name
-        assert_equal "coupler", job.group
-        assert_equal Jobs::Transform.java_class, job.job_class
-        assert_equal 123, job.job_data_map.get("resource_id")
-        assert_equal 456, job.job_data_map.get("job_id")
+      @java_scheduler.expects(:schedule_job).with do |job_detail, trigger|
+        assert_equal "transform_resource_123", job_detail.name
+        assert_equal "coupler", job_detail.group
+        assert_equal Jobs::Transform.java_class, job_detail.job_class
+        assert_equal 123, job_detail.job_data_map.get("resource_id")
+        assert_equal 456, job_detail.job_data_map.get("job_id")
 
-        assert_equal "transform_pants_trigger", trigger.name
+        assert_equal "transform_resource_123_trigger", trigger.name
         assert_equal "coupler", trigger.group
 
         true
@@ -58,7 +58,7 @@ module Coupler
     end
 
     def test_schedule_run_scenario_job
-      scenario = stub("scenario", :slug => "pants") do
+      scenario = stub("scenario") do
         stubs(:[]).with(:id).returns(123)
       end
       job_model = stub("job model") do
@@ -71,14 +71,14 @@ module Coupler
       }).returns(job_model)
 
       scheduler = Scheduler.instance
-      @java_scheduler.expects(:schedule_job) do |job, trigger|
-        assert_equal "run_scenario_pants", job.name
-        assert_equal "coupler", job.group
-        assert_equal Jobs::RunScenario.java_class, job.job_class
-        assert_equal 123, job.job_data_map.get("scenario_id")
-        assert_equal 456, job.job_data_map.get("job_id")
+      @java_scheduler.expects(:schedule_job).with do |job_detail, trigger|
+        assert_equal "run_scenario_123", job_detail.name
+        assert_equal "coupler", job_detail.group
+        assert_equal Jobs::RunScenario.java_class, job_detail.job_class
+        assert_equal 123, job_detail.job_data_map.get("scenario_id")
+        assert_equal 456, job_detail.job_data_map.get("job_id")
 
-        assert_equal "run_scenario_pants_trigger", trigger.name
+        assert_equal "run_scenario_123_trigger", trigger.name
         assert_equal "coupler", trigger.group
 
         true

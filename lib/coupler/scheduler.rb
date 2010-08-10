@@ -23,10 +23,11 @@ module Coupler
         :resource => resource,
         :status => "scheduled"
       })
-      job_detail = JobDetail.new("transform_#{resource.slug}", "coupler", Jobs::Transform.java_class)
-      job_detail.job_data_map.put(java.lang.String.new("resource_id"), resource[:id])
+      resource_id = resource[:id]
+      job_detail = JobDetail.new("transform_resource_#{resource_id}", "coupler", Jobs::Transform.java_class)
+      job_detail.job_data_map.put(java.lang.String.new("resource_id"), resource_id)
       job_detail.job_data_map.put(java.lang.String.new("job_id"), job_model[:id])
-      trigger = SimpleTrigger.new("transform_#{resource.slug}_trigger", "coupler")
+      trigger = SimpleTrigger.new("transform_resource_#{resource_id}_trigger", "coupler")
       @scheduler.schedule_job(job_detail, trigger)
     end
 
@@ -36,10 +37,11 @@ module Coupler
         :scenario => scenario,
         :status => "scheduled"
       })
-      job_detail = JobDetail.new("run_scenario_#{scenario.slug}", "coupler", Jobs::RunScenario.java_class)
-      job_detail.job_data_map.put(java.lang.String.new("scenario_id"), scenario[:id])
+      scenario_id = scenario[:id]
+      job_detail = JobDetail.new("run_scenario_#{scenario_id}", "coupler", Jobs::RunScenario.java_class)
+      job_detail.job_data_map.put(java.lang.String.new("scenario_id"), scenario_id)
       job_detail.job_data_map.put(java.lang.String.new("job_id"), job_model[:id])
-      trigger = SimpleTrigger.new("run_scenario_#{scenario.slug}_trigger", "coupler")
+      trigger = SimpleTrigger.new("run_scenario_#{scenario_id}_trigger", "coupler")
       @scheduler.schedule_job(job_detail, trigger)
     end
   end

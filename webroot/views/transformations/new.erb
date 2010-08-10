@@ -2,8 +2,8 @@
 <%= error_messages_for @transformation %>
 <form method="post" action="/projects/<%= @project.id %>/resources/<%= @resource.id %>/transformations">
   <p>
-    <label for="field_id">Field</label><br/>
-    <select id="field_id" name="transformation[field_id]">
+    <label for="source_field_id">Field</label><br/>
+    <select id="source_field_id" name="transformation[source_field_id]">
     <% @fields.each do |field| %>
       <option value="<%= field.id %>"><%= field.name %></option>
     <% end %>

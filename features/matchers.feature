@@ -11,9 +11,9 @@ Feature: managing matchers
     And I click the "Add matcher" link
     And I click the "Add comparison" link
     And I select "Field" as the first type
-    And I select "last_name" for "People 1" as the first value
+    And I select "last_name" for "People [1]" as the first value
     And I select "Field" as the second type
-    And I select "last_name" for "People 2" as the second value
+    And I select "last_name" for "People [2]" as the second value
     And I click the "Add" button
     And I click the "Submit" button
     Then it should take me back to the scenario page

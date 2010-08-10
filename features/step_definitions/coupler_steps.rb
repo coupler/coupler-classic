@@ -29,7 +29,7 @@ Given /^that I have added a transformation for "([^\"]*)"$/ do |field|
   resource = @resources[0]
   @transformation = Factory(:transformation, {
     :resource => resource, :transformer => @transformer,
-    :field => resource.fields_dataset[:name => field]
+    :source_field => resource.fields_dataset[:name => field]
   })
 end
 
@@ -93,23 +93,27 @@ When /^I click the "(.+?)" link$/ do |link_name|
 end
 
 When /^I fill in the form:$/ do |table|
+  form = browser.forms.first
   table.raw.each do |(label_or_name, value)|
-    elt = nil
-    if md = label_or_name.match(/\s*\((\d+)\)\s*$/)
-      elt = find_numbered_element_by_label(md.pre_match, md[1].to_i - 1)
-    else
-      [:text_field, :select_list].each do |type|
-        elt = find_element_by_label_or_name(type, label_or_name)
-        break if elt.exist?
-      end
+    md = label_or_name.match(/\s*\((\d+)\)\s*$/)
+    args = md ? [md.pre_match, md[1].to_i - 1] : [label_or_name]
+    elt = find_visible_element_by_label_or_id(*args)
+    if elt.nil?
+      puts current_page_source
     end
-    assert elt.exist?, "can't find element with label or name of '#{label_or_name}'"
+    assert elt && elt.exist?, "can't find element with label or name of '#{label_or_name}'"
 
     case elt
     when Celerity::TextField
       elt.value = value
     when Celerity::SelectList
-      value.split("/").each { |v| elt.select(v) }
+      value.split("/").each do |v|
+        elt.object.get_options.find do |option|
+          option.text_content == v || option.value_attribute == v
+        end.click
+      end
+    else
+      raise "unknown field type: #{elt.to_xml}"
     end
   end
 end

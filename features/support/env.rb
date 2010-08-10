@@ -14,7 +14,7 @@ module CouplerWorld
     unless @browser
       @browser = Celerity::Browser.new({
         :javascript_exceptions => true, :viewer => "127.0.0.1:6429",
-        :resynchronize => true
+        :resynchronize => true, :css => true
       })
     end
     @browser
@@ -63,25 +63,13 @@ module CouplerWorld
     browser.button(button_value).click
   end
 
-  def find_element_by_label_or_name(type, label_or_name)
-    elt = browser.send(type, :label, label_or_name)
-    if !elt.exist?
-      elt = browser.send(type, :name, label_or_name)
-      elt = elt.exist? ? elt : browser.send(type, :id, label_or_name)
+  def find_visible_element_by_label_or_id(label_or_id, which = 0)
+    labels = browser.labels.select do |label|
+      object = label.object
+      object.textContent == label_or_id && object.displayed?
     end
-    elt
-  end
-
-  def find_numbered_element_by_label(label, which)
-    labels = browser.labels.select { |l| l.object.textContent == label }
-    return nil  if labels[which].nil?
-
-    elt = nil
-    [:text_field, :select_list].each do |type|
-      elt = browser.send(type, :id, labels[which].for)
-      break if elt.exist?
-    end
-    elt
+    id = labels.empty? ? label_or_id : labels[which].for
+    browser.elements_by_xpath("id('#{id}')")[0]
   end
 
   private
