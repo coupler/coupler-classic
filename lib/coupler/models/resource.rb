@@ -18,6 +18,8 @@ module Coupler
       nested_attributes(:connection, :destroy => false)
       nested_attributes(:fields, :destroy => false, :fields => [:is_selected]) { |h| !(h.has_key?('id') || h.has_key?(:id)) }
 
+      attr_accessor :resource_type
+
       def source_database(&block)
         if import
           project.local_database(&block)

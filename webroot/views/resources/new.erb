@@ -4,12 +4,13 @@
 
 <div class="strong">Choose a resource type:</div>
 <div id="resource-type-buttons" style="padding: 1em 0 2em 2em">
-  <input id="type-database" name="resource[type]" type="radio" value="database" /><label for="type-database">Database</label>
-  <input id="type-csv" name="resource[type]" type="radio" value="csv" /><label for="type-csv">CSV</label>
+  <label for="resource-type-database">Database</label><input id="resource-type-database" type="radio" name="resource-type" value="database"<%= ' checked="checked"' if @resource.resource_type == 'database' %> />
+  <label for="resource-type-csv">CSV</label><input id="resource-type-csv" type="radio" name="resource-type" value="csv"<%= ' checked="checked"' if @resource.resource_type == 'csv' %> />
 </div>
 
-<div id="resource-database" style="display: none">
+<div id="resource-database"<%= ' style="display: none"' if @resource.resource_type != 'database' %>>
   <form method="post" action="/projects/<%= @project.id %>/resources">
+    <div style='display: none;'><input type='hidden' name="resource[resource_type]" value="database" /></div>
     <%- if @connections.empty? -%>
     <h2>Connection</h2>
     <table class="form">
@@ -91,11 +92,12 @@
     <p>
       <input type="submit" value="Submit" /> or <a href="/projects/<%= @project.id %>">Cancel</a>
     </p>
-  </div>
-</form>
+  </form>
+</div>
 
-<div id="resource-csv" style="display: none;">
+<div id="resource-csv"<%= ' style="display: none"' if @resource.resource_type != 'csv' %>>
   <form id="new-import" method="post" action="/projects/<%= @project.id %>/imports" enctype="multipart/form-data">
+    <div style='display: none;'><input type='hidden' name="resource[resource_type]" value="csv" /></div>
     <h2>CSV Import</h2>
     <p>
       <input type="file" name="import[data]" />
@@ -105,20 +107,20 @@
 
 <script type="text/javascript">
   $(function() {
-    $('#resource-type-buttons').buttonset();
-    $('input[name=resource\\[type\\]]').change(function() {
-      val = $(this).val();
-      if (val == "database") {
-        $('#resource-csv').fadeOut('fast', function() {
-          $('#resource-database').fadeIn('fast');
-        });
-      }
-      else if (val == "csv") {
-        $('#resource-database').fadeOut('fast', function() {
-          $('#resource-csv').fadeIn('fast');
-        });
-      }
-    });
+    $('#resource-type-buttons').buttonset()
+      .find('input').change(function() {
+        val = $(this).val();
+        if (val == "database") {
+          $('#resource-csv').fadeOut('fast', function() {
+            $('#resource-database').fadeIn('fast');
+          });
+        }
+        else if (val == "csv") {
+          $('#resource-database').fadeOut('fast', function() {
+            $('#resource-csv').fadeIn('fast');
+          });
+        }
+      });
     $('input:file').change(function() {
       $('#new-import').submit();
     });
