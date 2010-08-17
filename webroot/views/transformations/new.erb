@@ -45,12 +45,12 @@
         <table class="show">
           <tr>
             <td class="col1 no-border"><label for="name">Name:</label></td>
-            <td><input id="name" name="transformation[transformer_attributes][name]" type="text" /></td>
+            <td><input id="name" name="transformation[transformer_attributes][name]" type="text" disabled="disabled" /></td>
           </tr>
           <tr>
             <td class="col1 no-border"><label for="allowed_types">Allowed Field Types:</label></td>
             <td>
-              <select id="allowed_types" name="transformation[transformer_attributes][allowed_types][]" multiple="multiple">
+              <select id="allowed_types" name="transformation[transformer_attributes][allowed_types][]" multiple="multiple" disabled="disabled">
               <% [%w{integer Integer}, %w{string String}, %w{datetime Date/Time}].each do |(value, label)| %>
                 <option value="<%= value %>"><%= label %></option>
               <% end %>
@@ -60,7 +60,7 @@
           <tr>
             <td class="col1 no-border"><label for="result_type">Result Type:</label></td>
             <td>
-              <select id="result_type" name="transformation[transformer_attributes][result_type]">
+              <select id="result_type" name="transformation[transformer_attributes][result_type]" disabled="disabled">
               <% [['same', 'Same as original field type'], %w{integer Integer}, %w{string String}, %w{datetime Date/Time}].each do |(value, label)| %>
                 <option value="<%= value %>"><%= label %></option>
               <% end %>
@@ -69,7 +69,7 @@
           </tr>
           <tr>
             <td class="col1 no-border" style="vertical-align: top"><label for="code">Code:</label></td>
-            <td><textarea id="code" name="transformation[transformer_attributes][code]" rows="10" cols="25"></textarea></td>
+            <td><textarea id="code" name="transformation[transformer_attributes][code]" rows="10" cols="25" disabled="disabled"></textarea></td>
           </tr>
         </table>
       </div>
@@ -107,6 +107,20 @@
 <script type="text/javascript">
   var fields = <%= @fields.inject({}) { |h, f| h[f.id] = { 'type' => f.final_type, 'db_type' => f.final_db_type }; h }.to_json %>;
   var transformers = <%= @transformers.inject({}) { |h, t| h[t.id] = { 'name' => t.name, 'allowed_types' => t.allowed_types, 'result_type' => t.result_type }; h }.to_json %>;
+  function toggleTransformerAttributes(bool) {
+    if (bool) {
+      $('#transformer-attributes').show()
+        .find('select, input, textarea').removeAttr('disabled');
+      $('#transformer-select').hide();
+      $('#result-field-selection').fadeIn('fast');
+    }
+    else {
+      $('#transformer-attributes').hide()
+        .find('select, input, textarea').attr('disabled', true);
+      $('#transformer-select').show();
+      $('#result-field-selection').fadeOut('fast');
+    }
+  }
   $(function() {
     $('#source_field_id').combobox().change(function() {
       var source_field_id = $(this).val();
@@ -128,16 +142,7 @@
             empty = false;
           }
         });
-        if (empty) {
-          $('#transformer-attributes').show();
-          $('#transformer-select').hide();
-          $('#result-field-selection').fadeIn('fast');
-        }
-        else {
-          $('#transformer-select').show();
-          $('#transformer-attributes').hide();
-          $('#result-field-selection').fadeOut('fast');
-        }
+        toggleTransformerAttributes(empty);
         $('#transformer').fadeIn('fast');
       }
       else {
@@ -158,9 +163,8 @@
       }
     });
     $('#create-transformer').button().click(function(e) {
+      toggleTransformerAttributes(true);
       e.preventDefault();
-      $('#transformer-attributes').show();
-      $('#transformer-select').hide();
     });
     $('#result-field-same').change(function() {
       if ($(this).is(':checked')) {
