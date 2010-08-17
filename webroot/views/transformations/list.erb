@@ -1,21 +1,29 @@
-<table class="list">
-  <thead>
-    <tr>
-      <th>Field</th>
-      <th>Transformer</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-  <% @transformations.each do |transformation| %>
-    <tr>
-      <td><%= transformation.source_field.name %></td>
-      <td><%= transformation.transformer.name %></td>
-      <td><%= delete_link("Delete", "/projects/#{@project.id}/resources/#{@resource.id}/transformations/#{transformation.id}") %></td>
-    </tr>
-  <% end %>
-  </tbody>
-</table>
+<% if @transformations.empty? %>
+  <p>There are currently no transformations for this resource.</p>
+<% else %>
+  <table class="list">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Source</th>
+        <th>Transformer</th>
+        <th>Target</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+    <% @transformations.each do |transformation| %>
+      <tr<%= cycle('', ' class="alt"') %>>
+        <td><%= transformation.position %></td>
+        <td><%= transformation.source_field.name %></td>
+        <td><%= transformation.transformer.name %></td>
+        <td><%= transformation.result_field.name %></td>
+        <td><%= delete_link("<span class='ui-icon ui-icon-trash'></span>", "/projects/#{@project.id}/resources/#{@resource.id}/transformations/#{transformation.id}") %></td>
+      </tr>
+    <% end %>
+    </tbody>
+  </table>
+<% end %>
 <p>
   <a href="/projects/<%= @project.id %>/resources/<%= @resource.id %>/transformations/new">New transformation</a>
 </p>

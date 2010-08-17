@@ -47,7 +47,7 @@ module Coupler
           @resource = @project.resources_dataset[:id => params[:id]]
           @fields = @resource.fields_dataset.filter(:is_selected => 1).all
           @transformers = Models::Transformer.all
-          @t12n_count = @resource.transformations_dataset.count
+          @transformations = @resource.transformations_dataset.order(:position)
           @scenarios = @resource.scenarios
           @running_jobs = @resource.running_jobs
           @scheduled_jobs = @resource.scheduled_jobs

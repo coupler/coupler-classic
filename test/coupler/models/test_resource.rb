@@ -556,6 +556,30 @@ module Coupler
         assert_equal "import_#{import.id}", resource.table_name
         assert_equal "project_#{project.id}", resource.database_name
       end
+
+      def test_preview_inplace_transformation
+        resource = Factory(:resource)
+        first_name = resource.fields_dataset[:name => 'first_name']
+        strlen = Factory(:transformer, :code => "value.length", :allowed_types => %w{string}, :result_type => 'integer')
+        square = Factory(:transformer, :code => "value ** 2", :allowed_types => %w{integer}, :result_type => 'integer')
+        transformation_1 = Factory(:transformation, { :resource => resource, :transformer => strlen, :source_field => first_name })
+        transformation_2 = Factory.build(:transformation, {
+          :resource => resource, :transformer => square,
+          :source_field => first_name, :result_field => first_name
+        })
+        arr = resource.preview_transformation(transformation_2)
+        assert_equal [:id, :first_name, :last_name, :age], arr[:fields]
+        assert_equal 50, arr[:data].length
+        resource.source_dataset do |ds|
+          ds.limit(50).each_with_index do |row, i|
+            before = row.merge(:first_name => row[:first_name].length)
+            after  = before.merge(:first_name => before[:first_name] ** 2)
+            result = arr[:data].find { |r| r[:before][:id] == row[:id] }
+            assert_equal before, result[:before]
+            assert_equal after, result[:after]
+          end
+        end
+      end
     end
   end
 end

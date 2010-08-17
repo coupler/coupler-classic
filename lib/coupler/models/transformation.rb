@@ -9,6 +9,7 @@ module Coupler
 
       plugin :nested_attributes
       nested_attributes :result_field
+      nested_attributes :transformer, :destroy => false
 
       def transform(data)
         transformer.transform(data, {
@@ -56,7 +57,10 @@ module Coupler
 
         def validate
           super
-          validates_presence [:resource_id, :transformer_id, :source_field_id]
+          validates_presence [:resource_id, :source_field_id]
+          if transformer.nil?
+            errors.add(:transformer_id, "is not present")
+          end
           if errors.empty?
             source_field = resource.fields_dataset[:id => source_field_id]
             if source_field.nil?
@@ -78,7 +82,7 @@ module Coupler
 
         def before_create
           super
-          self.position = self.class.filter(:resource_id => resource_id).count + 1
+          self.position ||= self.class.filter(:resource_id => resource_id).count + 1
         end
 
         def after_save

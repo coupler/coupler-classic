@@ -25,7 +25,7 @@ module Coupler
         assert !transformation.valid?
       end
 
-      def test_requires_transformer_id
+      def test_requires_existing_transformer_or_nested_attributes
         transformation = Factory.build(:transformation, :transformer => nil)
         assert !transformation.valid?
       end
@@ -82,6 +82,15 @@ module Coupler
       def test_requires_existing_result_field_or_nested_attributes
         transformation = Factory.build(:transformation, :result_field_id => 1337)
         assert !transformation.valid?
+      end
+
+      def test_accepts_nested_attributes_for_transformer
+        count = Transformer.count
+        transformation = Factory(:transformation, {
+          :transformer => nil,
+          :transformer_attributes => Factory.attributes_for(:transformer)
+        })
+        assert_equal count + 1, Transformer.count
       end
 
       def test_transform_with_same_source_and_result_field

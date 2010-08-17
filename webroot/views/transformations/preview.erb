@@ -1,0 +1,42 @@
+<table id="transformation-preview-table" class="dataTable" style="width: auto">
+  <thead>
+    <tr>
+      <th class="ui-state-default">Field</th>
+      <th class="ui-state-default">Before</th>
+      <th class="ui-state-default">After</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% max = [0, 0, 0] %>
+    <% @preview[:data].each_with_index do |row, i| %>
+      <% @preview[:fields].each do |field| %>
+        <%# bleh %>
+        <%- max[0] = [max[0], field.to_s.length].max -%>
+        <%- max[1] = [max[1], row[:before][field].to_s.length].max -%>
+        <%- max[2] = [max[2], row[:after][field].to_s.length].max -%>
+        <tr id="preview-set-<%= i+1 %>" class="monospace">
+          <td class="strong" style="text-align: right;"><%= field %></td>
+          <td><%= row[:before][field] %></td>
+          <td><%= row[:after][field] %></td>
+        </tr>
+      <% end %>
+    <% end %>
+  </tbody>
+</table>
+<script type="text/javascript">
+  $(function() {
+    var obj = $('#transformation-preview-table');
+    obj.dataTable({
+      bJQueryUI: true, bSort: false, bLengthChange: false, bFilter: false,
+      bAutoWidth: false, iDisplayLength: <%= @preview[:fields].length %>,
+      aoColumns: [<%= max.collect { |n| "{ sWidth: '#{n+5}ex' } "}.join(", ") %>],
+      bInfo: false,
+      /*
+      fnDrawCallback: function() {
+        var which = obj.find('tr:first').attr('id').replace(/^preview-set-/, "");
+        obj.find('.dataTables_info').html('Showing '+which+' of <%= @preview[:data].length %>');
+      }
+      */
+    });
+  });
+</script>

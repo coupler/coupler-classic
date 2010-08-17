@@ -223,6 +223,9 @@ table.show td.col1 {
   font-weight: bold;
   padding-right: 6px;
 }
+table.show td.col1.no-border {
+  border: 0;
+}
 
 tr.alt td {
   background-color: #ddd;
@@ -256,6 +259,9 @@ input, select, textarea {
   margin: 1em 0;
   overflow: auto;
 }
+.section.visible-overflow {
+  overflow: visible;
+}
 
 .ui-dialog-content p,
 .ui-dialog-content table {
@@ -267,6 +273,7 @@ input, select, textarea {
 .inline { display: inline; }
 .strong { font-weight: bold; }
 .centered { text-align: center; }
+.hidden { display: none; }
 div.p { margin-bottom: 20px; }
 
 span.sup { font-size: smaller; vertical-align: super; }

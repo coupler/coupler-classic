@@ -7,62 +7,49 @@
     <tr>
       <th>Field</th>
       <th>Type</th>
-      <% if @t12n_count > 0 %><th></th><% end %>
-      <th></th>
     </tr>
   </thead>
   <tbody>
   <%- @fields.each do |field| -%>
     <tr>
       <td><%= field.name %></td>
-      <td><%= field.db_type %></td>
-      <%- if @t12n_count > 0 -%>
-        <%- if field.transformations_dataset.count > 0 -%>
-          <%- list = "<ul>" + field.transformations.inject("") { |s, t| s + "<li>#{t.transformer.name}</li>" } + "</ul>" %>
-          <td>
-            <a href="#" onclick="transformationsFor('<%= field.name %>');"><img class="tooltip" src="/images/cog.png" title="Transformations - <%= list %>" alt="Cog" /></a>
-          </td>
-        <%- else -%>
-        <td></td>
-        <%- end -%>
-      <%- end -%>
-      <td>
-        <a href="#" onclick="newTransformation('<%= field.name %>', <%= field.id %>);"><img class="tooltip" src="/images/hammer.png" title="New Transformation - <%= field.name %>" alt="Hammer" /></a>
-      </td>
+      <td<%= ' style="color: green; font-weight: bold;"'  if field.local_db_type %>><%= field.final_db_type %></td>
     </tr>
   <%- end -%>
   </tbody>
 </table>
 <p>
   <a href="/projects/<%= @project.id %>/resources/<%= @resource.id %>/edit">Select Fields</a>
-  <%- if @t12n_count > 0 -%>
-  | <a href="/projects/<%= @project.id %>/resources/<%= @resource.id %>/transformations">All Transformations</a>
-  <%- end -%>
 </p>
+
+<h2>Transformations</h2>
+<div class="section">
+  <%= erb(:"transformations/list", :layout => false) %>
+</div>
 
 <h2>Status</h2>
 <div class="section">
-<% if !@running_jobs.empty? %>
-  <p>This resource is currently being transformed:</p>
-  <%= erb(:'jobs/list', {:layout => false}, {:jobs => @running_jobs}) %>
-<% elsif !@scheduled_jobs.empty? %>
-  <p>This scenario is currently scheduled to be transformed:</p>
-  <%= erb(:'jobs/list', {:layout => false}, {:jobs => @scheduled_jobs}) %>
-<% else %>
-  <p>
-    Status: <strong><%= humanize(@resource.status) %></strong><br/>
-    <% if @t12n_count > 0 %>
-    Last transformed at: <strong><%= @resource.transformed_at || "Never" %></strong>
-    <% end %>
-  </p>
-  <% if @t12n_count > 0 %>
-  <form method="get" action="/projects/<%= @project.id %>/resources/<%= @resource.id %>/transform">
+  <% if !@running_jobs.empty? %>
+    <p>This resource is currently being transformed:</p>
+    <%= erb(:'jobs/list', {:layout => false}, {:jobs => @running_jobs}) %>
+  <% elsif !@scheduled_jobs.empty? %>
+    <p>This scenario is currently scheduled to be transformed:</p>
+    <%= erb(:'jobs/list', {:layout => false}, {:jobs => @scheduled_jobs}) %>
+  <% else %>
     <p>
-      <input onclick="return confirm('Are you sure you want to transform this resource?');" value="Transform now" type="submit" />
+      Status: <strong><%= humanize(@resource.status) %></strong><br/>
+      <% if !@transformations.empty? %>
+        Last transformed at: <strong><%= @resource.transformed_at || "Never" %></strong>
+      <% end %>
     </p>
-  </form>
+    <% if !@transformations.empty? %>
+      <form method="get" action="/projects/<%= @project.id %>/resources/<%= @resource.id %>/transform">
+        <p>
+          <input onclick="return confirm('Are you sure you want to transform this resource?');" value="Transform now" type="submit" />
+        </p>
+      </form>
+    <% end %>
   <% end %>
-<% end %>
 </div>
 
 <% if !@scenarios.empty? %>
@@ -171,8 +158,6 @@
       bJQueryUI: true, aaSorting: [],
       aoColumns: [
         null, null,
-        <%= "{ bSortable: false, bSearchable: false, sWidth: '20px' }," if @t12n_count > 0 %>
-        { bSortable: false, bSearchable: false, sWidth: '20px' }
       ],
     });
     $('.tooltip').tooltip({ delay: 0, track: true, showURL: false, showBody: " - " });

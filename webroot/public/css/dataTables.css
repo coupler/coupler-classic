@@ -472,3 +472,7 @@ div.box {
 	border: 1px solid #8080FF;
 	background-color: #E5E5FF;
 }
+
+tr.monospace td {
+  font-family: monospace;
+}

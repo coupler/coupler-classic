@@ -173,6 +173,10 @@ module Coupler
           assert_equal({ field.id => { :db_type => "int(11)", :type => :integer } }, transformer.field_changes(field))
         end
       end
+
+      def test_should_handle_empty_values
+        flunk
+      end
     end
   end
 end

@@ -25,6 +25,7 @@ module Coupler
       private
         def validate
           super
+          validates_presence [:name, :resource_id]
           validates_unique [:name, :resource_id]
         end
 

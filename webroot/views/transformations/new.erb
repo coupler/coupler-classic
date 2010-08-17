@@ -1,23 +1,185 @@
 <% @breadcrumbs = [@project, @resource, @transformation] %>
+<% add_javascript('jquery-ui.min.js', 'jquery-ui.combobox.js', 'jquery.dataTables.min.js') %>
+<% add_stylesheet('dataTables.css') %>
 <%= error_messages_for @transformation %>
 <form method="post" action="/projects/<%= @project.id %>/resources/<%= @resource.id %>/transformations">
-  <p>
-    <label for="source_field_id">Field</label><br/>
-    <select id="source_field_id" name="transformation[source_field_id]">
-    <% @fields.each do |field| %>
-      <option value="<%= field.id %>"><%= field.name %></option>
-    <% end %>
-    </select>
-  </p>
-  <p>
-    <label for="transformer_id">Transformer</label><br/>
-    <select id="transformer_id" name="transformation[transformer_id]">
-    <% @transformers.each do |transformer| %>
-      <option value="<%= transformer.id %>"><%= transformer.name %></option>
-    <% end %>
-    </select>
-  </p>
-  <p>
-    <input type="submit" value="Submit" /> or <a href="/projects/<%= @project.id %>/resources/<%= @resource.id %>">Cancel</a>
-  </p>
+  <h2>Source Field</h2>
+  <div class="ui-widget section">
+    <table class='show'>
+      <tr>
+        <td class='col1 no-border'><label for="source_field_id" class="strong">Field:</label></td>
+        <td>
+          <select id="source_field_id" name="transformation[source_field_id]">
+            <option></option>
+            <% @fields.each do |field| %>
+              <option value="<%= field.id %>"><%= field.name %></option>
+            <% end %>
+          </select>
+        </td>
+      </tr>
+      <tr id="field-info" class="hidden">
+        <td class="col1 no-border">Current Type:</td>
+        <td><span id='field-type'></span> (<span id='field-db-type'></span>)</td>
+      </tr>
+    </table>
+  </div>
+  <div id="transformer" class="hidden">
+    <h2>Transformer</h2>
+    <div class="ui-widget section">
+      <div id="transformer-select">
+        <table class='show'>
+          <tr>
+            <td class='col1 no-border'><label for="transformer_id" class='strong'>Select existing:</label></td>
+            <td>
+              <select id="transformer_id" name="transformation[transformer_id]"></select>
+              or <button id="create-transformer">Create New</button>
+            </td>
+          </tr>
+          <tr id="transformer-info" class="hidden">
+            <td class="col1 no-border">Result Type:</td>
+            <td><span id='transformer-result-type'></span></td>
+          </tr>
+        </table>
+      </div>
+      <div id="transformer-attributes" class="hidden">
+        <table class="show">
+          <tr>
+            <td class="col1 no-border"><label for="name">Name:</label></td>
+            <td><input id="name" name="transformation[transformer_attributes][name]" type="text" /></td>
+          </tr>
+          <tr>
+            <td class="col1 no-border"><label for="allowed_types">Allowed Field Types:</label></td>
+            <td>
+              <select id="allowed_types" name="transformation[transformer_attributes][allowed_types][]" multiple="multiple">
+              <% [%w{integer Integer}, %w{string String}, %w{datetime Date/Time}].each do |(value, label)| %>
+                <option value="<%= value %>"><%= label %></option>
+              <% end %>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td class="col1 no-border"><label for="result_type">Result Type:</label></td>
+            <td>
+              <select id="result_type" name="transformation[transformer_attributes][result_type]">
+              <% [['same', 'Same as original field type'], %w{integer Integer}, %w{string String}, %w{datetime Date/Time}].each do |(value, label)| %>
+                <option value="<%= value %>"><%= label %></option>
+              <% end %>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td class="col1 no-border" style="vertical-align: top"><label for="code">Code:</label></td>
+            <td><textarea id="code" name="transformation[transformer_attributes][code]" rows="10" cols="25"></textarea></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    <div id="result-field-selection" class="hidden">
+      <h2>Result Field</h2>
+      <div class="ui-widget section">
+        <p>
+          <input id="result-field-same" type="radio" name="transformation[result_field_id]" value="" />
+          <label for="result-field-same">Same as source field</label>
+          <input id="result-field-new" type="radio" name="transformation[result_field_id]" value="" />
+          <label for="result-field-new">New field</label>
+        </p>
+        <div id="result-field-attributes" class="hidden">
+          DO IT
+        </div>
+      </div>
+    </div>
+    <div id="transformation-result" class="hidden">
+      <h2>Result</h2>
+      <div class="section visible-overflow">
+        <h3>Preview <img id='spinner' src="/images/ajax-loader.gif" /></h3>
+        <div id="transformation-preview" style="float: left;">
+        </div>
+        <div class="clear"></div>
+      </div>
+      <p>
+        <input type="submit" value="Submit" /> or <a href="/projects/<%= @project.id %>/resources/<%= @resource.id %>">Cancel</a>
+      </p>
+    </div>
+  </div>
+  <!--
+  -->
 </form>
+<script type="text/javascript">
+  var fields = <%= @fields.inject({}) { |h, f| h[f.id] = { 'type' => f.final_type, 'db_type' => f.final_db_type }; h }.to_json %>;
+  var transformers = <%= @transformers.inject({}) { |h, t| h[t.id] = { 'name' => t.name, 'allowed_types' => t.allowed_types, 'result_type' => t.result_type }; h }.to_json %>;
+  $(function() {
+    $('#source_field_id').combobox().change(function() {
+      var source_field_id = $(this).val();
+      if (source_field_id) {
+        var field = fields[source_field_id];
+        $('#field-type').html(field.type);
+        $('#field-db-type').html(field.db_type);
+        $('#field-info').fadeIn('fast');
+        $('#result-field-same').val(source_field_id);
+
+        var sel = $('#transformer_id').html('<option></option>');
+        var empty = true;
+        $.each(transformers, function(id, transformer) {
+          if ($.inArray(field.type, transformer.allowed_types) >= 0) {
+            $('<option></option>')
+              .attr('value', id)
+              .html(transformer.name)
+              .appendTo(sel);
+            empty = false;
+          }
+        });
+        if (empty) {
+          $('#transformer-attributes').show();
+          $('#transformer-select').hide();
+          $('#result-field-selection').fadeIn('fast');
+        }
+        else {
+          $('#transformer-select').show();
+          $('#transformer-attributes').hide();
+          $('#result-field-selection').fadeOut('fast');
+        }
+        $('#transformer').fadeIn('fast');
+      }
+      else {
+        $('#field-info').fadeOut('fast');
+      }
+    });
+    $('#transformer_id').combobox().change(function() {
+      var transformer_id = $(this).val();
+      if (transformer_id) {
+        var transformer = transformers[transformer_id];
+        $('#transformer-result-type').html(transformer.result_type);
+        $('#transformer-info').fadeIn('fast');
+        $('#result-field-selection').fadeIn('fast');
+      }
+      else {
+        $('#transformer-info').fadeOut('fast');
+        $('#result-field-selection').fadeOut('fast');
+      }
+    });
+    $('#create-transformer').button().click(function(e) {
+      e.preventDefault();
+      $('#transformer-attributes').show();
+      $('#transformer-select').hide();
+    });
+    $('#result-field-same').change(function() {
+      if ($(this).is(':checked')) {
+        $('#transformation-result').fadeIn('fast');
+        $.post("./preview", $('form').serialize(), function(data, status, xhr) {
+          $('#spinner').hide();
+          $('#transformation-preview').html(data);
+        }, 'html');
+      }
+      else {
+      }
+    });
+    $('#result-field-new').change(function() {
+      if ($(this).is(':checked')) {
+        $('#result-field-attributes').fadeIn('fast');
+      }
+      else {
+        $('#result-field-attributes').fadeOut('fast');
+      }
+    });
+  });
+</script>

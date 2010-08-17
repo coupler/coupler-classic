@@ -91,6 +91,14 @@ module Coupler
         get "/projects/#{@project.id}/resources/#{@resource.id}/transformations"
         assert last_response.ok?
       end
+
+      def test_preview
+        field = @resource.fields_dataset[:name => 'first_name']
+        Models::Resource.any_instance.expects(:preview_transformation).with(instance_of(Models::Transformation)).returns([])
+        params = { :transformer_id => @transformer.id, :source_field_id => field.id, :result_field_id => field.id }
+        post "/projects/#{@project.id}/resources/#{@resource.id}/transformations", :transformation => params
+        assert last_response.ok?
+      end
     end
   end
 end

@@ -1,6 +1,33 @@
 module Coupler
   module Models
     class Resource < Sequel::Model
+      # This class is used during resource transformation.  Its purpose
+      # is for mass inserts into the local database for speed.
+      class RowBuffer
+        attr_writer :dataset, :limit
+        attr_reader :array
+        def initialize(limit = nil, dataset = nil)
+          @array = []
+          @limit = limit
+          @dataset = dataset
+          @mutex = Mutex.new
+        end
+
+        def add(row)
+          @mutex.synchronize do
+            @array.push(row)
+            flush if @array.length == @limit
+          end
+        end
+
+        def flush
+          if @dataset
+            @dataset.multi_insert(@array)
+            @array.clear
+          end
+        end
+      end
+
       include CommonModel
       include Jobify
 
@@ -101,9 +128,20 @@ module Coupler
       end
 
       def transform!
-        runner = Runner.new(self)
-        runner.transform
+        create_local_table!
+        _transform
         self.update(:transformed_at => Time.now)
+      end
+
+      def preview_transformation(transformation)
+        buffer = _transform(true, 50)
+        result = buffer.array
+        result.each_index do |i|
+          after = transformation.transform(result[i].dup)
+          result[i] = { :before => result[i], :after => after }
+        end
+        fields = result[0][:before].keys | result[0][:after].keys
+        { :fields => fields, :data => result }
       end
 
       private
@@ -124,6 +162,48 @@ module Coupler
               :resource_id => self.id
             })
           end
+        end
+
+        def create_local_table!
+          fields = selected_fields_dataset.order(:id).all
+          cols = fields.collect { |f| f.local_column_options }
+          project.local_database do |l_db|
+            # create intermediate table
+            l_db.create_table!("resource_#{id}") do
+              columns.push(*cols)
+            end
+          end
+        end
+
+        def _transform(dry_run = false, limit = nil)
+          buffer = RowBuffer.new
+          if dry_run
+            buffer.limit = -1
+            _iterate_over_source_and_transform(buffer, limit)
+          else
+            local_dataset do |l_ds|
+              buffer.limit = 10000
+              buffer.dataset = l_ds
+              _iterate_over_source_and_transform(buffer, limit)
+            end
+          end
+          buffer
+        end
+
+        def _iterate_over_source_and_transform(buffer, limit)
+          thread_pool = ThreadPool.new(10)
+          transformations = transformations_dataset.order(:position).all
+          source_dataset do |s_ds|
+            s_ds = s_ds.limit(limit) if limit
+            s_ds.each do |row|
+              thread_pool.execute(row) do |r|
+                hash = transformations.inject(r) { |x, t| t.transform(x) }
+                buffer.add(hash)
+              end
+            end
+            thread_pool.join
+          end
+          buffer.flush
         end
 
         def before_validation
@@ -210,5 +290,3 @@ module Coupler
     end
   end
 end
-
-require File.join(File.dirname(__FILE__), 'resource', 'runner')
