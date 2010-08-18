@@ -2,7 +2,7 @@ require File.dirname(__FILE__) + '/../../helper'
 
 module Coupler
   module Models
-    class TestResource < Test::Unit::TestCase
+    class TestTransformation < Test::Unit::TestCase
       def test_sequel_model
         assert_equal ::Sequel::Model, Transformation.superclass
         assert_equal :transformations, Transformation.table_name
@@ -158,8 +158,29 @@ module Coupler
         flunk
       end
 
-      def test_deletes_result_field_on_destroy
-        flunk
+      def test_deletes_orphaned_result_field_on_destroy
+        resource = Factory(:resource)
+        source_field = resource.fields_dataset[:name => "first_name"]
+        transformation = Factory(:transformation, {
+          :resource => resource,
+          :source_field => source_field,
+          :result_field_attributes => { :name => 'new_first_name' }
+        })
+        result_field = transformation.result_field
+        transformation.destroy
+        assert_nil Field[:id => result_field.id]
+      end
+
+      def test_prevents_deletion_unless_in_last_position
+        # FIXME: this is temporary, but I don't want to program the
+        # complex logic to enable deletion from the middle of a
+        # transformation stack
+        resource = Factory(:resource)
+        source_field = resource.fields_dataset[:name => "first_name"]
+        transformation_1 = Factory(:transformation, :resource => resource)
+        transformation_2 = Factory(:transformation, :resource => resource)
+        transformation_1.destroy
+        assert_not_nil Transformation[:id => transformation_1.id]
       end
 
       def test_sets_position_by_resource

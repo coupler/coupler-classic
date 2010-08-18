@@ -12,8 +12,8 @@
   <tbody>
   <%- @fields.each do |field| -%>
     <tr>
-      <td><%= field.name %></td>
-      <td<%= ' style="color: green; font-weight: bold;"'  if field.local_db_type %>><%= field.final_db_type %></td>
+      <td<%= ' class="altered-field"' if field.is_generated %>><%= field.name %></td>
+      <td<%= ' class="altered-field"' if field.local_db_type %>><%= field.final_db_type %></td>
     </tr>
   <%- end -%>
   </tbody>

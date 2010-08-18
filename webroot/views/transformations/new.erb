@@ -84,7 +84,8 @@
           <label for="result-field-new">New field</label>
         </p>
         <div id="result-field-attributes" class="hidden">
-          DO IT
+          <label for="result-field-name" class="strong">Name:</label>
+          <input id="result-field-name" type="text" name="transformation[result_field_attributes][name]" />
         </div>
       </div>
     </div>
@@ -101,8 +102,6 @@
       </p>
     </div>
   </div>
-  <!--
-  -->
 </form>
 <script type="text/javascript">
   var fields = <%= @fields.inject({}) { |h, f| h[f.id] = { 'type' => f.final_type, 'db_type' => f.final_db_type }; h }.to_json %>;
@@ -120,6 +119,13 @@
       $('#transformer-select').show();
       $('#result-field-selection').fadeOut('fast');
     }
+  }
+  function getTransformationPreview() {
+    $('#transformation-result').fadeIn('fast');
+    $.post("./preview", $('form').serialize(), function(data, status, xhr) {
+      $('#spinner').hide();
+      $('#transformation-preview').html(data);
+    }, 'html');
   }
   $(function() {
     $('#source_field_id').combobox().change(function() {
@@ -168,11 +174,7 @@
     });
     $('#result-field-same').change(function() {
       if ($(this).is(':checked')) {
-        $('#transformation-result').fadeIn('fast');
-        $.post("./preview", $('form').serialize(), function(data, status, xhr) {
-          $('#spinner').hide();
-          $('#transformation-preview').html(data);
-        }, 'html');
+        getTransformationPreview();
       }
       else {
       }
@@ -184,6 +186,9 @@
       else {
         $('#result-field-attributes').fadeOut('fast');
       }
+    });
+    $('#result-field-name').change(function() {
+      getTransformationPreview();
     });
   });
 </script>

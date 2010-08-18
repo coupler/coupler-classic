@@ -35,6 +35,10 @@ module Coupler
         }))
       end
 
+      def deletable?
+        position == self.class.max(:position)
+      end
+
       private
         def before_validation
           super
@@ -88,6 +92,17 @@ module Coupler
         def after_save
           super
           resource.update_fields
+        end
+
+        def before_destroy
+          # Prevent all but the last transformation from being destroyed
+          super
+          deletable?
+        end
+
+        def after_destroy
+          super
+          result_field.destroy
         end
     end
   end

@@ -17,8 +17,8 @@
         <td><%= transformation.position %></td>
         <td><%= transformation.source_field.name %></td>
         <td><%= transformation.transformer.name %></td>
-        <td><%= transformation.result_field.name %></td>
-        <td><%= delete_link("<span class='ui-icon ui-icon-trash'></span>", "/projects/#{@project.id}/resources/#{@resource.id}/transformations/#{transformation.id}") %></td>
+        <td<%= ' class="altered-field"' if transformation.result_field.is_generated %>><%= transformation.result_field.name %></td>
+        <td><%= delete_link("<span class='ui-icon ui-icon-trash'></span>", "/projects/#{@project.id}/resources/#{@resource.id}/transformations/#{transformation.id}") if transformation.deletable? %></td>
       </tr>
     <% end %>
     </tbody>

@@ -277,3 +277,5 @@ input, select, textarea {
 div.p { margin-bottom: 20px; }
 
 span.sup { font-size: smaller; vertical-align: super; }
+
+.altered-field { color: green; font-weight: bold; }
