@@ -49,7 +49,8 @@ namespace :db do
         :operator => 'equals'
       }]
     })
-    transformer = Factory(:transformer, :name => 'noop')
+    Factory(:transformer, :name => 'strlen', :code => 'value.length', :allowed_types => %w{string}, :result_type => 'integer')
+    Factory(:transformer, :name => 'square', :code => 'value * value', :allowed_types => %w{integer}, :result_type => 'integer')
   end
 
   desc "Start server daemon"
