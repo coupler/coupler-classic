@@ -12,6 +12,10 @@ module Coupler
         'datetime' => lambda { Time.now }
       }
 
+      def accepts_type?(type)
+        allowed_types.is_a?(Array) && allowed_types.include?(type)
+      end
+
       def transform(data, options)
         input = data[options[:in]]
         runner = Runner.new(code, input)

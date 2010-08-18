@@ -580,6 +580,18 @@ module Coupler
           end
         end
       end
+
+      def test_preview_transformation_with_invalid_transformer
+        resource = Factory(:resource)
+        first_name = resource.fields_dataset[:name => 'first_name']
+        transformation = Factory.build(:transformation, {
+          :resource => resource, :source_field => first_name,
+          :result_field => first_name, :transformer => nil,
+          :transformer_attributes => Factory.attributes_for(:transformer, :code => "HAY")
+        })
+        result = resource.preview_transformation(transformation)
+        assert_kind_of Exception, result
+      end
     end
   end
 end

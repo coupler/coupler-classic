@@ -137,8 +137,12 @@ module Coupler
         buffer = _transform(true, 50)
         result = buffer.array
         result.each_index do |i|
-          after = transformation.transform(result[i].dup)
-          result[i] = { :before => result[i], :after => after }
+          begin
+            after = transformation.transform(result[i].dup)
+            result[i] = { :before => result[i], :after => after }
+          rescue Exception => e # yes, I know rescuing Exception is "bad"
+            return e
+          end
         end
         fields = result[0][:before].keys | result[0][:after].keys
         { :fields => fields, :data => result }

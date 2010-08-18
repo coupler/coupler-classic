@@ -70,7 +70,7 @@ module Coupler
             if source_field.nil?
               errors.add(:source_field_id, "is invalid")
             else
-              if !transformer.allowed_types.include?(source_field.final_type)
+              if transformer.allowed_types.is_a?(Array) && !transformer.allowed_types.include?(source_field.final_type)
                 errors.add(:base, "#{transformer.name} cannot transform type '#{source_field.final_type}'")
               end
             end
@@ -102,7 +102,9 @@ module Coupler
 
         def after_destroy
           super
-          result_field.destroy
+          if result_field && result_field.is_generated
+            result_field.destroy
+          end
         end
     end
   end

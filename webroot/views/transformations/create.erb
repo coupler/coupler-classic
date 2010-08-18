@@ -1,0 +1,112 @@
+<% @breadcrumbs = [@project, @resource, @transformation] %>
+<% add_javascript('jquery-ui.min.js', 'jquery-ui.combobox.js', 'jquery.dataTables.min.js', 'transformations.js') %>
+<% add_stylesheet('dataTables.css') %>
+<%= error_messages_for @transformation %>
+<form method="post" action="/projects/<%= @project.id %>/resources/<%= @resource.id %>/transformations">
+  <div class="hidden">
+    <input type="hidden" name="transformation[source_field_id]" value="<%= @transformation.source_field_id %>" />
+    <input type="hidden" name="transformation[transformer_id]" value="<%= @transformation.transformer_id %>" />
+  </div>
+  <h2>Source Field</h2>
+  <div class="section">
+    <table class="show no-border">
+      <tr>
+        <td class="col1">
+          <label for="source_field_id" class="strong">Field:</label>
+        </td>
+        <td id="source-field-name"><%= @transformation.source_field.name %></td>
+      </tr>
+      <tr id="field-info">
+        <td class="col1">Current Type:</td>
+        <td><span id='field-type'><%= @transformation.source_field.final_type %></span> (<span id='field-db-type'><%= @transformation.source_field.final_db_type %></span>)</td>
+      </tr>
+    </table>
+  </div>
+  <div id="transformer">
+    <h2>Transformer</h2>
+    <div class="section">
+      <% if @transformation.transformer_id %>
+        <div id="transformer-select">
+          <table class='show no-border'>
+            <tr>
+              <td class='col1'>
+                <label for="transformer_id" class='strong'>Select existing:</label>
+              </td>
+              <td id="transformer-name"><%= @transformation.transformer.name %></td>
+            </tr>
+            <tr id="transformer-info">
+              <td class="col1">Result Type:</td>
+              <td id='transformer-result-type'><%= @transformation.transformer.result_type %></td>
+            </tr>
+          </table>
+        </div>
+      <% else %>
+        <div id="transformer-attributes">
+          <table class="show no-border">
+            <tr>
+              <td class="col1"><label for="transformer-name">Name:</label></td>
+              <td><input id="transformer-name" name="transformation[transformer_attributes][name]" type="text" value="<%= @transformation.transformer.name %>" /></td>
+            </tr>
+            <tr>
+              <td class="col1" style="vertical-align: top"><label for="transformer-allowed_types">Allowed Field Types:</label></td>
+              <td>
+                <select id="transformer-allowed_types" name="transformation[transformer_attributes][allowed_types][]" multiple="multiple">
+                <% [%w{integer Integer}, %w{string String}, %w{datetime Date/Time}].each do |(value, label)| %>
+                  <option value="<%= value %>"<%= ' selected="selected"' if @transformation.transformer.accepts_type?(value) %>><%= label %></option>
+                <% end %>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td class="col1"><label for="transformer-result_type">Result Type:</label></td>
+              <td>
+                <select id="transformer-result_type" name="transformation[transformer_attributes][result_type]">
+                <% [['same', 'Same as original field type'], %w{integer Integer}, %w{string String}, %w{datetime Date/Time}].each do |(value, label)| %>
+                  <option value="<%= value %>"<%= ' selected="selected"' if @transformation.transformer.result_type == value %>><%= label %></option>
+                <% end %>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td class="col1" style="vertical-align: top"><label for="transformer-code">Code:</label></td>
+              <td><textarea id="transformer-code" name="transformation[transformer_attributes][code]" rows="10" cols="25"><%= @transformation.transformer.code %></textarea></td>
+            </tr>
+          </table>
+        </div>
+      <% end %>
+    </div>
+    <div id="result-field-selection">
+      <h2>Result Field</h2>
+      <div class="section">
+        <p>
+          <input id="result-field-same" type="radio" name="transformation[result_field_id]" value="<%= @transformation.source_field_id %>"<%= ' checked="checked"' if @transformation.result_field_id == @transformation.source_field_id %> />
+          <label for="result-field-same">Same as source field</label>
+          <input id="result-field-new" type="radio" name="transformation[result_field_id]" value=""<%= ' checked="checked"' if @transformation.result_field.new? %> />
+          <label for="result-field-new">New field</label>
+        </p>
+        <div id="result-field-attributes"<%= ' class="hidden"' unless @transformation.result_field.new? %>>
+          <label for="result-field-name" class="strong">Name:</label>
+          <input id="result-field-name" type="text" name="transformation[result_field_attributes][name]" <%= @transformation.result_field.new? ? %{value="#{@transformation.result_field.name}"}: 'value="" disabled="disabled"' %> />
+        </div>
+      </div>
+    </div>
+    <div id="transformation-result">
+      <h2>Result</h2>
+      <div class="section visible-overflow">
+        <h3>Preview</h3>
+        <div id="transformation-preview" style="float: left;">
+          <%= erb(:'transformations/preview', :layout => false) %>
+        </div>
+        <div class="clear"></div>
+      </div>
+      <p>
+        <input type="submit" value="Submit" /> or <a href="/projects/<%= @project.id %>/resources/<%= @resource.id %>">Cancel</a>
+      </p>
+    </div>
+  </div>
+</form>
+<script type="text/javascript">
+  var fields = <%= @fields.inject({}) { |h, f| h[f.id] = { 'name' => f.name, 'type' => f.final_type, 'db_type' => f.final_db_type }; h }.to_json %>;
+  var transformers = <%= @transformers.inject({}) { |h, t| h[t.id] = { 'name' => t.name, 'allowed_types' => t.allowed_types, 'result_type' => t.result_type }; h }.to_json %>;
+  var previewUrl = "/projects/<%= @project.id %>/resources/<%= @resource.id %>/transformations/preview";
+</script>

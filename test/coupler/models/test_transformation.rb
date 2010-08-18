@@ -93,6 +93,14 @@ module Coupler
         assert_equal count + 1, Transformer.count
       end
 
+      def test_handles_bad_transformer_attributes_on_save
+        transformation = Factory.build(:transformation, {
+          :transformer => nil,
+          :transformer_attributes => Factory.attributes_for(:transformer, :allowed_types => nil)
+        })
+        assert !transformation.valid?
+      end
+
       def test_transform_with_same_source_and_result_field
         transformer = Factory(:transformer)
         resource = Factory(:resource)

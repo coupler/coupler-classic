@@ -18,7 +18,7 @@ module Coupler
           raise ResourceNotFound  unless @resource
           @fields = @resource.selected_fields_dataset.order(:id).all
           @transformers = Models::Transformer.all
-          @transformation = Models::Transformation.new(:transformer_attributes => {})
+          @transformation = Models::Transformation.new()
           erb 'transformations/new'.to_sym
         end
 
@@ -27,7 +27,7 @@ module Coupler
           raise ProjectNotFound   unless @project
           @resource = @project.resources_dataset[:id => params[:resource_id]]
           raise ResourceNotFound  unless @resource
-          @fields = @resource.fields_dataset.filter(:is_selected => 1)
+          @fields = @resource.selected_fields_dataset.order(:id).all
           @transformation = Models::Transformation.new(params[:transformation])
           @transformation.resource = @resource
 
@@ -36,7 +36,8 @@ module Coupler
             redirect "/projects/#{@project.id}/resources/#{@resource.id}"
           else
             @transformers = Models::Transformer.all
-            erb 'transformations/new'.to_sym
+            @preview = @resource.preview_transformation(@transformation)
+            erb :'transformations/create'
           end
         end
 
