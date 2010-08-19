@@ -240,7 +240,7 @@ module Coupler
         end
       end
 
-      def test_update_fields
+      def test_refresh_fields
         project = Factory(:project, :name => "local_dataset test")
         resource = Factory(:resource, :name => "Resource 1", :project => project)
         first_name = resource.fields_dataset[:name => 'first_name']
@@ -271,7 +271,7 @@ module Coupler
           :source_field => last_name
         })
 
-        resource.update_fields
+        resource.refresh_fields!
 
         first_name.refresh
         assert_equal 'int(11)', first_name.local_db_type
@@ -282,7 +282,7 @@ module Coupler
         assert_equal 'datetime', last_name.local_type
       end
 
-      def test_update_fields_does_not_change_newly_created_result_field
+      def test_refresh_fields_does_not_change_newly_created_result_field
         project = Factory(:project, :name => "local_dataset test")
         resource = Factory(:resource, :project => project)
         first_name = resource.fields_dataset[:name => 'first_name']
@@ -297,7 +297,7 @@ module Coupler
           :result_field_attributes => { :name => "first_name_2" }
         })
 
-        resource.update_fields
+        resource.refresh_fields!
 
         first_name.refresh
         assert_nil first_name.local_db_type
@@ -306,6 +306,29 @@ module Coupler
         first_name_2 = resource.fields_dataset[:name => 'first_name_2']
         assert_nil first_name_2.local_db_type
         assert_nil first_name_2.local_type
+      end
+
+      def test_refresh_fields_handles_deleted_transformations
+        resource = Factory(:resource)
+        first_name = resource.fields_dataset[:name => 'first_name']
+        transformer = Factory(:transformer, {
+          :name => "strlen", :allowed_types => %w{string},
+          :result_type => 'integer', :code => 'value.length'
+        })
+        transformation = Factory(:transformation, {
+          :resource => resource, :transformer => transformer,
+          :source_field => first_name
+        })
+        resource.refresh_fields!
+        first_name.refresh
+        assert_equal 'int(11)', first_name.local_db_type
+        assert_equal 'integer', first_name.local_type
+
+        transformation.destroy
+        resource.refresh_fields!
+        first_name.refresh
+        assert_nil first_name.local_db_type
+        assert_nil first_name.local_type
       end
 
       def test_transform

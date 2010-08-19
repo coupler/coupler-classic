@@ -115,7 +115,8 @@ module Coupler
         Scenario.filter(["resource_1_id = ? OR resource_2_id = ?", id, id]).all
       end
 
-      def update_fields
+      def refresh_fields!
+        fields_dataset.update(:local_db_type => nil, :local_type => nil)
         transformations_dataset.order(:position).each do |transformation|
           if transformation.source_field_id == transformation.result_field_id
             source_field = transformation.source_field

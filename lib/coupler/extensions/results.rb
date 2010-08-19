@@ -21,6 +21,7 @@ module Coupler
           @snapshot = @result.snapshot
 
           filename = "#{@scenario.slug}-run-#{@result.created_at.strftime('%Y%m%d-%H%M')}.txt"
+          content_type('text/plain')
           attachment(filename)
           erb :'results/show', :layout => false
         end

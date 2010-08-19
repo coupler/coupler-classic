@@ -179,6 +179,23 @@ module Coupler
         assert_nil Field[:id => result_field.id]
       end
 
+      def test_does_not_delete_result_field_in_use
+        resource = Factory(:resource)
+        source_field = resource.fields_dataset[:name => "first_name"]
+        transformation_1 = Factory(:transformation, {
+          :resource => resource,
+          :source_field => source_field,
+          :result_field_attributes => { :name => 'new_first_name' }
+        })
+        transformation_2 = Factory(:transformation, {
+          :resource => resource,
+          :source_field => transformation_1.result_field
+        })
+        result_field = transformation_1.result_field
+        transformation_2.destroy
+        assert Field[:id => result_field.id]
+      end
+
       def test_prevents_deletion_unless_in_last_position
         # FIXME: this is temporary, but I don't want to program the
         # complex logic to enable deletion from the middle of a

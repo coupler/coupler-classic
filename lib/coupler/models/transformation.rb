@@ -22,11 +22,11 @@ module Coupler
         transformer.field_changes(source_field)
       end
 
-      # NOTE: The fact that the aliased name doesn't have an = at the end
-      # is important.  Ruby methods with names that have = at the end always
+      # NOTE: The fact that the aliased name doesn't have an = at the end is
+      # important.  Ruby methods with names that have = at the end always
       # return the RHS value, regardless of what the method actually returns.
-      # The only way to grab the associated object that gets created from
-      # the nested attributes methods is by fetching the return value.
+      # The only way to grab the associated object that gets created from the
+      # nested attributes methods is by fetching the return value.
       #
       alias :original_result_field_attributes :result_field_attributes=
       def result_field_attributes=(h)
@@ -96,15 +96,21 @@ module Coupler
 
         def before_destroy
           # Prevent all but the last transformation from being destroyed
+          #
+          # FIXME: This is probably temporary, since I'm putting off
+          # programming the complex logic required to enable deletion from the
+          # middle of a transformation stack.
+          #
           super
           deletable?
         end
 
         def after_destroy
           super
-          if result_field && result_field.is_generated
+          if result_field && result_field.is_generated && self.class.filter(:result_field_id => result_field.id).count == 0
             result_field.destroy
           end
+          resource.refresh_fields!  if resource
         end
     end
   end
