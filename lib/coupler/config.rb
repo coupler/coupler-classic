@@ -10,6 +10,15 @@ module Coupler
     }
 
     VENDOR_LIBS = {
+      'jruby' => {
+        :type => 'java',
+        :filetype => 'jar',
+        :version => '1.5.1',
+        :url => "http://repository.codehaus.org/org/jruby/jruby-complete/%1$s/jruby-complete-%1$s.jar",
+        :uncompress => false,
+        :filename => "jruby-complete-%s.jar",
+        :symlink => "jruby-complete.jar"
+      },
       'mysql-connector-mxj' => {
         :type => 'java',
         :filetype => "tarball",
@@ -46,7 +55,10 @@ module Coupler
 
     def self.each_vendor_lib
       VENDOR_LIBS.each_pair do |name, info|
-        yield(name, info[:type], info[:filetype], info[:dir] % info[:version], info[:url] % info[:version])
+        info = info.merge({:url => info[:url] % info[:version]})
+        info[:dir]      %= info[:version]   if info[:dir]
+        info[:filename] %= info[:version]   if info[:filename]
+        yield(name, info)
       end
     end
 
