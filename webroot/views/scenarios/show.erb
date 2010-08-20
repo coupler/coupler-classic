@@ -18,7 +18,7 @@
   </p>
 </div>
 
-<h2>Run</h2>
+<h2>Status</h2>
 <div class="section">
 <% if !@running_jobs.empty? %>
   <p>This scenario is currently being run:</p>
@@ -28,14 +28,16 @@
   <%= erb(:'jobs/list', {:layout => false}, {:jobs => @scheduled_jobs}) %>
 <% else %>
   <div class="p">
-    Status: <strong><%= humanize(@scenario.status) %></strong><br/>
+    Status: <span class="strong"<%= ' style="color: red"' if @scenario.status != 'ok' %>><%= humanize(@scenario.status) %></span><br/>
     Last run: <%= timeago(@scenario.last_run_at, "inline strong") %>
   </div>
-  <form method="get" action="/projects/<%= @project.id %>/scenarios/<%= @scenario.id %>/run" class="button-to">
-    <p>
-      <input onclick="return confirm('Are you sure you want to run this scenario?');" value="Run now" type="submit" />
-    </p>
-  </form>
+  <%- if @scenario.status == 'ok' -%>
+    <form method="get" action="/projects/<%= @project.id %>/scenarios/<%= @scenario.id %>/run" class="button-to">
+      <p>
+        <input onclick="return confirm('Are you sure you want to run this scenario?');" value="Run now" type="submit" />
+      </p>
+    </form>
+  <%- end -%>
 
   <% if @scenario.results_dataset.count > 0 %>
   <p>

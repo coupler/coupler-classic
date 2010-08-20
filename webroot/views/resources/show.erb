@@ -37,7 +37,7 @@
     <%= erb(:'jobs/list', {:layout => false}, {:jobs => @scheduled_jobs}) %>
   <% else %>
     <p>
-      Status: <strong><%= humanize(@resource.status) %></strong><br/>
+      Status: <span class="strong"<%= ' style="color: red;"' if @resource.status != "ok" %>><%= humanize(@resource.status) %></span><br/>
       <% if !@transformations.empty? %>
         Last transformed at: <strong><%= @resource.transformed_at || "Never" %></strong>
       <% end %>

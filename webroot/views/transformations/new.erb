@@ -96,15 +96,19 @@
             <label for="result-field-new">New field</label>
           </p>
           <div id="result-field-attributes" class="hidden">
-            <label for="result-field-name" class="strong">Name:</label>
-            <input id="result-field-name" type="text" name="transformation[result_field_attributes][name]" disabled="disabled" />
+            <p>
+              <label for="result-field-name" class="strong">Name:</label>
+              <input id="result-field-name" type="text" name="transformation[result_field_attributes][name]" disabled="disabled" />
+            </p>
+          </div>
+          <div id="preview-button" class="hidden">
+            <p><button>Preview</button></p>
           </div>
         </div>
       </div>
     <div id="transformation-result" class="hidden">
-      <h2>Result</h2>
+      <h2>Preview <img id='spinner' src="/images/ajax-loader.gif" /></h2>
       <div class="section visible-overflow">
-        <h3>Preview <img id='spinner' src="/images/ajax-loader.gif" /></h3>
         <div id="transformation-preview" style="float: left;">
         </div>
         <div class="clear"></div>

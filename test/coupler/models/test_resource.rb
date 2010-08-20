@@ -349,6 +349,7 @@ module Coupler
           resource.transform!
           assert_equal Time.now, resource.transformed_at
         end
+        assert_equal "#{transformation.id}", resource.transformed_with
 
         Sequel.connect(Config.connection_string("project_#{project.id}")) do |db|
           assert db.tables.include?(:"resource_#{resource.id}")
@@ -405,20 +406,30 @@ module Coupler
         assert_equal "out_of_date", resource.status
       end
 
-      def test_status_when_transformed_at_is_old
+      def test_status_when_new_transformation_is_created_since_transforming
         resource = Factory(:resource, :transformed_at => Time.now - 20)
         transformation = Factory(:transformation, :resource => resource)
         assert_equal "out_of_date", resource.status
       end
 
-      def test_status_when_transformations_are_updated
+      def test_status_when_transformation_is_updated_since_transforming
         now = Time.now
-        resource = Factory(:resource, :transformed_at => now - 1)
-        transformation = Factory(:transformation, :resource => resource, :created_at => now - 2, :updated_at => now - 2)
+        resource = Factory(:resource)
+        transformation = Factory(:transformation, :resource => resource, :created_at => now - 5, :updated_at => now - 3)
+        resource.update(:transformed_at => now - 4, :transformed_with => "#{transformation.id}")
         assert_equal "out_of_date", resource.status
       end
 
-      def test_status_when_transformations_are_removed
+      def test_status_when_transformation_is_removed_since_transforming
+        now = Time.now
+        resource = Factory(:resource)
+        transformation = Factory(:transformation, :resource => resource, :created_at => now - 4, :updated_at => now - 4)
+        resource.update(:transformed_at => now - 5, :transformed_with => "#{transformation.id}")
+        transformation.destroy
+        assert_equal "out_of_date", resource.status
+      end
+
+      def test_status_when_new_transformation_is_removed_before_transforming
         resource = Factory(:resource, :transformed_at => Time.now - 20)
         transformation = Factory(:transformation, :resource => resource)
         assert_equal "out_of_date", resource.status

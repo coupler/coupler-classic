@@ -81,9 +81,11 @@ $(function() {
         $('#transformation-result').hide();
       }
     }
+    $('#preview-button').show();
   });
-  $('#result-field-name').change(function() {
+  $('#preview-button button').button().click(function(e) {
     previewTransformation();
+    e.preventDefault();
   });
   $('#transformer-code').change(function() {
     if ($('#transformation-result').is(':visible')) {

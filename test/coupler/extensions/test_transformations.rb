@@ -13,14 +13,6 @@ module Coupler
       def test_new
         get "/projects/#{@project.id}/resources/#{@resource.id}/transformations/new"
         assert last_response.ok?
-
-        doc = Nokogiri::HTML(last_response.body)
-        fields = doc.at('select[name="transformation[source_field_id]"]')
-        assert_equal %w{id first_name last_name age}, fields.css('option').collect(&:inner_html)
-
-        transformers = doc.at('select[name="transformation[transformer_id]"]')
-        assert_equal [@transformer.name],
-          transformers.css('option').collect(&:inner_html)
       end
 
       def test_new_with_non_existant_project
@@ -94,10 +86,9 @@ module Coupler
 
       def test_preview
         field = @resource.fields_dataset[:name => 'first_name']
-        Models::Resource.any_instance.expects(:preview_transformation).with(instance_of(Models::Transformation)).returns([])
         params = { :transformer_id => @transformer.id, :source_field_id => field.id, :result_field_id => field.id }
-        post "/projects/#{@project.id}/resources/#{@resource.id}/transformations", :transformation => params
-        assert last_response.ok?
+        post "/projects/#{@project.id}/resources/#{@resource.id}/transformations/preview", :transformation => params
+        assert last_response.ok?, "OMG #{last_response.body}"
       end
     end
   end

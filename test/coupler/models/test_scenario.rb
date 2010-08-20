@@ -101,6 +101,24 @@ module Coupler
         assert_equal resource_2, scenario.resource_2
       end
 
+      def test_doesnt_run_when_there_are_no_matchers
+        project = Factory(:project)
+        resource = Factory(:resource, :project => project)
+        scenario = Factory(:scenario, :project => project, :name => 'Foo bar', :resource_1 => resource)
+        assert_raises(Scenario::NoMatchersError) { scenario.run! }
+      end
+
+      def test_doesnt_run_when_resources_are_out_of_date
+        project = Factory(:project)
+        resource = Factory(:resource, :project => project)
+        scenario = Factory(:scenario, :project => project, :name => 'Foo bar', :resource_1 => resource)
+        matcher = Factory(:matcher, :scenario => scenario)
+
+        # make resource out of date
+        transformation = Factory(:transformation, :resource => resource)
+        assert_raises(Scenario::ResourcesOutOfDateError) { scenario.run! }
+      end
+
       def test_run_self_linkage
         project = Factory(:project, :name => "Test without transformations")
         resource = Factory(:resource, :name => "Resource 1", :project => project)

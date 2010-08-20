@@ -1,6 +1,9 @@
 module Coupler
   module Models
     class Scenario < Sequel::Model
+      class NoMatchersError < Exception; end
+      class ResourcesOutOfDateError < Exception; end
+
       include CommonModel
       include Jobify
 
@@ -14,8 +17,7 @@ module Coupler
       def status
         if matchers_dataset.count == 0
           "no_matchers"
-        elsif resource_1.status == "out_of_date" ||
-            (resource_2 && resource_2.status == "out_of_date")
+        elsif resources.any? { |r| r.status == "out_of_date" }
           "resources_out_of_date"
         else
           "ok"
@@ -31,6 +33,11 @@ module Coupler
       end
 
       def run!
+        case status
+        when 'no_matchers'            then raise NoMatchersError
+        when 'resources_out_of_date'  then raise ResourcesOutOfDateError
+        end
+
         runner = case linkage_type
                  when "self-linkage"
                    SingleRunner.new(self)

@@ -91,7 +91,7 @@ module Coupler
 
         def after_save
           super
-          resource.update_fields
+          resource.refresh_fields!
         end
 
         def before_destroy

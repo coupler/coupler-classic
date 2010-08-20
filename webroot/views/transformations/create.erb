@@ -88,6 +88,9 @@
           <label for="result-field-name" class="strong">Name:</label>
           <input id="result-field-name" type="text" name="transformation[result_field_attributes][name]" <%= @transformation.result_field.new? ? %{value="#{@transformation.result_field.name}"}: 'value="" disabled="disabled"' %> />
         </div>
+        <div id="preview-button">
+          <p><button>Preview</button></p>
+        </div>
       </div>
     </div>
     <div id="transformation-result">

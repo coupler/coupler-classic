@@ -96,18 +96,10 @@ module Coupler
       end
 
       def status
-        if transformed_at.nil?
-          if transformations_dataset.count > 0
-            "out_of_date"
-          else
-            "ok"
-          end
+        if transformed_with.to_s != transformation_ids.join(",") || transformations_dataset.filter("updated_at > ?", transformed_at).count > 0
+          "out_of_date"
         else
-          if transformations_dataset.filter("updated_at > ?", self.transformed_at).count > 0
-            "out_of_date"
-          else
-            "ok"
-          end
+          "ok"
         end
       end
 
@@ -129,9 +121,12 @@ module Coupler
       end
 
       def transform!
+        self.update({
+          :transformed_at => Time.now,
+          :transformed_with => transformation_ids.join(",")
+        })
         create_local_table!
         _transform
-        self.update(:transformed_at => Time.now)
       end
 
       def preview_transformation(transformation)
@@ -150,6 +145,10 @@ module Coupler
       end
 
       private
+        def transformation_ids
+          transformations_dataset.select(:id).order(:id).all.collect(&:id)
+        end
+
         def local_connection_string
           Config.connection_string(:"project_#{project.id}", {
             :create_database => true,
