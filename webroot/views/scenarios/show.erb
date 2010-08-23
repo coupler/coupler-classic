@@ -22,10 +22,10 @@
 <div class="section">
 <% if !@running_jobs.empty? %>
   <p>This scenario is currently being run:</p>
-  <%= erb(:'jobs/list', {:layout => false}, {:jobs => @running_jobs}) %>
+  <%= erb(:'jobs/list', {:layout => false}, {:jobs => @running_jobs, :show_target => false}) %>
 <% elsif !@scheduled_jobs.empty? %>
   <p>This scenario is currently scheduled to run:</p>
-  <%= erb(:'jobs/list', {:layout => false}, {:jobs => @scheduled_jobs}) %>
+  <%= erb(:'jobs/list', {:layout => false}, {:jobs => @scheduled_jobs, :show_target => false}) %>
 <% else %>
   <div class="p">
     Status: <span class="strong"<%= ' style="color: red"' if @scenario.status != 'ok' %>><%= humanize(@scenario.status) %></span><br/>

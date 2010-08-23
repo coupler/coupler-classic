@@ -15,6 +15,13 @@ module Coupler
       def test_belongs_to_scenario
         assert_respond_to Job.new, :scenario
       end
+
+      def test_progress
+        job = Factory(:resource_job, :total => 200, :completed => 54)
+        assert_equal 27, job.progress
+        job.total = 0
+        assert_equal 0, job.progress
+      end
     end
   end
 end

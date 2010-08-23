@@ -279,3 +279,14 @@ div.p { margin-bottom: 20px; }
 span.sup { font-size: smaller; vertical-align: super; }
 
 .altered-field { color: green; font-weight: bold; }
+
+#progressbar {
+  float: left;
+  width: 300px;
+  height: 25px;
+}
+#progressbar-spinner {
+  float: left;
+  padding-top: 4px;
+  padding-left: 10px;
+}

@@ -29,17 +29,20 @@
 
 <h2>Status</h2>
 <div class="section">
-  <% if !@running_jobs.empty? %>
-    <p>This resource is currently being transformed:</p>
-    <%= erb(:'jobs/list', {:layout => false}, {:jobs => @running_jobs}) %>
-  <% elsif !@scheduled_jobs.empty? %>
-    <p>This scenario is currently scheduled to be transformed:</p>
-    <%= erb(:'jobs/list', {:layout => false}, {:jobs => @scheduled_jobs}) %>
+  <%- if @job -%>
+    <% if @job.status == 'running' %>
+      <p>This resource is currently being transformed (since <%= timeago(@job.started_at, 'strong', 'span') %>).</p>
+      <div id="progressbar"></div>
+      <img id="progressbar-spinner" src="/images/ajax-loader.gif" alt="Spinner" style="float: left;" />
+      <div class="clear"></div>
+    <% elsif @job.status == 'scheduled' %>
+      <p>This resource is currently scheduled to be transformed (since <%= timeago(@job.created_at, 'strong', 'span') %>).</p>
+    <% end %>
   <% else %>
     <p>
       Status: <span class="strong"<%= ' style="color: red;"' if @resource.status != "ok" %>><%= humanize(@resource.status) %></span><br/>
       <% if !@transformations.empty? %>
-        Last transformed at: <strong><%= @resource.transformed_at || "Never" %></strong>
+        Last transformed: <%= timeago(@resource.transformed_at, 'strong', 'span') %>
       <% end %>
     </p>
     <% if !@transformations.empty? %>
@@ -59,116 +62,22 @@
 </div>
 <% end %>
 
-<div id="new_transformation" style="display: none">
-  <%- if @transformers.empty? -%>
-  There are no transformers yet.<br/>
-  <a href="/transformers/new">Create one &raquo;</a>
-  <%- else -%>
-  <form method="post" action="/projects/<%= @project.id %>/resources/<%= @resource.id %>/transformations">
-    <div id="step-1">
-      <table class="form">
-        <tr>
-          <td class="col1"><strong>Field</strong></td>
-          <td id="source_field_id_label" class="col2"></td>
-        </tr>
-        <tr>
-          <td class="col1"><label for="transformer_id" class="strong">Transformer</label></td>
-          <td class="col2">
-            <select id="transformer_id" name="transformation[transformer_id]">
-              <% @transformers.each do |transformer| %>
-                <option value="<%= transformer.id %>"><%= transformer.name %></option>
-              <% end %>
-            </select>
-          </td>
-        </tr>
-      </table>
-      <div style="display: none;">
-        <input id="source_field_id_input" name="transformation[source_field_id]" type="hidden" value="" />
-      </div>
-    </div>
-    <div id="step-2" style="display: none;">
-      <p style="text-align: justify; margin-bottom: 1em">
-        If you want the result of the transformation to become a new field, enter the new field name below.  Otherwise, leave it blank.
-      </p>
-      <p>
-        <label for="result_field_name" class="strong">New Field Name</label>
-        <input id="result_field_name" name="transformation[result_field_attributes][name]" type="text" />
-      </p>
-    </div>
-  </form>
-  <%- end -%>
-</div>
-
-<div id="transformations_for" style="display: none">
-</div>
-
 <script type="text/javascript">
-  function newTransformation(source_field_name, source_field_id) {
-    $('#source_field_id_input').val(source_field_id);
-    $('#source_field_id_label').html(source_field_name);
-    $('#new_transformation').dialog('option', 'title', 'New Transformation').dialog('open');
-    return false;
-  }
-  function dialogButtons() {
-    return([
-      <%- if !@transformers.empty? -%>
-        {
-          label: 'Finish',
-          callback: function() {
-            if ($('#result_value_name') == "") {
-              $('#result_value_name').disable();
-            }
-            $(this).find('form').submit();
-          }
-        },
-        {
-          label: 'Next',
-          callback: function() {
-            var buttons = $(this).dialog('option', 'buttons');
-            delete buttons['Next'];
-            $(this).dialog('option', 'buttons', buttons);
-
-            $('#step-1').hide();
-            $('#step-2').show();
-          },
-        },
-      <%- end -%>
-        {
-          label: 'Cancel',
-          options: { 'style': 'float: left; margin-right: 0; margin-left: 0.4em' },
-          callback: function() {
-            $(this).dialog('close')
-              .dialog('option', 'buttons', dialogButtons())
-              .find('form').each(function() { this.reset(); });
-            $('#step-1').show();
-            $('#step-2').hide();
-          }
-        }
-      ]);
-  }
-  function transformationsFor(field) {
-    $('#transformations_for').load("/projects/<%= @project.id %>/resources/<%= @resource.id %>/transformations/for/" + field, function() {
-      $(this).dialog('option', 'title', 'Transformations for '+field).dialog('open');
-    });
-  }
-
-  var oTable;
+  var intervalId;
   $(function() {
-    oTable = $('#fields').dataTable({
-      bJQueryUI: true, aaSorting: [],
-      aoColumns: [
-        null, null,
-      ],
-    });
+    $('#fields').dataTable({bJQueryUI: true, aaSorting: [], aoColumns: [null, null] });
     $('.tooltip').tooltip({ delay: 0, track: true, showURL: false, showBody: " - " });
-
-    var original_buttons;
-    $('#new_transformation').dialog({
-      autoOpen: false,
-      buttons: dialogButtons(),
-      modal: true,
-    });
-
-    $('#transformations_for').dialog({ autoOpen: false });
+  <%- if @job && @job.status == 'running' -%>
+    $('#progressbar').progressbar({value: <%= @job.progress %>});
+    setInterval(function() {
+      $.get("/jobs/<%= @job.id %>/progress", function(data) {
+        var percent = parseInt(data);
+        $('#progressbar').progressbar('option', 'value', percent);
+        if (percent == 100) {
+          window.location.reload(true);
+        }
+      });
+    }, 5000);
+  <%- end -%>
   });
 </script>

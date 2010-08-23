@@ -49,8 +49,7 @@ module Coupler
           @transformers = Models::Transformer.all
           @transformations = @resource.transformations_dataset.order(:position)
           @scenarios = @resource.scenarios
-          @running_jobs = @resource.running_jobs
-          @scheduled_jobs = @resource.scheduled_jobs
+          @job = @resource.jobs_dataset[:status => %w{running scheduled}]
           erb 'resources/show'.to_sym
         end
 

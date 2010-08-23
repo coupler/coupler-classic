@@ -8,7 +8,12 @@ module Coupler
         end
 
         app.get "/jobs/count" do
-          Coupler::Models::Job.filter(:completed_at => nil).count.to_s
+          Models::Job.filter(:completed_at => nil).count.to_s
+        end
+
+        app.get "/jobs/:id/progress" do
+          @job = Models::Job[:id => params[:id]]
+          @job.progress.to_s
         end
       end
     end

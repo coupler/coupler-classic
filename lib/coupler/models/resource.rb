@@ -6,11 +6,12 @@ module Coupler
       class RowBuffer
         attr_writer :dataset, :limit
         attr_reader :array
-        def initialize(limit = nil, dataset = nil)
+        def initialize(limit = nil, dataset = nil, &progress)
           @array = []
           @limit = limit
           @dataset = dataset
           @mutex = Mutex.new
+          @progress = progress
         end
 
         def add(row)
@@ -21,6 +22,7 @@ module Coupler
         end
 
         def flush
+          @progress.call(@array.length) if @progress
           if @dataset
             @dataset.multi_insert(@array)
             @array.clear
@@ -120,13 +122,13 @@ module Coupler
         end
       end
 
-      def transform!
+      def transform!(&progress)
         self.update({
           :transformed_at => Time.now,
           :transformed_with => transformation_ids.join(",")
         })
         create_local_table!
-        _transform
+        _transform(&progress)
       end
 
       def preview_transformation(transformation)
@@ -179,8 +181,8 @@ module Coupler
           end
         end
 
-        def _transform(dry_run = false, limit = nil)
-          buffer = RowBuffer.new
+        def _transform(dry_run = false, limit = nil, &progress)
+          buffer = RowBuffer.new(&progress)
           if dry_run
             buffer.limit = -1
             _iterate_over_source_and_transform(buffer, limit)

@@ -78,13 +78,13 @@ module Coupler
       string.gsub(/_+/, " ").capitalize
     end
 
-    def timeago(time, klass = nil)
+    def timeago(time, klass = nil, tag = "div")
       if time.nil?
         "Never"
       else
         dt = time.send(:to_datetime)
         klass = "timeago" + (klass.nil? ? "" : " #{klass}")
-        %{<div class="#{klass}" title="#{dt.to_s}">#{time.to_s}</div>}
+        %{<#{tag} class="#{klass}" title="#{dt.to_s}">#{time.to_s}</#{tag}>}
       end
     end
 

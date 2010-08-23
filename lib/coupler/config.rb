@@ -13,7 +13,7 @@ module Coupler
       'jruby' => {
         :type => 'java',
         :filetype => 'jar',
-        :version => '1.5.1',
+        :version => '1.5.2',
         :url => "http://repository.codehaus.org/org/jruby/jruby-complete/%1$s/jruby-complete-%1$s.jar",
         :uncompress => false,
         :filename => "jruby-complete-%s.jar",

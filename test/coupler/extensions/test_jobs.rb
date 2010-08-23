@@ -17,6 +17,13 @@ module Coupler
         assert last_response.ok?
         assert_equal "1", last_response.body
       end
+
+      def test_progress
+        job = Factory(:resource_job, :total => 200, :completed => 54)
+        get "/jobs/#{job.id}/progress"
+        assert last_response.ok?
+        assert_equal "27", last_response.body
+      end
     end
   end
 end

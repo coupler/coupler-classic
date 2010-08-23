@@ -3,5 +3,5 @@
 <% if @jobs.empty? %>
 <p>There are currently no jobs scheduled.</p>
 <% else %>
-<%= erb(:'jobs/list', {:layout => false}, {:jobs => @jobs}) %>
+<%= erb(:'jobs/list', {:layout => false}, {:jobs => @jobs, :show_target => true}) %>
 <% end %>

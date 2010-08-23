@@ -626,6 +626,21 @@ module Coupler
         result = resource.preview_transformation(transformation)
         assert_kind_of Exception, result
       end
+
+      def test_transform_with_progress_callback
+        resource = Factory(:resource)
+        first_name = resource.fields_dataset[:name => 'first_name']
+        transformation = Factory.build(:transformation, {
+          :resource => resource, :source_field => first_name,
+          :result_field => first_name, :transformer => nil,
+          :transformer_attributes => Factory.attributes_for(:transformer, :code => "HAY")
+        })
+        count = 0
+        resource.transform! do |n|
+          count += 1
+        end
+        assert count > 0
+      end
     end
   end
 end
