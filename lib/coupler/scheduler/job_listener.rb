@@ -23,7 +23,7 @@ module Coupler
       def jobWasExecuted(context, exception)
         job_id = context.job_detail.job_data_map.get("job_id")
         job = Models::Job[:id => job_id]
-        job.update(:status => "done", :completed_at => Time.now)
+        job.update(:status => exception ? "failed" : "done", :completed_at => Time.now)
       end
       add_method_signature("jobWasExecuted", [java.lang.Void::TYPE, org.quartz.JobExecutionContext, org.quartz.JobExecutionException])
     end

@@ -32,6 +32,30 @@ module Coupler
         job = Transform.new
         job.execute(context)
       end
+
+      def test_throws_job_execution_exception
+        job_data_map = stub("job data map", :get => 1)
+        job_detail = stub("job detail", :job_data_map => job_data_map)
+        context = stub("context", :job_detail => job_detail)
+
+        job_ds = stub("job_ds", :update => true)
+        Models::Job.stubs(:filter).returns(job_ds)
+
+        dataset = stub("dataset", :count => 12345)
+        resource = stub("resource") do
+          stubs(:source_dataset).yields(dataset)
+          stubs(:transform!).raises(Exception.new("hey"))
+        end
+        Models::Resource.stubs(:[]).returns(resource)
+
+        job = Transform.new
+        exception = nil
+        begin
+          job.execute(context)
+        rescue org.quartz.JobExecutionException => exception
+        end
+        assert_not_nil exception
+      end
     end
   end
 end

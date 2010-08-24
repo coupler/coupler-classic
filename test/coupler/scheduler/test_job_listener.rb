@@ -44,10 +44,28 @@ module Coupler
         end
         job_detail = stub("job detail", :job_data_map => job_data_map)
         context = stub("context", :job_detail => job_detail)
-        exception = stub("job execution exception")
 
         job_model = mock("job") do
           expects(:update).with({:status => "done", :completed_at => now})
+        end
+        Models::Job.expects(:[]).with(:id => 1).returns(job_model)
+
+        Timecop.freeze(now) do
+          @listener.jobWasExecuted(context, nil)
+        end
+      end
+
+      def test_failed_job_status
+        now = Time.now
+        job_data_map = mock("job data map") do
+          expects(:get).with("job_id").returns(1)
+        end
+        job_detail = stub("job detail", :job_data_map => job_data_map)
+        context = stub("context", :job_detail => job_detail)
+        exception = stub("job execution exception")
+
+        job_model = mock("job") do
+          expects(:update).with({:status => "failed", :completed_at => now})
         end
         Models::Job.expects(:[]).with(:id => 1).returns(job_model)
 

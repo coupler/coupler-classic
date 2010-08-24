@@ -9,7 +9,11 @@ module Coupler
         resource_id = data_map.get("resource_id")
         resource = Models::Resource[:id => resource_id]
         resource.source_dataset { |s_ds| job_ds.update(:total => s_ds.count) }
-        resource.transform! { |n| job_ds.update(:completed => :completed + n) }
+        begin
+          resource.transform! { |n| job_ds.update(:completed => :completed + n) }
+        rescue Exception => e
+          raise org.quartz.JobExecutionException.new(e.to_s)
+        end
       end
       add_method_signature("execute", [java.lang.Void::TYPE, org.quartz.JobExecutionContext])
     end

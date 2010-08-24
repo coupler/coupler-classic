@@ -23,6 +23,24 @@ module Coupler
         job = RunScenario.new
         job.execute(context)
       end
+
+      def test_throws_job_execution_exception
+        job_data_map = stub("job data map", :get => 1)
+        job_detail = stub("job detail", :job_data_map => job_data_map)
+        context = stub("context", :job_detail => job_detail)
+
+        scenario = stub("scenario") do
+          stubs(:run!).raises(Exception.new("hey"))
+        end
+        Models::Scenario.stubs(:[]).returns(scenario)
+
+        job = RunScenario.new
+        begin
+          job.execute(context)
+        rescue org.quartz.JobExecutionException => exception
+        end
+        assert_not_nil exception
+      end
     end
   end
 end
