@@ -85,6 +85,20 @@ module Coupler
         assert_equal 'integer', field_2.final_type
         assert_equal 'int(11)', field_2.final_db_type
       end
+
+      def test_scenarios_dataset
+        project = Factory(:project)
+        resource = Factory(:resource, :project => project)
+        first_name = resource.fields_dataset[:name => 'first_name']
+        scenario = Factory(:scenario, :resource_1 => resource, :project => project)
+        matcher = Factory(:matcher,
+          :comparisons_attributes => [
+            {:lhs_type => 'field', :lhs_value => first_name.id, :lhs_which => 1, :rhs_type => 'field', :rhs_value => first_name.id, :rhs_which => 2, :operator => 'equals'},
+          ],
+          :scenario => scenario)
+        ds = first_name.scenarios_dataset
+        assert_equal scenario, ds.first
+      end
     end
   end
 end

@@ -36,7 +36,8 @@ module Coupler
       end
 
       def deletable?
-        position == self.class.max(:position)
+        position == self.class.max(:position) &&
+          (result_field.nil? || !result_field.is_generated || result_field.scenarios_dataset.count == 0)
       end
 
       private

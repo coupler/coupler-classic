@@ -179,7 +179,7 @@ module Coupler
         assert_nil Field[:id => result_field.id]
       end
 
-      def test_does_not_delete_result_field_in_use
+      def test_does_not_delete_result_field_in_use_by_other_transformation
         resource = Factory(:resource)
         source_field = resource.fields_dataset[:name => "first_name"]
         transformation_1 = Factory(:transformation, {
@@ -196,12 +196,31 @@ module Coupler
         assert Field[:id => result_field.id]
       end
 
+      def test_prevents_deletion_if_result_field_is_in_use_by_scenario
+        project = Factory(:project)
+        resource = Factory(:resource, :project => project)
+        source_field = resource.fields_dataset[:name => "first_name"]
+        transformation = Factory(:transformation, {
+          :resource => resource,
+          :source_field => source_field,
+          :result_field_attributes => { :name => 'new_first_name' }
+        })
+        result_field = transformation.result_field
+        scenario = Factory(:scenario, :project => project, :resource_1 => resource)
+        matcher = Factory(:matcher, {
+          :comparisons_attributes => [
+            {:lhs_type => 'field', :lhs_value => source_field.id, :rhs_type => 'field', :rhs_value => result_field.id, :operator => 'equals'},
+          ],
+          :scenario => scenario
+        })
+        assert !transformation.destroy
+      end
+
       def test_prevents_deletion_unless_in_last_position
         # FIXME: this is temporary, but I don't want to program the
         # complex logic to enable deletion from the middle of a
         # transformation stack
         resource = Factory(:resource)
-        source_field = resource.fields_dataset[:name => "first_name"]
         transformation_1 = Factory(:transformation, :resource => resource)
         transformation_2 = Factory(:transformation, :resource => resource)
         transformation_1.destroy

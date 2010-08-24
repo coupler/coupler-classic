@@ -22,6 +22,16 @@ module Coupler
         local_db_type || db_type
       end
 
+      def scenarios_dataset
+        marshalled_id = [Marshal.dump(id)].pack('m')
+        Scenario.
+          select(:scenarios.*).
+          filter({:project_id => resource.project_id} & ({:resource_1_id => resource_id} | {:resource_2_id => resource_id})).
+          join(Matcher, :scenario_id => :id).
+          join(Comparison, :matcher_id => :id).
+          filter({:lhs_type => 'field', :lhs_value => marshalled_id} | {:rhs_type => 'field', :rhs_value => marshalled_id})
+      end
+
       private
         def validate
           super
