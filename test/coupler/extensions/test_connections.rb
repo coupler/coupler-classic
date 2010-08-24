@@ -60,6 +60,14 @@ module Coupler
         get "/connections/#{connection.id}"
         assert last_response.ok?
       end
+
+      def test_destroy
+        connection = Factory(:connection)
+        delete "/connections/#{connection.id}"
+        assert_nil Models::Connection[connection.id]
+        assert last_response.redirect?
+        assert_equal "/connections", last_response['location']
+      end
     end
   end
 end

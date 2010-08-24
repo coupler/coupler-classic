@@ -13,6 +13,10 @@ module Coupler
         }, &block)
       end
 
+      def deletable?
+        resources_dataset.count == 0
+      end
+
       private
         def connection_string(database_name)
           misc = adapter == 'mysql' ? '&zeroDateTimeBehavior=convertToNull' : ''
@@ -36,6 +40,13 @@ module Coupler
           rescue Sequel::DatabaseConnectionError, Sequel::DatabaseError => e
             errors.add(:base, "Couldn't connect to the database")
           end
+        end
+
+        def before_destroy
+          super
+
+          # Prevent destruction of connections in use by resources.
+          deletable?
         end
     end
   end

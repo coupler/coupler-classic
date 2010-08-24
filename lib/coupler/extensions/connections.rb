@@ -38,6 +38,17 @@ module Coupler
             erb 'connections/new'.to_sym
           end
         end
+
+        app.delete "/connections/:id" do
+          @connection = Models::Connection[params[:id]]
+          if @connection.destroy
+            flash[:notice] = "Connection was successfully deleted."
+          else
+            flash[:notice] = "Connection could not be deleted."
+            flash[:notice_class] = "error"
+          end
+          redirect "/connections"
+        end
       end
     end
   end

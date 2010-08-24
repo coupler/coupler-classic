@@ -76,6 +76,30 @@ module Coupler
           assert database.test_connection
         end
       end
+
+      def test_deletable_if_unused
+        connection = Factory(:connection)
+        assert connection.deletable?
+      end
+
+      def test_not_deletable_if_used
+        connection = Factory(:connection)
+        resource = Factory(:resource, :connection => connection)
+        assert !connection.deletable?
+      end
+
+      def test_deleting_unused_connection
+        connection = Factory(:connection)
+        assert connection.destroy
+        assert_nil Connection[connection.id]
+      end
+
+      def test_prevent_deleting_connection_in_use
+        connection = Factory(:connection)
+        resource = Factory(:resource, :connection => connection)
+        assert !connection.destroy
+        assert_not_nil Connection[connection.id]
+      end
     end
   end
 end
