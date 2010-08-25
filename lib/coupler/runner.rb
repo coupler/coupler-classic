@@ -1,6 +1,7 @@
 module Coupler
   class Runner
     def initialize(argv = ARGV)
+      irb = false
       OptionParser.new do |opts|
         opts.on("-p", "--port PORT", "Web server port") do |port|
           Base.set(:port, port.to_i)
@@ -19,6 +20,9 @@ module Coupler
             raise "Invalid environment (must be production, development, or test)"
           end
         end
+        opts.on('-i', '--interactive', "Run an IRB session") do
+          irb = true
+        end
       end.parse!(argv)
 
       if !Server.instance.is_running?
@@ -32,7 +36,14 @@ module Coupler
       end
 
       Database.instance.migrate!
-      Base.run! { |_| shutdown }
+
+      if irb
+        at_exit { shutdown }
+        require "irb"
+        IRB.start
+      else
+        Base.run! { |_| shutdown }
+      end
     end
 
     def shutdown
