@@ -211,7 +211,7 @@ module Coupler
         resource = Factory.create(:resource)
         resource.source_dataset do |dataset|
           assert_kind_of Sequel::Dataset, dataset
-          assert_equal "SELECT * FROM `people`", dataset.select_sql
+          assert_match /^SELECT .+? FROM `people`$/, dataset.select_sql
         end
       end
 
@@ -504,6 +504,16 @@ module Coupler
           # NOTE: in MySQL, when selecting strings (ex: SELECT 'foo'),
           # the name of the column in sequel is :foo instead of :"'foo'",
           # because of the way MySQL names columns
+          assert_equal "SELECT `id`, `first_name` FROM `people`", ds.select_sql
+        end
+      end
+
+      def test_source_dataset_does_not_select_generated_columns
+        resource = Factory(:resource)
+        resource.fields_dataset.filter(["name NOT IN ?", %w{id first_name}]).update(:is_selected => false)
+        generated_field = Factory(:field, :resource => resource, :is_generated => true)
+        resource.source_dataset do |ds|
+          assert_equal [:id, :first_name], ds.columns
           assert_equal "SELECT `id`, `first_name` FROM `people`", ds.select_sql
         end
       end

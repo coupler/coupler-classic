@@ -59,12 +59,8 @@ module Coupler
 
       def source_dataset
         source_database do |db|
-          ds = db[table_name.to_sym]
-          if fields_dataset.filter(:is_selected => 0).count > 0
-            columns = fields_dataset.filter(:is_selected => 1).collect(&:name)
-            ds = ds.select(*columns.collect(&:to_sym))
-          end
-          yield ds
+          columns = fields_dataset.filter(:is_selected => true, :is_generated => false).collect { |f| f.name.to_sym }
+          yield db[table_name.to_sym].select(*columns.collect(&:to_sym))
         end
       end
 
