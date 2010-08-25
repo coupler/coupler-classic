@@ -51,12 +51,13 @@ module Coupler
           matcher = create_matcher_for(scenario, [@first_name, @first_name])
           matcher_id = matcher.id
 
-          dataset = mock("Dataset")
+          database = mock("Database", :uri => "jdbc:mysql://localhost/foo")
+          dataset = mock("Dataset", :db => database)
           dataset.expects(:first_source_table).twice.returns(:people)
-          dataset.expects(:from).with({:fake_data__people => :t1}).returns(dataset)
+          dataset.expects(:from).with({:foo__people => :t1}).returns(dataset)
 
           joined_dataset = mock("Joined dataset")
-          dataset.expects(:join).with(:fake_data__people,
+          dataset.expects(:join).with(:foo__people,
             [:t1__id < :t2__id, expr(:t1__first_name => :t2__first_name)],
             {:table_alias => :t2}
           ).returns(joined_dataset)
@@ -86,12 +87,13 @@ module Coupler
           matcher = create_matcher_for(scenario, [@first_name, @first_name, 'does_not_equal'])
           matcher_id = matcher.id
 
-          dataset = mock("Dataset")
+          database = mock("Database", :uri => "jdbc:mysql://localhost/foo")
+          dataset = mock("Dataset", :db => database)
           dataset.expects(:first_source_table).twice.returns(:people)
-          dataset.expects(:from).with({:fake_data__people => :t1}).returns(dataset)
+          dataset.expects(:from).with({:foo__people => :t1}).returns(dataset)
 
           joined_dataset = mock("Joined dataset")
-          dataset.expects(:join).with(:fake_data__people,
+          dataset.expects(:join).with(:foo__people,
             [:t1__id < :t2__id, ~{:t1__first_name => :t2__first_name}],
             {:table_alias => :t2}
           ).returns(joined_dataset)
@@ -121,12 +123,13 @@ module Coupler
           matcher = create_matcher_for(scenario, [@first_name, @first_name], [@age, 30, 'greater_than'])
           matcher_id = matcher.id
 
-          dataset = mock("Dataset")
+          database = mock("Database", :uri => "jdbc:mysql://localhost/foo")
+          dataset = mock("Dataset", :db => database)
           dataset.expects(:first_source_table).twice.returns(:people)
-          dataset.expects(:from).with({:fake_data__people => :t1}).returns(dataset)
+          dataset.expects(:from).with({:foo__people => :t1}).returns(dataset)
 
           joined_dataset = mock("Joined dataset")
-          dataset.expects(:join).with(:fake_data__people, 
+          dataset.expects(:join).with(:foo__people, 
             [:t1__id < :t2__id, expr(:t1__first_name => :t2__first_name)],
             {:table_alias => :t2}
           ).returns(joined_dataset)
@@ -158,12 +161,13 @@ module Coupler
           matcher = create_matcher_for(scenario, [@first_name, @first_name], [@last_name, @last_name])
           matcher_id = matcher.id
 
-          dataset = mock("Dataset")
+          database = mock("Database", :uri => "jdbc:mysql://localhost/foo")
+          dataset = mock("Dataset", :db => database)
           dataset.expects(:first_source_table).twice.returns(:people)
-          dataset.expects(:from).with({:fake_data__people => :t1}).returns(dataset)
+          dataset.expects(:from).with({:foo__people => :t1}).returns(dataset)
 
           joined_dataset = mock("Joined dataset")
-          dataset.expects(:join).with(:fake_data__people,
+          dataset.expects(:join).with(:foo__people,
             [:t1__id < :t2__id,
               expr(:t1__first_name => :t2__first_name),
               expr(:t1__last_name => :t2__last_name)],
@@ -197,12 +201,13 @@ module Coupler
           matcher = create_matcher_for(scenario, [@first_name, @last_name])
           matcher_id = matcher.id
 
-          dataset = mock("Dataset")
+          database = mock("Database", :uri => "jdbc:mysql://localhost/foo")
+          dataset = mock("Dataset", :db => database)
           dataset.expects(:first_source_table).twice.returns(:people)
-          dataset.expects(:from).with({:fake_data__people => :t1}).returns(dataset)
+          dataset.expects(:from).with({:foo__people => :t1}).returns(dataset)
 
           joined_dataset = mock("Joined dataset")
-          dataset.expects(:join).with(:fake_data__people,
+          dataset.expects(:join).with(:foo__people,
             [:t1__id < :t2__id, expr(:t1__first_name => :t2__last_name)],
             {:table_alias => :t2}
           ).returns(joined_dataset)
@@ -236,12 +241,13 @@ module Coupler
           )
           matcher_id = matcher.id
 
-          dataset = mock("Dataset")
+          database = mock("Database", :uri => "jdbc:mysql://localhost/foo")
+          dataset = mock("Dataset", :db => database)
           dataset.expects(:first_source_table).twice.returns(:people)
-          dataset.expects(:from).with({:fake_data__people => :t1}).returns(dataset)
+          dataset.expects(:from).with({:foo__people => :t1}).returns(dataset)
 
           joined_dataset = mock("Joined dataset")
-          dataset.expects(:join).with(:fake_data__people,
+          dataset.expects(:join).with(:foo__people,
             [:t1__id < :t2__id, expr(:t1__first_name => :t2__first_name)],
             {:table_alias => :t2}
           ).returns(joined_dataset)
@@ -273,11 +279,13 @@ module Coupler
           matcher = create_matcher_for(scenario, [@first_name, @owner_first_name])
           matcher_id = matcher.id
 
-          dataset_1 = mock("Dataset 1", :first_source_table => :people)
-          dataset_2 = mock("Dataset 2", :first_source_table => :pets)
+          database_1 = mock("Database", :uri => "jdbc:mysql://localhost/foo")
+          database_2 = mock("Database", :uri => "jdbc:mysql://localhost/bar")
+          dataset_1 = mock("Dataset 1", :db => database_1, :first_source_table => :people)
+          dataset_2 = mock("Dataset 2", :db => database_2, :first_source_table => :pets)
           joined_dataset = mock("Joined dataset")
-          dataset_1.expects(:from).with({:fake_data__people => :t1}).returns(dataset_1)
-          dataset_1.expects(:join).with(:fake_data__pets,
+          dataset_1.expects(:from).with({:foo__people => :t1}).returns(dataset_1)
+          dataset_1.expects(:join).with(:bar__pets,
             [expr(:t1__first_name => :t2__owner_first_name)],
             {:table_alias => :t2}
           ).returns(joined_dataset)
@@ -307,11 +315,13 @@ module Coupler
           matcher = create_matcher_for(scenario, [@first_name, @owner_first_name], [@last_name, @owner_last_name])
           matcher_id = matcher.id
 
-          dataset_1 = mock("Dataset 1", :first_source_table => :people)
-          dataset_2 = mock("Dataset 2", :first_source_table => :pets)
+          database_1 = mock("Database", :uri => "jdbc:mysql://localhost/foo")
+          database_2 = mock("Database", :uri => "jdbc:mysql://localhost/bar")
+          dataset_1 = mock("Dataset 1", :db => database_1, :first_source_table => :people)
+          dataset_2 = mock("Dataset 2", :db => database_2, :first_source_table => :pets)
           joined_dataset = mock("Joined dataset")
-          dataset_1.expects(:from).with({:fake_data__people => :t1}).returns(dataset_1)
-          dataset_1.expects(:join).with(:fake_data__pets,
+          dataset_1.expects(:from).with({:foo__people => :t1}).returns(dataset_1)
+          dataset_1.expects(:join).with(:bar__pets,
             [expr(:t1__first_name => :t2__owner_first_name),
               expr(:t1__last_name => :t2__owner_last_name)],
             {:table_alias => :t2}
@@ -344,7 +354,8 @@ module Coupler
           matcher = create_matcher_for(scenario, [@first_name, @first_name])
           matcher_id = matcher.id
 
-          dataset = stub("Dataset", :first_source_table => :people)
+          database = mock("Database", :uri => "jdbc:mysql://localhost/foo")
+          dataset = stub("Dataset", :db => database, :first_source_table => :people)
           joined_dataset = stub("Joined dataset")
           dataset.stubs(:from => dataset, :join => joined_dataset)
           joined_dataset.stubs(:select => joined_dataset, :filter => joined_dataset, :order => joined_dataset)
@@ -371,8 +382,10 @@ module Coupler
           matcher = create_matcher_for(scenario, [@first_name, @owner_first_name])
           matcher_id = matcher.id
 
-          dataset_1 = mock("Dataset 1", :first_source_table => :people)
-          dataset_2 = mock("Dataset 2", :first_source_table => :pets)
+          database_1 = mock("Database", :uri => "jdbc:mysql://localhost/foo")
+          database_2 = mock("Database", :uri => "jdbc:mysql://localhost/bar")
+          dataset_1 = mock("Dataset 1", :db => database_1, :first_source_table => :people)
+          dataset_2 = mock("Dataset 2", :db => database_2, :first_source_table => :pets)
           joined_dataset = mock("Joined dataset")
           dataset_1.stubs(:from => dataset_1, :join => joined_dataset)
           joined_dataset.stubs(:select => joined_dataset, :filter => joined_dataset, :order => joined_dataset)

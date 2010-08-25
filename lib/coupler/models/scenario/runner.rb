@@ -11,10 +11,8 @@ module Coupler
           setup_resources
 
           @keys = []
-          @databases = []
           @resources.each do |resource|
             @keys << resource.primary_key_name.to_sym
-            @databases << resource.database_name
           end
         end
 
@@ -25,6 +23,11 @@ module Coupler
         protected
           def setup_resources
             raise NotImplementedError
+          end
+
+          def database_name(dataset)
+            u = URI.parse(dataset.db.uri.sub(/\Ajdbc:/, ''))
+            (m = /\/(.*)/.match(u.path)) && m[1]
           end
 
           def add_match(score_set, matches, first_id, second_id, matcher_id)
@@ -48,12 +51,13 @@ module Coupler
             matcher_id = matcher.id
             join_array = []
             filter_array = []
+            database_names = datasets.collect { |ds| database_name(ds) }
             if datasets.length == 1
               # Self-join
               join_array.push(:"t1__#{@keys[0]}" < :"t2__#{@keys[0]}")
               datasets[1] = datasets[0].clone
+              database_names[1] = database_names[0]
               @keys[1] = @keys[0]
-              @databases[1] = @databases[0]
             end
 
             matcher.comparisons.each do |comparison|
@@ -83,7 +87,7 @@ module Coupler
               end
             end
 
-            tables = (0..1).collect { |i| :"#{@databases[i]}__#{datasets[i].first_source_table}" }
+            tables = (0..1).collect { |i| :"#{database_names[i]}__#{datasets[i].first_source_table}" }
             dataset = datasets[0].from(tables[0] => :t1).
               join(tables[1], join_array, :table_alias => :t2).
               select(:"t1__#{@keys[0]}" => :first_id, :"t2__#{@keys[1]}" => :second_id).
