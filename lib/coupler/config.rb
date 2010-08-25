@@ -24,7 +24,7 @@ module Coupler
         :filetype => "tarball",
         :version => '5-0-11',
         :dir => "mysql-connector-mxj-gpl-%s",
-        :url => "ftp://mirror.anl.gov/pub/mysql/Downloads/Connector-MXJ/mysql-connector-mxj-gpl-%s.tar.gz",
+        :url => "http://mysql.mirrors.hoobly.com/Downloads/Connector-MXJ/mysql-connector-mxj-gpl-%s.tar.gz",
         :libs => [
           "mysql-connector-mxj-gpl-%s.jar",
           "mysql-connector-mxj-gpl-%s-db-files.jar"
@@ -35,7 +35,7 @@ module Coupler
         :filetype => "tarball",
         :version => '5.1.13',
         :dir => "mysql-connector-java-%s",
-        :url => "ftp://mirror.anl.gov/pub/mysql/Downloads/Connector-J/mysql-connector-java-%s.tar.gz",
+        :url => "http://mysql.mirrors.hoobly.com/Downloads/Connector-J/mysql-connector-java-%s.tar.gz",
         :libs => [
           "mysql-connector-java-%s-bin.jar",
         ]

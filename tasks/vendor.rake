@@ -22,16 +22,16 @@ namespace :vendor do
       io.close
 
       if info[:uncompress] != false
-        case filetype
+        case info[:filetype]
         when "tarball"
-          `tar -xzf #{tmp.path} -C #{type_dir}`
+          `tar -xzf #{io.path} -C #{type_dir}`
         when "jar", "zip"
           FileUtils.mkdir(destination)
           Dir.chdir(destination) do
-            if filetype == "jar"
-              `jar -xf #{tmp.path}`
+            if info[:filetype] == "jar"
+              `jar -xf #{io.path}`
             else
-              `unzip #{tmp.path}`
+              `unzip #{io.path}`
             end
           end
         end
