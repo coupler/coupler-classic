@@ -4,30 +4,47 @@ module Coupler
       # This class is used during resource transformation.  Its purpose
       # is for mass inserts into the local database for speed.
       class RowBuffer
-        attr_writer :dataset, :limit
-        attr_reader :array
-        def initialize(limit = nil, dataset = nil, &progress)
-          @array = []
-          @limit = limit
+        attr_writer :dataset
+        def initialize(columns, dataset, &progress)
+          @columns = columns
           @dataset = dataset
           @mutex = Mutex.new
           @progress = progress
+          @pending = 0
+
+          # Subtracting 4 at the end accounts for the query packet header (I think)
+          @max_allowed_packet = dataset.
+            db["SHOW VARIABLES LIKE ?", 'max_allowed_packet'].
+            first[:Value].to_i - 4
+
+          reset_sql
         end
 
         def add(row)
+          fragment = " " + @dataset.literal(row.values_at(*@columns)) + ","
           @mutex.synchronize do
-            @array.push(row)
-            flush if @array.length == @limit
+            if (@sql.length + fragment.length) > @max_allowed_packet
+              flush
+              reset_sql
+            end
+            @sql += fragment
+            @pending += 1
           end
         end
 
         def flush
-          @progress.call(@array.length) if @progress
-          if @dataset
-            @dataset.multi_insert(@array)
-            @array.clear
+          if @sql
+            @dataset.db.run(@sql.chomp(","))
+            @progress.call(@pending) if @progress
+            @pending = 0
+            @sql = nil
           end
         end
+
+        private
+          def reset_sql
+            @sql = @dataset.insert_sql(@columns, Sequel::LiteralString.new('VALUES'))
+          end
       end
 
       include CommonModel
@@ -128,8 +145,8 @@ module Coupler
       end
 
       def preview_transformation(transformation)
-        buffer = _transform(true, 50)
-        result = buffer.array
+        result = []
+        _iterate_over_source_and_transform(50) { |r| result << r }
         result.each_index do |i|
           begin
             after = transformation.transform(result[i].dup)
@@ -177,22 +194,16 @@ module Coupler
           end
         end
 
-        def _transform(dry_run = false, limit = nil, &progress)
-          buffer = RowBuffer.new(&progress)
-          if dry_run
-            buffer.limit = -1
-            _iterate_over_source_and_transform(buffer, limit)
-          else
-            local_dataset do |l_ds|
-              buffer.limit = 10000
-              buffer.dataset = l_ds
-              _iterate_over_source_and_transform(buffer, limit)
-            end
+        def _transform(&progress)
+          local_dataset do |l_ds|
+            field_names = selected_fields_dataset.order(:id).naked.select(:name).map { |r| r[:name].to_sym }
+            buffer = RowBuffer.new(field_names, l_ds, &progress)
+            _iterate_over_source_and_transform { |r| buffer.add(r) }
+            buffer.flush
           end
-          buffer
         end
 
-        def _iterate_over_source_and_transform(buffer, limit)
+        def _iterate_over_source_and_transform(limit = nil)
           thread_pool = ThreadPool.new(10)
           transformations = transformations_dataset.order(:position).all
           source_dataset do |s_ds|
@@ -200,12 +211,11 @@ module Coupler
             s_ds.each do |row|
               thread_pool.execute(row) do |r|
                 hash = transformations.inject(r) { |x, t| t.transform(x) }
-                buffer.add(hash)
+                yield hash
               end
             end
             thread_pool.join
           end
-          buffer.flush
         end
 
         def before_validation

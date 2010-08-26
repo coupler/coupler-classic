@@ -651,6 +651,10 @@ module Coupler
         end
         assert count > 0
       end
+
+      def test_unselecting_a_generated_field_before_transformation
+        flunk
+      end
     end
   end
 end
