@@ -17,33 +17,34 @@ module Coupler
             db["SHOW VARIABLES LIKE ?", 'max_allowed_packet'].
             first[:Value].to_i - 4
 
-          reset_sql
+          @query = String.alloc(@max_allowed_packet)
+          init_query
         end
 
         def add(row)
           fragment = " " + @dataset.literal(row.values_at(*@columns)) + ","
           @mutex.synchronize do
-            if (@sql.length + fragment.length) > @max_allowed_packet
+            if (@query.length + fragment.length) > @max_allowed_packet
               flush
-              reset_sql
+              init_query
             end
-            @sql += fragment
+            @query << fragment
             @pending += 1
           end
         end
 
         def flush
-          if @sql
-            @dataset.db.run(@sql.chomp(","))
+          if @query && @query.length > 0
+            @dataset.db.run(@query.chomp(","))
             @progress.call(@pending) if @progress
             @pending = 0
-            @sql = nil
+            @query.replace(String.alloc(@max_allowed_packet))
           end
         end
 
         private
-          def reset_sql
-            @sql = @dataset.insert_sql(@columns, Sequel::LiteralString.new('VALUES'))
+          def init_query
+            @query << @dataset.insert_sql(@columns, Sequel::LiteralString.new('VALUES'))
           end
       end
 
