@@ -5,7 +5,7 @@ module Coupler
         :port => 12345,
         :user => 'coupler',
         :password => 'cupla',
-        :max_connections => 100,
+        :max_connections => '100',
         :max_allowed_packet => '1M',
         :connection_string => 'jdbc:mysql://localhost:%d/%s?user=%s&password=%s',
       }

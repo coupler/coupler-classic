@@ -52,15 +52,13 @@ module Coupler
     def test_start_and_shutdown
       scheduler = Scheduler.instance
       thread = stub('thread')
-      Thread.expects(:new).once.yields.returns(thread)
-      scheduler.expects(:run_jobs)
-      scheduler.expects(:sleep).with(30)
+      Thread.expects(:new).once.returns(thread)
       scheduler.start
       assert scheduler.is_started?
 
       scheduler.start # don't start again
 
-      thread.expects(:terminate).once
+      thread.expects(:exit).once
       scheduler.shutdown
       assert !scheduler.is_started?
     end

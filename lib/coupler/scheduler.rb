@@ -36,14 +36,16 @@ module Coupler
     def start
       if !is_started?
         @loop = Thread.new do
-          sleep 30
-          run_jobs
+          loop do
+            sleep 30
+            run_jobs
+          end
         end
       end
     end
 
     def shutdown
-      @loop.terminate
+      @loop.exit
       @loop = nil
     end
 

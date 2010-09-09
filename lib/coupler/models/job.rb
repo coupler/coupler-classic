@@ -11,24 +11,33 @@ module Coupler
       end
 
       def execute
+        Logger.instance.info("Starting job #{id} (#{name})")
         case name
         when 'transform'
-          update(:status => 'running', :total => resource.source_dataset_count)
+          update(:status => 'running', :started_at => Time.now, :total => resource.source_dataset_count)
+
+          new_status = nil
           begin
             resource.transform! { |n| update(:completed => completed + n) }
-            update(:status => 'done')
+            new_status = 'done'
           rescue Exception => e # FIXME: probably should handle each exception explicitly :)
-            update(:status => 'failed')
+            new_status = 'failed'
           end
+          update(:status => new_status, :completed_at => Time.now)
+
         when 'run_scenario'
-          update(:status => 'running')
+          update(:status => 'running', :started_at => Time.now)
+
+          new_status = nil
           begin
             scenario.run!
-            update(:status => 'done')
+            new_status = 'done'
           rescue Exception => e # FIXME: again
-            update(:status => 'failed')
+            new_status = 'failed'
           end
+          update(:status => new_status, :completed_at => Time.now)
         end
+        Logger.instance.info("Job #{id} (#{name}) finished")
       end
     end
   end
