@@ -41,22 +41,6 @@ module Coupler
         :libs => [
           "mysql-connector-java-%s-bin.jar",
         ]
-      },
-      'quartz' => {
-        :type => 'java',
-        :filetype => 'tarball',
-        :version => '1.8.3',
-        :dir => "quartz-%s",
-        :url => "http://www.terracotta.org/download/reflector.jsp?b=tcdistributions&i=quartz-%s.tar.gz",
-        :libs => [
-          'quartz-all-%s.jar',
-          File.join('lib', 'commons-dbcp-1.3.jar'),
-          File.join('lib', 'commons-pool-1.5.4.jar'),
-          File.join('lib', 'jta-1.1.jar'),
-          File.join('lib', 'log4j-1.2.14.jar'),
-          File.join('lib', 'slf4j-api-1.5.10.jar'),
-          File.join('lib', 'slf4j-log4j12-1.5.10.jar'),
-        ]
       }
     }
 

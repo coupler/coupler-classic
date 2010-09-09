@@ -652,6 +652,13 @@ module Coupler
         assert count > 0
       end
 
+      def test_source_dataset_count
+        resource = Factory(:resource)
+        dataset = mock('dataset', :count => 12345)
+        resource.expects(:source_dataset).yields(dataset)
+        assert_equal resource.source_dataset_count, 12345
+      end
+
       def test_unselecting_a_generated_field_before_transformation
         flunk
       end

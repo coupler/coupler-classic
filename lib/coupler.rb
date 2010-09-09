@@ -26,14 +26,6 @@ require File.dirname(__FILE__) + "/coupler/config"
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'vendor', 'ruby', 'thread_pool', 'lib')) # this won't hurt anything if we're inside a jar
 require 'thread_pool'
 
-# quartz
-begin
-  org.quartz.Job
-rescue NameError
-  Coupler::Config.require_vendor_libs('quartz')
-  org.apache.log4j.BasicConfigurator.configure();
-end
-
 # mysql embedded
 begin
   com.mysql.management.MysqldResource
@@ -56,7 +48,6 @@ require File.dirname(__FILE__) + "/coupler/database"
 require File.dirname(__FILE__) + "/coupler/scheduler"
 require File.dirname(__FILE__) + "/coupler/data_uploader"
 require File.dirname(__FILE__) + "/coupler/models"
-require File.dirname(__FILE__) + "/coupler/jobs"
 require File.dirname(__FILE__) + "/coupler/score_set"
 require File.dirname(__FILE__) + "/coupler/extensions"
 require File.dirname(__FILE__) + "/coupler/helpers"

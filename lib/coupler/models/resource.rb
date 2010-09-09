@@ -85,6 +85,12 @@ module Coupler
         end
       end
 
+      def source_dataset_count
+        count = nil
+        source_dataset { |ds| count = ds.count }
+        count
+      end
+
       def source_schema
         schema = nil
         source_database { |db| schema = db.schema(table_name) }
