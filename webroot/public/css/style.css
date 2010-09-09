@@ -285,6 +285,9 @@ span.sup { font-size: smaller; vertical-align: super; }
   width: 300px;
   height: 25px;
 }
+#progressbar-info {
+  padding-left: 10px;
+}
 #progressbar-spinner {
   float: left;
   padding-top: 4px;

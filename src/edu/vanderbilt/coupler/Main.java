@@ -15,16 +15,18 @@ import org.jruby.RubyArray;
 import org.jruby.RubyString;
 
 public class Main {
-  private static final Properties properties = new Properties();
-  public static final String PROPFILE = "coupler.properties";
+  private static final Properties couplerProperties = new Properties();
+  public static final String COUPLER_PROPERTIES = "coupler.properties";
+  public static final String JRUBY_PROPERTIES = "jruby.properties";
+
   static {
     InputStream stream = null;
     try {
-      stream = Main.class.getResourceAsStream(PROPFILE);
+      stream = Main.class.getResourceAsStream(COUPLER_PROPERTIES);
       if (stream == null) {
-        throw new RuntimeException("Resource not found: " + PROPFILE);
+        throw new RuntimeException("Resource not found: " + COUPLER_PROPERTIES);
       }
-      properties.load(stream);
+      couplerProperties.load(stream);
     } catch (IOException ioe) {
       ioe.printStackTrace();
     } finally {
@@ -40,8 +42,31 @@ public class Main {
 
   private Main(String[] args) {
     System.out.printf("Coupler version: %s\nBuild date: %s\n\n",
-        properties.getProperty("coupler.version"),
-        properties.getProperty("build.timestamp"));
+        couplerProperties.getProperty("coupler.version"),
+        couplerProperties.getProperty("build.timestamp"));
+
+    // Set JRuby runtime properties
+    Properties systemProperties;
+    InputStream stream = null;
+    try {
+      stream = Main.class.getResourceAsStream(JRUBY_PROPERTIES);
+      if (stream == null) {
+        throw new RuntimeException("Resource not found: " + JRUBY_PROPERTIES);
+      }
+      systemProperties = new Properties(System.getProperties());
+      systemProperties.load(stream);
+      System.setProperties(systemProperties);
+    } catch (IOException ioe) {
+      ioe.printStackTrace();
+    } finally {
+      if (stream != null) {
+        try {
+          stream.close();
+        } catch (IOException e) {
+          // silently ignore
+        }
+      }
+    }
 
     String location = findCouplerPath();
     List<String> loadPaths = new ArrayList();

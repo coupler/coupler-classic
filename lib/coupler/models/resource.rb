@@ -1,6 +1,8 @@
 module Coupler
   module Models
     class Resource < Sequel::Model
+      LIMIT = 10000
+
       # This class is used during resource transformation.  Its purpose
       # is for mass inserts into the local database for speed.
       class RowBuffer
@@ -17,7 +19,6 @@ module Coupler
             db["SHOW VARIABLES LIKE ?", 'max_allowed_packet'].
             first[:Value].to_i - 4
 
-          @query = String.alloc(@max_allowed_packet)
           init_query
         end
 
@@ -30,20 +31,22 @@ module Coupler
             end
             @query << fragment
             @pending += 1
+            puts "Pending: #{@pending}; Query Length: #{@query.length}" if @pending % 500 == 0
           end
         end
 
         def flush
-          if @query && @query.length > 0
+          if @query
             @dataset.db.run(@query.chomp(","))
             @progress.call(@pending) if @progress
             @pending = 0
-            @query.replace(String.alloc(@max_allowed_packet))
+            @query = nil
           end
         end
 
         private
           def init_query
+            @query = String.alloc(@max_allowed_packet)
             @query << @dataset.insert_sql(@columns, Sequel::LiteralString.new('VALUES'))
           end
       end
@@ -137,12 +140,13 @@ module Coupler
       end
 
       def transform!(&progress)
-        self.update({
-          :transformed_at => Time.now,
-          :transformed_with => transformation_ids.join(",")
-        })
+        t_ids = transformation_ids.join(",")
         create_local_table!
         _transform(&progress)
+        self.update({
+          :transformed_at => Time.now,
+          :transformed_with => t_ids
+        })
       end
 
       def preview_transformation(transformation)
@@ -204,18 +208,30 @@ module Coupler
           end
         end
 
-        def _iterate_over_source_and_transform(limit = nil)
-          thread_pool = ThreadPool.new(10)
+        def _iterate_over_source_and_transform(total = nil)
+          tw = ThreadsWait.new
           transformations = transformations_dataset.order(:position).all
           source_dataset do |s_ds|
-            s_ds = s_ds.limit(limit) if limit
-            s_ds.each do |row|
-              thread_pool.execute(row) do |r|
-                hash = transformations.inject(r) { |x, t| t.transform(x) }
-                yield hash
+            total ||= s_ds.count
+            limit   = (total && total < LIMIT) ? total : LIMIT
+            offset  = 0
+            count   = 0
+            while count < total
+              s_ds = s_ds.limit(limit, offset)
+              offset += limit
+              count  += limit
+
+              thr = Thread.new(s_ds) do |ds|
+                ds.each do |row|
+                  hash = transformations.inject(row) { |x, t| t.transform(x) }
+                  yield hash
+                end
               end
+              thr.abort_on_exception = true
+              tw.join_nowait(thr)
+              tw.next_wait    if tw.threads.length == 50
             end
-            thread_pool.join
+            tw.all_waits
           end
         end
 

@@ -16,11 +16,11 @@ module Coupler
         assert_respond_to Job.new, :scenario
       end
 
-      def test_progress
+      def test_percent_completed
         job = Factory(:resource_job, :total => 200, :completed => 54)
-        assert_equal 27, job.progress
+        assert_equal 27, job.percent_completed
         job.total = 0
-        assert_equal 0, job.progress
+        assert_equal 0, job.percent_completed
       end
     end
   end

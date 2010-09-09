@@ -5,7 +5,9 @@ module Coupler
         :port => 12345,
         :user => 'coupler',
         :password => 'cupla',
-        :connection_string => 'jdbc:mysql://localhost:%d/%s?user=%s&password=%s'
+        :max_connections => 500,
+        :max_allowed_packet => '1M',
+        :connection_string => 'jdbc:mysql://localhost:%d/%s?user=%s&password=%s',
       }
     }
 
@@ -42,13 +44,18 @@ module Coupler
       },
       'quartz' => {
         :type => 'java',
-        :filetype => 'zip',
-        :version => '1.6.6',
+        :filetype => 'tarball',
+        :version => '1.8.3',
         :dir => "quartz-%s",
-        :url => "http://www.quartz-scheduler.org/download/quartz-%s.zip",
+        :url => "http://www.terracotta.org/download/reflector.jsp?b=tcdistributions&i=quartz-%s.tar.gz",
         :libs => [
-          'quartz-%s.jar',
-          File.join('lib', 'core', 'commons-logging-1.1.jar')
+          'quartz-all-%s.jar',
+          File.join('lib', 'commons-dbcp-1.3.jar'),
+          File.join('lib', 'commons-pool-1.5.4.jar'),
+          File.join('lib', 'jta-1.1.jar'),
+          File.join('lib', 'log4j-1.2.14.jar'),
+          File.join('lib', 'slf4j-api-1.5.10.jar'),
+          File.join('lib', 'slf4j-log4j12-1.5.10.jar'),
         ]
       }
     }

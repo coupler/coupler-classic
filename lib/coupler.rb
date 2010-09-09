@@ -8,6 +8,7 @@ require 'delegate'
 require 'singleton'
 require 'logger'
 require 'optparse'
+require 'thwait'
 require 'rack'
 require 'rack/mime'   # This is an attempt to avoid NameError exceptions
 require 'sinatra/base'
@@ -30,6 +31,7 @@ begin
   org.quartz.Job
 rescue NameError
   Coupler::Config.require_vendor_libs('quartz')
+  org.apache.log4j.BasicConfigurator.configure();
 end
 
 # mysql embedded

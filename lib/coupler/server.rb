@@ -17,7 +17,8 @@ module Coupler
           'initialize-user'          => 'true',
           'initialize-user.user'     => Config.get(:database, :user),
           'initialize-user.password' => Config.get(:database, :password),
-          'max_allowed_packet'       => '1M'
+          'max_allowed_packet'       => Config.get(:database, :max_allowed_packet),
+          'max_connections'          => Config.get(:database, :max_connections)
         })
         @server.start("coupler-server", options)
       end

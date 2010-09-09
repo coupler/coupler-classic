@@ -6,7 +6,7 @@ module Coupler
       @env = ENV['COUPLER_ENV']
       database_name = @env ? "coupler_#{@env}" : "coupler"
       connection_string = Config.connection_string(database_name, :create_database => true)
-      @database = Sequel.connect(connection_string, :loggers => [Coupler::Logger.instance], :max_connections => 12)
+      @database = Sequel.connect(connection_string, :loggers => [Coupler::Logger.instance], :max_connections => 20)
       super(@database)
     end
 

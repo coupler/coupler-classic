@@ -13,7 +13,7 @@ module Coupler
 
         app.get "/jobs/:id/progress" do
           @job = Models::Job[:id => params[:id]]
-          @job.progress.to_s
+          { :completed => @job.completed, :total => @job.total }.to_json
         end
       end
     end

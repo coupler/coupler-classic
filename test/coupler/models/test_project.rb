@@ -182,6 +182,10 @@ module Coupler
         assert_equal 0, Database.instance[:resources_versions].filter(:current_id => resource.id).count
         assert_equal 0, Database.instance[:scenarios_versions].filter(:current_id => scenario.id).count
       end
+
+      def test_local_database_uses_connection_class
+        flunk
+      end
     end
   end
 end

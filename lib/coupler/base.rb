@@ -37,6 +37,7 @@ module Coupler
       handler      = detect_rack_handler
       handler_name = handler.name.gsub(/.*::/, '')
       puts <<'EOF'
+                             ___
                             /\_ \
   ___    ___   __  __  _____\//\ \      __   _ __
  /'___\ / __`\/\ \/\ \/\ '__`\\ \ \   /'__`\/\`'__\

@@ -45,6 +45,7 @@ module Coupler
           @project = Models::Project[:id => params[:project_id]]
           raise ProjectNotFound   unless @project
           @resource = @project.resources_dataset[:id => params[:id]]
+          raise ResourceNotFound  unless @resource
           @fields = @resource.fields_dataset.filter(:is_selected => 1).all
           @transformers = Models::Transformer.all
           @transformations = @resource.transformations_dataset.order(:position)
@@ -57,6 +58,7 @@ module Coupler
           @project = Models::Project[:id => params[:project_id]]
           raise ProjectNotFound   unless @project
           @resource = @project.resources_dataset[:id => params[:id]]
+          raise ResourceNotFound  unless @resource
           Scheduler.instance.schedule_transform_job(@resource)
           redirect "/projects/#{@project.id}/resources/#{@resource.id}"
         end
@@ -65,6 +67,7 @@ module Coupler
           @project = Models::Project[:id => params[:project_id]]
           raise ProjectNotFound   unless @project
           @resource = @project.resources_dataset[:id => params[:id]]
+          raise ResourceNotFound  unless @resource
           @fields = @resource.fields
           @selection_count = @resource.fields_dataset.filter(:is_selected => true).count
           erb 'resources/edit'.to_sym
@@ -74,6 +77,7 @@ module Coupler
           @project = Models::Project[:id => params[:project_id]]
           raise ProjectNotFound   unless @project
           @resource = @project.resources_dataset[:id => params[:id]]
+          raise ResourceNotFound  unless @resource
 
           @resource.set(params[:resource])  if params[:resource]
           if @resource.valid?
@@ -88,11 +92,6 @@ module Coupler
             erb 'resources/edit'.to_sym
           end
         end
-
-        #app.get "/projects/:project_id/resources/:id/progress" do
-          #resource = Models::Resource[:project_id => params[:project_id], :id => params[:id]]
-          #(resource[:completed] * 100 / resource[:total]).to_s
-        #end
       end
     end
   end

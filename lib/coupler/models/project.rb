@@ -8,6 +8,8 @@ module Coupler
       def local_database(&block)
         Sequel.connect(local_connection_string, {
           :loggers => [Coupler::Logger.instance],
+          :max_connections => 50,
+          :pool_timeout => 60
         }, &block)
       end
 

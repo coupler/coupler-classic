@@ -100,6 +100,10 @@ module Coupler
         assert !connection.destroy
         assert_not_nil Connection[connection.id]
       end
+
+      def test_connection_limit
+        flunk
+      end
     end
   end
 end

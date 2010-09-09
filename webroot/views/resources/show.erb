@@ -33,6 +33,7 @@
     <% if @job.status == 'running' %>
       <p>This resource is currently being transformed (since <%= timeago(@job.started_at, 'strong', 'span') %>).</p>
       <div id="progressbar"></div>
+      <div id="progressbar-info" style="float: left;"><%= "#{@job.completed} / #{@job.total}"   if @job.status == 'running' %></div>
       <img id="progressbar-spinner" src="/images/ajax-loader.gif" alt="Spinner" style="float: left;" />
       <div class="clear"></div>
     <% elsif @job.status == 'scheduled' %>
@@ -68,15 +69,18 @@
     $('#fields').dataTable({bJQueryUI: true, aaSorting: [], aoColumns: [null, null] });
     $('.tooltip').tooltip({ delay: 0, track: true, showURL: false, showBody: " - " });
   <%- if @job && @job.status == 'running' -%>
-    $('#progressbar').progressbar({value: <%= @job.progress %>});
+    $('#progressbar').progressbar({value: <%= @job.percent_completed %>});
     setInterval(function() {
       $.get("/jobs/<%= @job.id %>/progress", function(data) {
-        var percent = parseInt(data);
+        var total = parseInt(data.total);
+        var completed = parseInt(data.completed);
+        var percent = completed / total * 100;
         $('#progressbar').progressbar('option', 'value', percent);
+        $('#progressbar-info').html(completed + " / " + total);
         if (percent == 100) {
           window.location.reload(true);
         }
-      });
+      }, 'json');
     }, 5000);
   <%- end -%>
   });

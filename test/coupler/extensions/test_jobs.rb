@@ -22,7 +22,8 @@ module Coupler
         job = Factory(:resource_job, :total => 200, :completed => 54)
         get "/jobs/#{job.id}/progress"
         assert last_response.ok?
-        assert_equal "27", last_response.body
+        result = JSON.parse(last_response.body)
+        assert_equal({'total' => 200, 'completed' => 54}, result)
       end
     end
   end

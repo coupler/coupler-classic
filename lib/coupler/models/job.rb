@@ -6,7 +6,7 @@ module Coupler
       many_to_one :resource
       many_to_one :scenario
 
-      def progress
+      def percent_completed
         total > 0 ? completed * 100 / total : 0
       end
     end
