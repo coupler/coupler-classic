@@ -60,9 +60,6 @@
       </fileset>
       <mapper type="regexp" from="^[^/]+/lib/(.+)$$" to="\1"/>
     </copy>
-
-    <!-- thread_pool -->
-    <copy todir="${build}/ruby" file="vendor/ruby/thread_pool/lib/thread_pool.rb" />
   </target>
 
   <target name="copy-coupler" depends="init">
