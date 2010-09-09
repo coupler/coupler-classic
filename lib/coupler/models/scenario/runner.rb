@@ -7,7 +7,6 @@ module Coupler
 
         def initialize(parent)
           @parent = parent
-          @thread_pool = ThreadPool.new(10)
           setup_resources
 
           @keys = []

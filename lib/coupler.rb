@@ -19,12 +19,9 @@ require 'json'
 require 'fastercsv'
 require 'carrierwave'
 
-# vendored stuff
 require File.dirname(__FILE__) + "/coupler/config"
 
-# thread_pool
-$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'vendor', 'ruby', 'thread_pool', 'lib')) # this won't hurt anything if we're inside a jar
-require 'thread_pool'
+# vendored stuff
 
 # mysql embedded
 begin

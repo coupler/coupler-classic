@@ -31,7 +31,6 @@ module Coupler
             end
             @query << fragment
             @pending += 1
-            puts "Pending: #{@pending}; Query Length: #{@query.length}" if @pending % 500 == 0
           end
         end
 
@@ -235,7 +234,7 @@ module Coupler
               end
               thr.abort_on_exception = true
               tw.join_nowait(thr)
-              tw.next_wait    if tw.threads.length == 50
+              tw.next_wait    if tw.threads.length == 10
             end
             tw.all_waits
           end

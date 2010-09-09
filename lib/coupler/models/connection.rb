@@ -10,8 +10,7 @@ module Coupler
       def database(database_name, &block)
         Sequel.connect(connection_string(database_name), {
           :loggers => [Coupler::Logger.instance],
-          :max_connections => 50,
-          :pool_timeout => 60
+          :max_connections => 20
         }, &block)
       end
 
