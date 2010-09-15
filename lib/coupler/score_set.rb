@@ -32,6 +32,7 @@ module Coupler
           columns.push({:name => :second_id, :type => type_2})
           Integer :score
           Integer :matcher_id
+          TrueClass :transitive
         end
         housekeeping.update(:last_table => new_table_num)
 

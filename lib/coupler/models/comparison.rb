@@ -26,6 +26,7 @@ module Coupler
             end
           end
 
+          # FIXME: this should be a view helper, probably
           def #{name}_label
             case #{name}_type
             when "field"
@@ -53,6 +54,36 @@ module Coupler
         OPERATORS[operator]
       end
 
+      def apply(dataset)
+        lhs = lhs_type == 'field' ? lhs_value.name.to_sym : lhs_value
+        rhs = rhs_type == 'field' ? rhs_value.name.to_sym : rhs_value
+        filters = []
+        if lhs_type == 'field' && rhs_type == 'field' && lhs_which != rhs_which
+          opts = dataset.opts
+          select = opts[:select] || []
+          order  = opts[:order] || []
+
+          (lhs == rhs ? [lhs] : [lhs, rhs]).each do |field|
+            # NOTE: This assumes that the presence of a field name in the select array implies
+            # that the filters for it are already in place.  I don't want to go searching through
+            # Sequel's filter expressions to find out what's in there.
+            if !select.include?(field)
+              select.push(field)
+              order.push(field)
+              filters.push(~{field => nil})
+            end
+          end
+          dataset = dataset.clone(:select => select, :order => order)
+        else
+          filters << Sequel::SQL::BooleanExpression.new(operator_symbol.to_sym, lhs, rhs)
+        end
+        dataset.filter(*filters)
+      end
+
+      def blocking?
+        lhs_type != 'field' || rhs_type != 'field' || lhs_which == rhs_which || operator != 'equals'
+      end
+
       private
         def coerce_value(type, value)
           case type
@@ -61,6 +92,12 @@ module Coupler
           else
             value
           end
+        end
+
+        def before_validation
+          super
+          self.lhs_which ||= 1  if lhs_type == 'field'
+          self.rhs_which ||= 2  if rhs_type == 'field'
         end
 
         def validate
@@ -74,6 +111,8 @@ module Coupler
           end
           validates_includes TYPES, [:lhs_type, :rhs_type]
           validates_includes OPERATORS, :operator
+          validates_includes [1, 2], :lhs_which   if lhs_type == 'field'
+          validates_includes [1, 2], :rhs_which   if rhs_type == 'field'
         end
 
         def before_save

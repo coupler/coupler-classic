@@ -2,7 +2,7 @@ module Coupler
   module Models
     class Scenario
       class Runner
-        LIMIT = 1000
+        LIMIT = 10000
         MATCHING_SCORE = 100
 
         def initialize(parent)
@@ -90,7 +90,7 @@ module Coupler
             dataset = datasets[0].from(tables[0] => :t1).
               join(tables[1], join_array, :table_alias => :t2).
               select(:"t1__#{@keys[0]}" => :first_id, :"t2__#{@keys[1]}" => :second_id).
-              filter(*filter_array).order(:"t1__#{@keys[0]}", :"t2__#{@keys[1]}")
+              filter(*filter_array)
             offset = 0
 
             matches = []

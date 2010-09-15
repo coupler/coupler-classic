@@ -68,7 +68,7 @@ module Coupler
           ).returns(joined_dataset)
           joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset)
           joined_dataset.expects(:each).multiple_yields([{:first_id => 123, :second_id => 456}], [{:first_id => 789, :second_id => 369}])
-          joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
+          #joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
 
           scenario.resource_1.stubs(:final_dataset).yields(dataset)
 
@@ -104,7 +104,7 @@ module Coupler
           ).returns(joined_dataset)
           joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset)
           joined_dataset.expects(:each).multiple_yields([{:first_id => 123, :second_id => 456}], [{:first_id => 789, :second_id => 369}])
-          joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
+          #joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
 
           scenario.resource_1.stubs(:final_dataset).yields(dataset)
 
@@ -142,7 +142,7 @@ module Coupler
           ).returns(joined_dataset)
           joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset)
           joined_dataset.expects(:each).multiple_yields([{:first_id => 123, :second_id => 456}], [{:first_id => 789, :second_id => 369}])
-          joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
+          #joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
 
           scenario.resource_1.stubs(:final_dataset).yields(dataset)
 
@@ -182,7 +182,7 @@ module Coupler
           ).returns(joined_dataset)
           joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset)
           joined_dataset.expects(:each).multiple_yields([{:first_id => 123, :second_id => 456}], [{:first_id => 789, :second_id => 369}])
-          joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
+          #joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
 
           scenario.resource_1.stubs(:final_dataset).yields(dataset)
 
@@ -218,7 +218,7 @@ module Coupler
           ).returns(joined_dataset)
           joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset)
           joined_dataset.expects(:each).multiple_yields([{:first_id => 123, :second_id => 456}], [{:first_id => 789, :second_id => 369}])
-          joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
+          #joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
 
           scenario.resource_1.stubs(:final_dataset).yields(dataset)
 
@@ -260,7 +260,7 @@ module Coupler
           ).returns(joined_dataset)
           joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset)
           joined_dataset.expects(:each).multiple_yields([{:first_id => 123, :second_id => 456}], [{:first_id => 789, :second_id => 369}])
-          joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
+          #joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
 
           scenario.resource_1.stubs(:final_dataset).yields(dataset)
 
@@ -296,7 +296,7 @@ module Coupler
           ).returns(joined_dataset)
           joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset)
           joined_dataset.expects(:each).multiple_yields([{:first_id => 123, :second_id => 456}], [{:first_id => 789, :second_id => 369}])
-          joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
+          #joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
           scenario.resource_1.stubs(:final_dataset).yields(dataset_1)
           scenario.resource_2.stubs(:final_dataset).yields(dataset_2)
 
@@ -335,7 +335,7 @@ module Coupler
           ).returns(joined_dataset)
           joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset)
           joined_dataset.expects(:each).multiple_yields([{:first_id => 123, :second_id => 456}], [{:first_id => 789, :second_id => 369}])
-          joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
+          #joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
           scenario.resource_1.stubs(:final_dataset).yields(dataset_1)
           scenario.resource_2.stubs(:final_dataset).yields(dataset_2)
 

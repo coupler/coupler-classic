@@ -10,6 +10,7 @@ module Coupler
     set :dump_errors, true
     set :logging, Proc.new { !test? }
     set :methodoverride, true
+    set :host, '127.0.0.1'
     enable :sessions
 
     use Rack::Flash

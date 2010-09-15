@@ -3,6 +3,15 @@ require File.dirname(__FILE__) + '/../../helper'
 module Coupler
   module Models
     class TestComparison < Test::Unit::TestCase
+      def sequel_expr(*args)
+        if args.length == 1
+          obj = args[0]
+          obj.is_a?(Sequel::SQL::BooleanExpression) ? obj : Sequel::SQL::BooleanExpression.from_value_pairs(obj)
+        else
+          Sequel::SQL::BooleanExpression.new(*args)
+        end
+      end
+
       def setup
         super
         @resource = Factory(:resource)
@@ -68,6 +77,18 @@ module Coupler
           comparison.operator = op
           assert comparison.valid?
         end
+      end
+
+      def test_requires_valid_lhs_which
+        field = @resource.fields_dataset[:name => 'first_name']
+        comparison = Factory.build(:comparison, :lhs_value => field, :lhs_type => 'field', :lhs_which => 123)
+        assert !comparison.valid?
+      end
+
+      def test_requires_valid_rhs_which
+        field = @resource.fields_dataset[:name => 'first_name']
+        comparison = Factory.build(:comparison, :rhs_value => field, :rhs_type => 'field', :rhs_which => 123)
+        assert !comparison.valid?
       end
 
       def test_value_methods_return_fields_if_type_is_field
@@ -160,6 +181,195 @@ module Coupler
           comparison.send("#{name}_value=", 'foo')
           assert_equal %{"foo"}, comparison.send("#{name}_label")
         end
+      end
+
+      def test_apply_field_equality
+        field = @resource.fields_dataset[:name => 'first_name']
+        comparison = Factory(:comparison, {
+          :lhs_type => 'field', :lhs_value => field.id, :lhs_which => 1,
+          :rhs_type => 'field', :rhs_value => field.id, :rhs_which => 2,
+          :operator => 'equals'
+        })
+        dataset = mock('dataset', :opts => {})
+        dataset.expects(:clone).with({:select => [:first_name], :order => [:first_name]}).returns(dataset)
+        dataset.expects(:filter).with(~{:first_name => nil}).returns(dataset)
+        assert_equal dataset, comparison.apply(dataset)
+      end
+
+      def test_apply_two_field_equality
+        field_1 = @resource.fields_dataset[:name => 'first_name']
+        field_2 = @resource.fields_dataset[:name => 'last_name']
+        comparison = Factory(:comparison, {
+          :lhs_type => 'field', :lhs_value => field_1.id, :lhs_which => 1,
+          :rhs_type => 'field', :rhs_value => field_2.id, :rhs_which => 2,
+          :operator => 'equals'
+        })
+        dataset = mock('dataset', :opts => {})
+        dataset.expects(:clone).with({:select => [:first_name, :last_name], :order => [:first_name, :last_name]}).returns(dataset)
+        dataset.expects(:filter).with(~{:first_name => nil}, ~{:last_name => nil}).returns(dataset)
+        assert_equal dataset, comparison.apply(dataset)
+      end
+
+      def test_apply_field_inequality
+        field = @resource.fields_dataset[:name => 'first_name']
+        comparison = Factory(:comparison, {
+          :lhs_type => 'field', :lhs_value => field.id, :lhs_which => 1,
+          :rhs_type => 'field', :rhs_value => field.id, :rhs_which => 2,
+          :operator => 'does_not_equal'
+        })
+        dataset = mock('dataset', :opts => {})
+        dataset.expects(:clone).with({:select => [:first_name], :order => [:first_name]}).returns(dataset)
+        dataset.expects(:filter).with(~{:first_name => nil}).returns(dataset)
+        assert_equal dataset, comparison.apply(dataset)
+      end
+
+      def test_apply_same_row_field_equality
+        field_1 = @resource.fields_dataset[:name => 'first_name']
+        field_2 = @resource.fields_dataset[:name => 'last_name']
+        comparison = Factory(:comparison, {
+          :lhs_type => 'field', :lhs_value => field_1.id, :lhs_which => 1,
+          :rhs_type => 'field', :rhs_value => field_2.id, :rhs_which => 1,
+          :operator => 'equals'
+        })
+        dataset = mock('dataset')
+        dataset.expects(:filter).with(sequel_expr(:first_name => :last_name)).returns(dataset)
+        assert_equal dataset, comparison.apply(dataset)
+      end
+
+=begin
+      def test_apply_field_greater_than_field
+        field_1 = @resource.fields_dataset[:name => 'first_name']
+        field_2 = @resource.fields_dataset[:name => 'last_name']
+        comparison = Factory(:comparison, {
+          :lhs_type => 'field', :lhs_value => field_1.id, :lhs_which => 1,
+          :rhs_type => 'field', :rhs_value => field_2.id, :rhs_which => 2,
+          :operator => 'greater_than'
+        })
+        dataset = mock('dataset', :opts => {})
+        dataset.expects(:clone).with({:select => [:first_name, :last_name]}).returns(dataset)
+        dataset.expects(:filter).with(~{:first_name => nil}, ~{:last_name => nil}).returns(dataset)
+        assert_equal dataset, comparison.apply(dataset)
+      end
+=end
+
+      def test_apply_does_not_duplicate_selects_or_orders
+        field_1 = @resource.fields_dataset[:name => 'first_name']
+        field_2 = @resource.fields_dataset[:name => 'last_name']
+        comparison = Factory(:comparison, {
+          :lhs_type => 'field', :lhs_value => field_1.id, :lhs_which => 1,
+          :rhs_type => 'field', :rhs_value => field_2.id, :rhs_which => 2,
+          :operator => 'equals'
+        })
+        dataset = mock('dataset', :opts => { :order => [:first_name], :select => [:foo, :first_name] })
+        dataset.expects(:clone).with({:select => [:foo, :first_name, :last_name], :order => [:first_name, :last_name]}).returns(dataset)
+        dataset.expects(:filter).with(~{:last_name => nil}).returns(dataset)
+        assert_equal dataset, comparison.apply(dataset)
+      end
+
+      def test_apply_field_equals_non_field
+        field = @resource.fields_dataset[:name => 'first_name']
+        comparison = Factory(:comparison, {
+          :lhs_type => 'field', :lhs_value => field.id,
+          :rhs_type => 'integer', :rhs_value => 123,
+          :operator => 'equals'
+        })
+        dataset = mock('dataset')
+        dataset.expects(:filter).with(sequel_expr({:first_name => 123})).returns(dataset)
+        assert_equal dataset, comparison.apply(dataset)
+      end
+
+      def test_apply_non_field_equals_field
+        field = @resource.fields_dataset[:name => 'first_name']
+        comparison = Factory(:comparison, {
+          :lhs_type => 'integer', :lhs_value => 123,
+          :rhs_type => 'field', :rhs_value => field.id,
+          :operator => 'equals'
+        })
+        dataset = mock('dataset')
+        dataset.expects(:filter).with(sequel_expr({123 => :first_name})).returns(dataset)
+        assert_equal dataset, comparison.apply(dataset)
+      end
+
+      def test_apply_field_does_not_equal_non_field
+        field = @resource.fields_dataset[:name => 'first_name']
+        comparison = Factory(:comparison, {
+          :lhs_type => 'field', :lhs_value => field.id,
+          :rhs_type => 'integer', :rhs_value => 123,
+          :operator => 'does_not_equal'
+        })
+        dataset = mock('dataset')
+        dataset.expects(:filter).with(sequel_expr(~{:first_name => 123})).returns(dataset)
+        assert_equal dataset, comparison.apply(dataset)
+      end
+
+      def test_apply_non_field_does_not_equal_field
+        field = @resource.fields_dataset[:name => 'first_name']
+        comparison = Factory(:comparison, {
+          :lhs_type => 'integer', :lhs_value => 123,
+          :rhs_type => 'field', :rhs_value => field.id,
+          :operator => 'does_not_equal'
+        })
+        dataset = mock('dataset')
+        dataset.expects(:filter).with(sequel_expr(~{123 => field.name.to_sym})).returns(dataset)
+        assert_equal dataset, comparison.apply(dataset)
+      end
+
+      def test_apply_field_greater_than_non_field
+        field = @resource.fields_dataset[:name => 'first_name']
+        comparison = Factory(:comparison, {
+          :lhs_type => 'field', :lhs_value => field.id,
+          :rhs_type => 'integer', :rhs_value => 123,
+          :operator => 'greater_than'
+        })
+        dataset = mock('dataset')
+        dataset.expects(:filter).with(sequel_expr(field.name.to_sym > 123)).returns(dataset)
+        assert_equal dataset, comparison.apply(dataset)
+      end
+
+      def test_apply_non_field_greater_than_field
+        field = @resource.fields_dataset[:name => 'first_name']
+        comparison = Factory(:comparison, {
+          :lhs_type => 'integer', :lhs_value => 123,
+          :rhs_type => 'field', :rhs_value => field.id,
+          :operator => 'greater_than'
+        })
+        dataset = mock('dataset')
+        dataset.expects(:filter).with(sequel_expr(:'>', 123, field.name.to_sym)).returns(dataset)
+        assert_equal dataset, comparison.apply(dataset)
+      end
+
+      def test_apply_field_less_than_non_field
+        field = @resource.fields_dataset[:name => 'first_name']
+        comparison = Factory(:comparison, {
+          :lhs_type => 'field', :lhs_value => field.id,
+          :rhs_type => 'integer', :rhs_value => 123,
+          :operator => 'less_than'
+        })
+        dataset = mock('dataset')
+        dataset.expects(:filter).with(sequel_expr(field.name.to_sym < 123)).returns(dataset)
+        assert_equal dataset, comparison.apply(dataset)
+      end
+
+      def test_apply_non_field_less_than_field
+        field = @resource.fields_dataset[:name => 'first_name']
+        comparison = Factory(:comparison, {
+          :lhs_type => 'integer', :lhs_value => 123,
+          :rhs_type => 'field', :rhs_value => field.id,
+          :operator => 'less_than'
+        })
+        dataset = mock('dataset')
+        dataset.expects(:filter).with(Sequel::SQL::BooleanExpression.new(:'<', 123, field.name.to_sym)).returns(dataset)
+        assert_equal dataset, comparison.apply(dataset)
+      end
+
+      def test_blocking?
+        field = @resource.fields_dataset[:name => 'first_name']
+        comparison = Factory(:comparison, {
+          :lhs_type => 'field', :lhs_value => field.id, :lhs_which => 1,
+          :rhs_type => 'field', :rhs_value => field.id, :rhs_which => 2,
+          :operator => 'equals'
+        })
+        assert !comparison.blocking?
       end
     end
   end

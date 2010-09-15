@@ -107,5 +107,31 @@ class Array
   end
 end
 
+module Mocha
+  class Expectation
+    def yields_block_result(count = 1, &block)
+      @yield_block_count = count
+      @yield_block_proc = block
+    end
+
+    def invoke
+      @invocation_count += 1
+      perform_side_effects()
+      if block_given? then
+        if @yield_block_proc
+          @yield_block_count.times do |i|
+            yield(*@yield_block_proc.call(i))
+          end
+        else
+          @yield_parameters.next_invocation.each do |yield_parameters|
+            yield(*yield_parameters)
+          end
+        end
+      end
+      @return_values.next
+    end
+  end
+end
+
 require 'factory_girl'
 Factory.find_definitions
