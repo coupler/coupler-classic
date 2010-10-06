@@ -115,7 +115,4 @@ module Coupler
 end
 
 #require File.join(File.dirname(__FILE__), 'scenario', 'runner')
-require File.join(File.dirname(__FILE__), 'scenario', 'group_manager')
-require File.join(File.dirname(__FILE__), 'scenario', 'group_worker')
-require File.join(File.dirname(__FILE__), 'scenario', 'record_matcher')
 require File.join(File.dirname(__FILE__), 'scenario', 'ruby_runner')

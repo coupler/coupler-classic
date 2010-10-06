@@ -215,6 +215,15 @@ module Coupler
         end
       end
 
+      def test_source_dataset_without_block
+        resource = Factory.create(:resource)
+        dataset = stub('dataset')
+        dataset.stubs(:select).returns(dataset)
+        database = stub('database', :[] => dataset)
+        resource.expects(:source_database).returns(database)
+        assert_equal dataset, resource.source_dataset
+      end
+
       def test_source_schema
         resource = Factory.create(:resource)
         expected = [[:id, {:allow_null=>false, :default=>nil, :primary_key=>true, :db_type=>"int(11)", :type=>:integer, :ruby_default=>nil}], [:first_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}], [:last_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}], [:age, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"int(11)", :type=>:integer, :ruby_default=>nil}]]
@@ -238,6 +247,15 @@ module Coupler
           assert_equal Config.connection_string("project_#{project.id}", :create_database => true, :zero_date_time_behavior => :convert_to_null), database.uri
           assert_equal database[:"resource_#{resource.id}"].select_sql, dataset.select_sql
         end
+      end
+
+      def test_local_dataset_without_block
+        resource = Factory.create(:resource)
+        dataset = stub('dataset')
+        dataset.stubs(:select).returns(dataset)
+        database = stub('database', :[] => dataset)
+        resource.project.expects(:local_database).returns(database)
+        assert_equal dataset, resource.local_dataset
       end
 
       def test_refresh_fields

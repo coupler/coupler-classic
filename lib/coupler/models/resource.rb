@@ -31,9 +31,15 @@ module Coupler
       end
 
       def source_dataset
-        source_database do |db|
+        if block_given?
+          source_database do |database|
+            columns = fields_dataset.filter(:is_selected => true, :is_generated => false).collect { |f| f.name.to_sym }
+            yield database[table_name.to_sym].select(*columns.collect(&:to_sym))
+          end
+        else
+          database = source_database
           columns = fields_dataset.filter(:is_selected => true, :is_generated => false).collect { |f| f.name.to_sym }
-          yield db[table_name.to_sym].select(*columns.collect(&:to_sym))
+          database[table_name.to_sym].select(*columns.collect(&:to_sym))
         end
       end
 
@@ -50,9 +56,14 @@ module Coupler
       end
 
       def local_dataset
-        project.local_database do |database|
-          ds = database[:"resource_#{id}"]
-          yield ds
+        if block_given?
+          project.local_database do |database|
+            ds = database[:"resource_#{id}"]
+            yield ds
+          end
+        else
+          database = project.local_database
+          database[:"resource_#{id}"]
         end
       end
 

@@ -39,6 +39,10 @@ class Test::Unit::TestCase
 
     assert_equal @original_database_count, Sequel::DATABASES.length
   end
+
+  def _connection_count
+    Sequel::DATABASES.inject(0) { |sum, db| sum + db.pool.size }
+  end
 end
 
 def fixture_file_upload(name, mime_type = "text/plain")

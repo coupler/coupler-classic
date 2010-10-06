@@ -43,7 +43,7 @@ module Coupler
               end
               rows = Array.new(21000) do |i|
                 [
-                  i < 10000 ? "1234567%02d" % (i % 30) : "9876%05d" % (i % 10000),
+                  i < 10500 ? "1234567%02d" % (i % 30) : "9876%05d" % (i % 10000),
                 ]
               end
               db[:resource_2].import([:SocialSecurityNumber], rows)
@@ -74,19 +74,18 @@ module Coupler
             assert db.tables.include?(:groups_records_1)
             ds = db[:groups_records_1]
             assert_equal 10500, ds.count
-            counts = ds.group_and_count(:group).all
+            counts = ds.group_and_count(:group_id).all
             assert_equal 30, counts.length
             assert counts.all? { |g| g[:count] == 350 }
             assert ds.group_and_count(:record_id).all? { |r| r[:count] == 1 }
             ds.each do |row|
-              record_id = groups[row[:group]]
+              record_id = groups[row[:group_id]]
               if record_id
                 assert_equal (record_id - 1) / 350, (row[:record_id].to_i - 1) / 350, "Record #{row[:record_id]} should not have been in the same group as Record #{record_id}."
               else
-                groups[row[:group]] = row[:record_id].to_i
+                groups[row[:group_id]] = row[:record_id].to_i
               end
               assert_equal @resource_1.id, row[:resource_id]
-              assert_equal matcher.id, row[:matcher_id]
             end
           end
         end
@@ -118,20 +117,19 @@ module Coupler
             ds = db[:groups_records_1]
             assert_equal 10500, ds.count
 
-            counts = ds.group_and_count(:group)
+            counts = ds.group_and_count(:group_id)
             assert_equal 20, counts.having(:count => 175).count
             assert_equal 20, counts.having(:count => 350).count
             assert ds.group_and_count(:record_id).all? { |r| r[:count] == 1 }
             ds.each do |row|
-              record_id = groups[row[:group]]
+              record_id = groups[row[:group_id]]
               if record_id
                 assert_equal (record_id - 1) / 350, (row[:record_id].to_i - 1) / 350, "Record #{row[:record_id]} should not have been in the same group as Record #{record_id}."
                 assert_equal (record_id - 1) / 525, (row[:record_id].to_i - 1) / 525, "Record #{row[:record_id]} should not have been in the same group as Record #{record_id}."
               else
-                groups[row[:group]] = row[:record_id].to_i
+                groups[row[:group_id]] = row[:record_id].to_i
               end
               assert_equal @resource_1.id, row[:resource_id]
-              assert_equal matcher.id, row[:matcher_id]
             end
           end
         end
@@ -158,18 +156,17 @@ module Coupler
             ds = db[:groups_records_1]
             assert_equal 250, ds.count
 
-            counts = ds.group_and_count(:group).order(:group).all.collect { |g| g[:count] }
+            counts = ds.group_and_count(:group_id).order(:group_id).all.collect { |g| g[:count] }
             assert_equal [100, 75, 50, 25], counts
             assert ds.group_and_count(:record_id).all? { |r| r[:count] == 1 }
             ds.each do |row|
-              record_id = groups[row[:group]]
+              record_id = groups[row[:group_id]]
               if record_id
                 assert_equal (record_id - 1) / 125, (row[:record_id].to_i - 1) / 100, "Record #{row[:record_id]} should not have been in the same group as Record #{record_id}."
               else
-                groups[row[:group]] = row[:record_id].to_i
+                groups[row[:group_id]] = row[:record_id].to_i
               end
               assert_equal @resource_1.id, row[:resource_id]
-              assert_equal matcher.id, row[:matcher_id]
             end
           end
         end
@@ -210,14 +207,13 @@ module Coupler
               assert index % 20 > 5,  "#{row[:record_id]}'s age is too small"
               assert index % 50 > 25, "#{row[:record_id]}'s height is too small"
 
-              record_id = groups[row[:group]]
+              record_id = groups[row[:group_id]]
               if record_id
                 assert_equal (record_id - 1) % 20 + 25, (row[:record_id].to_i - 1) % 20 + 25, "Record #{row[:record_id]} should not have been in the same group as Record #{record_id}."
               else
-                groups[row[:group]] = row[:record_id].to_i
+                groups[row[:group_id]] = row[:record_id].to_i
               end
               assert_equal @resource_1.id, row[:resource_id]
-              assert_equal matcher.id, row[:matcher_id]
             end
           end
         end
@@ -241,23 +237,18 @@ module Coupler
             p db.uri
             assert db.tables.include?(:groups_records_1)
             ds = db[:groups_records_1]
-            assert_equal 31500, ds.count
+            assert_equal 32000, ds.count
 
-            counts = ds.group_and_count(:group).all
-            assert_equal 30, counts.length
-            assert counts.all? { |g| g[:count] == 350 }
-            assert ds.group_and_count(:record_id).all? { |r| r[:count] == 1 }
-            ds.each do |row|
-              record_id = groups[row[:group]]
-              if record_id
-                assert_equal (record_id - 1) / 350, (row[:record_id].to_i - 1) / 350, "Record #{row[:record_id]} should not have been in the same group as Record #{record_id}."
-              else
-                groups[row[:group]] = row[:record_id].to_i
-              end
-              assert_equal @resource_1.id, row[:resource_id]
-              assert_equal matcher.id, row[:matcher_id]
-            end
+            counts = ds.group_and_count(:group_id).all
+            assert_equal 10560, counts.length
+            counts = counts.inject({}) { |h, r| h[r[:count]] ||= 0; h[r[:count]] += 1; h }
+            assert_equal 60, counts[350]
+            assert_equal 10000, counts[1]
+            assert_equal 500, counts[2]
+            assert ds.group_and_count(:record_id, :resource_id).all? { |r| r[:count] == 1 }
           end
+
+          notify("Complete me!")
         end
       end
     end
