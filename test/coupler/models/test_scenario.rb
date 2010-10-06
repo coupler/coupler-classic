@@ -34,8 +34,8 @@ module Coupler
         assert_equal [resource_1, resource_2], scenario.resources
       end
 
-      def test_one_to_many_matchers
-        assert_respond_to Scenario.new, :matchers
+      def test_one_to_one_matcher
+        assert_respond_to Scenario.new, :matcher
       end
 
       def test_one_to_many_jobs
@@ -101,11 +101,11 @@ module Coupler
         assert_equal resource_2, scenario.resource_2
       end
 
-      def test_doesnt_run_when_there_are_no_matchers
+      def test_doesnt_run_when_there_is_no_matcher
         project = Factory(:project)
         resource = Factory(:resource, :project => project)
         scenario = Factory(:scenario, :project => project, :name => 'Foo bar', :resource_1 => resource)
-        assert_raises(Scenario::NoMatchersError) { scenario.run! }
+        assert_raises(Scenario::NoMatcherError) { scenario.run! }
       end
 
       def test_doesnt_run_when_resources_are_out_of_date
@@ -150,15 +150,15 @@ module Coupler
         end
       end
 
-      def test_status_with_no_matchers
+      def test_status_with_no_matcher
         project = Factory(:project)
         resource = Factory(:resource, :project => project)
         scenario = Factory(:scenario, :project => project, :resource_1 => resource)
 
-        assert_equal "no_matchers", scenario.status
+        assert_equal "no_matcher", scenario.status
       end
 
-      def test_status_with_matchers
+      def test_status_with_matcher
         project = Factory(:project)
         resource = Factory(:resource, :project => project)
         scenario = Factory(:scenario, :project => project, :resource_1 => resource)
@@ -272,7 +272,7 @@ module Coupler
       end
 
       def test_destroying
-        flunk
+        pend
       end
     end
   end

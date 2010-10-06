@@ -1,10 +1,9 @@
-<% if @matchers.empty? %>
-<p>There are currently no matchers for this scenario.</p>
+<% if @matcher.nil? %>
+<p>There is currently no matcher for this scenario.</p>
 <% else %>
 <table class="list">
   <thead>
     <tr>
-      <th>#</th>
       <th>Value 1</th>
       <th></th>
       <th>Value 2</th>
@@ -13,24 +12,21 @@
     </tr>
   </thead>
   <tbody>
-  <% @matchers.each_with_index do |matcher, i| %>
-    <%- comparisons = matcher.comparisons -%>
-    <tr<%= " class='alt'" if i % 2 == 1 %>>
-      <td rowspan="<%= comparisons.length %>"><%= i + 1 %></td>
+    <%- comparisons = @matcher.comparisons -%>
+    <tr>
       <td><%= comparisons[0].lhs_label %></td>
       <td><%= comparisons[0].operator_symbol %></td>
       <td><%= comparisons[0].rhs_label %></td>
-      <td rowspan="<%= comparisons.length %>"><a href="/projects/<%= @project.id %>/scenarios/<%= @scenario.id %>/matchers/<%= matcher.id %>/edit">Edit</a></td>
-      <td rowspan="<%= comparisons.length %>"><%= delete_link("Delete", "/projects/#{@project.id}/scenarios/#{@scenario.id}/matchers/#{matcher.id}") %></td>
+      <td rowspan="<%= comparisons.length %>"><a href="/projects/<%= @project.id %>/scenarios/<%= @scenario.id %>/matchers/<%= @matcher.id %>/edit">Edit</a></td>
+      <td rowspan="<%= comparisons.length %>"><%= delete_link("Delete", "/projects/#{@project.id}/scenarios/#{@scenario.id}/matchers/#{@matcher.id}") %></td>
     </tr>
     <%- comparisons[1..-1].each_with_index do |comparison, j| -%>
-    <tr<%= " class='alt'" if i % 2 == 1 %>>
+    <tr<%= " class='alt'" if j % 2 == 0 %>>
       <td><%= comparison.lhs_label %></td>
       <td><%= comparison.operator_symbol %></td>
       <td><%= comparison.rhs_label %></td>
     </tr>
     <%- end -%>
-  <% end %>
   </tbody>
 </table>
 <% end %>

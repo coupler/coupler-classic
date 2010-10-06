@@ -121,9 +121,7 @@ module Coupler
             #num = dataset.count
             #@parent.update(:completed => 0, :total => num * (num - 1) / 2)
 
-            @parent.matchers.each do |matcher|
-              score(score_set, matcher, dataset)
-            end
+            score(score_set, @parent.matcher, dataset)
           end
         end
       end
@@ -140,9 +138,7 @@ module Coupler
               #num = dataset_1.count * dataset_2.count
               #self.update(:completed => 0, :total => num)
 
-              @parent.matchers.each do |matcher|
-                score(score_set, matcher, dataset_1, dataset_2)
-              end
+              score(score_set, @parent.matcher, dataset_1, dataset_2)
             end
           end
         end

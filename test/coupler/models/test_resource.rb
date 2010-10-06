@@ -660,15 +660,15 @@ module Coupler
       end
 
       def test_unselecting_a_generated_field_before_transformation
-        flunk
+        pend
       end
 
       def test_connection_limit_on_source_database
-        flunk
+        pend
       end
 
       def test_connection_limit_on_local_database
-        flunk
+        pend
       end
     end
   end

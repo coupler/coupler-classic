@@ -1,7 +1,8 @@
 require 'java'
-require 'test/unit'
 require 'pp'
 require 'rubygems'
+gem "test-unit", "2.1.1"
+require 'test/unit'
 require 'mocha'
 require 'rack/test'
 require 'rack/flash'

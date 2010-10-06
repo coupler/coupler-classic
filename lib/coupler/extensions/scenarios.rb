@@ -35,7 +35,7 @@ module Coupler
           raise ProjectNotFound   unless @project
           @scenario = @project.scenarios_dataset[:id => params[:id]]
           @resources = @scenario.resources
-          @matchers = @scenario.matchers
+          @matcher = @scenario.matcher
           @running_jobs = @scenario.running_jobs
           @scheduled_jobs = @scenario.scheduled_jobs
           erb 'scenarios/show'.to_sym

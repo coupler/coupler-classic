@@ -1,7 +1,7 @@
 module Coupler
   module Models
     class Scenario < Sequel::Model
-      class NoMatchersError < Exception; end
+      class NoMatcherError < Exception; end
       class ResourcesOutOfDateError < Exception; end
 
       include CommonModel
@@ -11,12 +11,12 @@ module Coupler
       many_to_one :project
       many_to_one :resource_1, :class => "Coupler::Models::Resource"
       many_to_one :resource_2, :class => "Coupler::Models::Resource"
-      one_to_many :matchers
+      one_to_one :matcher
       one_to_many :results
 
       def status
-        if matchers_dataset.count == 0
-          "no_matchers"
+        if matcher.nil?
+          "no_matcher"
         elsif resources.any? { |r| r.status == "out_of_date" }
           "resources_out_of_date"
         else
@@ -34,7 +34,7 @@ module Coupler
 
       def run!
         case status
-        when 'no_matchers'            then raise NoMatchersError
+        when 'no_matcher'             then raise NoMatcherError
         when 'resources_out_of_date'  then raise ResourcesOutOfDateError
         end
 

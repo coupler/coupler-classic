@@ -175,7 +175,7 @@ module Coupler
       end
 
       def test_should_handle_empty_values
-        flunk
+        pend
       end
     end
   end

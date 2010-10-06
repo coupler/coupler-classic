@@ -47,8 +47,7 @@ module Coupler
         assert last_response.redirect?, "Wasn't redirected"
         assert_equal "/projects/#{@project.id}/scenarios/#{@scenario.id}", last_response['location']
 
-        matcher = @scenario.matchers_dataset.first
-        assert matcher
+        assert @scenario.matcher
       end
 
       def test_edit

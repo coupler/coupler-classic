@@ -163,7 +163,7 @@ module Coupler
       end
 
       def test_updates_resource_fields_on_destroy
-        flunk
+        pend
       end
 
       def test_deletes_orphaned_result_field_on_destroy
