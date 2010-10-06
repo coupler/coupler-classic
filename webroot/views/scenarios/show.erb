@@ -1,7 +1,7 @@
 <% @breadcrumbs = [@project, @scenario] %>
 <% if flash[:newly_created] %>
 <div id="notice">
-  Scenario successfully created!  Next you'll need to add matchers.
+  Scenario successfully created!  Next you'll need to add a matcher.
 </div>
 <% end %>
 
@@ -13,9 +13,11 @@
 <h2>Matchers</h2>
 <div class="section">
   <%= erb(:"matchers/list", :layout => false) %>
+  <%- if @matcher.nil? -%>
   <p>
     <a href="/projects/<%= @project.id %>/scenarios/<%= @scenario.id %>/matchers/new">Add matcher</a>
   </p>
+  <%- end -%>
 </div>
 
 <h2>Status</h2>

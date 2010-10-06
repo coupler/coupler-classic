@@ -102,7 +102,7 @@ module Coupler
       end
 
       def test_connection_limit
-        flunk
+        pend
       end
     end
   end

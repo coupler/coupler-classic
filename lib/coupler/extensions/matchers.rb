@@ -17,7 +17,7 @@ module Coupler
           raise ProjectNotFound   unless @project
           @scenario = @project.scenarios_dataset[:id => params[:scenario_id]]
           raise ScenarioNotFound  unless @scenario
-          @matcher = @scenario.matchers_dataset[:id => params[:id]]
+          @matcher = @scenario.matcher_dataset[:id => params[:id]]
           raise MatcherNotFound   unless @matcher
           @resources = @scenario.resources
           erb 'matchers/form'.to_sym
@@ -45,7 +45,7 @@ module Coupler
           raise ProjectNotFound   unless @project
           @scenario = @project.scenarios_dataset[:id => params[:scenario_id]]
           raise ScenarioNotFound  unless @scenario
-          @matcher = @scenario.matchers_dataset[:id => params[:id]]
+          @matcher = @scenario.matcher_dataset[:id => params[:id]]
           raise MatcherNotFound   unless @matcher
           @matcher.set(params[:matcher])
 
@@ -63,7 +63,7 @@ module Coupler
           raise ProjectNotFound   unless @project
           @scenario = @project.scenarios_dataset[:id => params[:scenario_id]]
           raise ScenarioNotFound  unless @scenario
-          @matcher = @scenario.matchers_dataset[:id => params[:id]]
+          @matcher = @scenario.matcher_dataset[:id => params[:id]]
           raise MatcherNotFound   unless @matcher
           @matcher.destroy
           redirect "/projects/#{@project.id}/scenarios/#{@scenario.id}"

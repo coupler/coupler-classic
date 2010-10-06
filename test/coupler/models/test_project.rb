@@ -184,7 +184,7 @@ module Coupler
       end
 
       def test_local_database_uses_connection_class
-        flunk
+        pend
       end
     end
   end
