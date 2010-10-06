@@ -44,32 +44,12 @@ module Coupler
 
     def test_default_table_schema
       expected = [
-        [:id, :integer],
-        [:first_id, :integer],
-        [:second_id, :integer],
-        [:score, :integer],
-        [:matcher_id, :integer],
-        [:transitive, :boolean]
-      ]
-      Coupler::ScoreSet.create do |set|
-        schema = set.db.schema(:'1')
-        expected.each do |(name, type)|
-          info = schema.assoc(name)
-          assert_not_nil info, "#{name} column doesn't exist"
-          assert_equal type, info[1][:type], "#{name} columns isn't the right type"
-        end
-      end
-    end
-
-    def test_table_schema_with_string_ids
-      expected = [
-        [:id, :integer],
-        [:first_id, :string],
-        [:second_id, :string],
-        [:score, :integer],
+        [:record_id, :string],
+        [:resource_id, :integer],
+        [:group, :integer],
         [:matcher_id, :integer]
       ]
-      Coupler::ScoreSet.create(String, String) do |set|
+      Coupler::ScoreSet.create do |set|
         schema = set.db.schema(:'1')
         expected.each do |(name, type)|
           info = schema.assoc(name)
@@ -95,16 +75,6 @@ module Coupler
     def test_id
       Coupler::ScoreSet.create do |set|
         assert_equal 1, set.id
-      end
-    end
-
-    def test_insert_or_update
-      Coupler::ScoreSet.create do |set|
-        filtered = set.filter(:first_id => 1, :second_id => 2)
-        set.insert_or_update(:first_id => 1, :second_id => 2, :score => 10)
-        assert_equal 10, filtered.first[:score]
-        set.insert_or_update(:first_id => 1, :second_id => 2, :score => 10)
-        assert_equal 20, filtered.first[:score]
       end
     end
   end

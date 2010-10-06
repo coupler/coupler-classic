@@ -54,30 +54,65 @@ module Coupler
         OPERATORS[operator]
       end
 
-      def apply(dataset)
+      def apply(dataset, which = nil)
         lhs = lhs_type == 'field' ? lhs_value.name.to_sym : lhs_value
         rhs = rhs_type == 'field' ? rhs_value.name.to_sym : rhs_value
-        filters = []
-        if lhs_type == 'field' && rhs_type == 'field' && lhs_which != rhs_which
-          opts = dataset.opts
-          select = opts[:select] || []
-          order  = opts[:order] || []
+        if !blocking?
+          filters = []
+          tmp = dataset.opts
+          opts = {
+            :select => tmp[:select] ? tmp[:select].dup : [],
+            :order  => tmp[:order]  ? tmp[:order].dup  : []
+          }
 
-          (lhs == rhs ? [lhs] : [lhs, rhs]).each do |field|
-            # NOTE: This assumes that the presence of a field name in the select array implies
-            # that the filters for it are already in place.  I don't want to go searching through
-            # Sequel's filter expressions to find out what's in there.
-            if !select.include?(field)
-              select.push(field)
-              order.push(field)
+          fields =
+            case which
+            when nil then lhs == rhs ? [lhs] : [lhs, rhs]
+            when 0   then [lhs]
+            when 1   then [rhs]
+            end
+          fields.each_with_index do |field, i|
+            index = i == 0 ? 0 : -1
+
+            # NOTE: This assumes that the presence of a field name in the
+            # select array implies that the filters for it are already in
+            # place.  I don't want to go searching through Sequel's filter
+            # expressions to find out what's in there.
+            if !opts[:select].include?(field)
+              opts[:select].push(field)
+              opts[:order].push(field)
+              opts[:modified] = true
               filters.push(~{field => nil})
             end
           end
-          dataset = dataset.clone(:select => select, :order => order)
+          if opts.delete(:modified)
+            dataset = dataset.clone(opts).filter(*filters)
+          end
         else
-          filters << Sequel::SQL::BooleanExpression.new(operator_symbol.to_sym, lhs, rhs)
+          # Figure out which side to apply this comparison to.
+          tmp_which = nil
+          if !which.nil?
+            if lhs_type == 'field' && rhs_type == 'field'
+              if lhs_which == rhs_which
+                tmp_which = lhs_which == 1 ? 0 : 1
+              else
+                raise "unsupported" # FIXME
+              end
+            elsif lhs_type == 'field'
+              tmp_which = lhs_which == 1 ? 0 : 1
+            elsif rhs_type == 'field'
+              tmp_which = rhs_which == 1 ? 0 : 1
+            else
+              # Doesn't matter.  Apply to either side.
+            end
+          end
+
+          if which.nil? || tmp_which.nil? || which == tmp_which
+            expr = Sequel::SQL::BooleanExpression.new(operator_symbol.to_sym, lhs, rhs)
+            dataset = dataset.filter(expr)
+          end
         end
-        dataset.filter(*filters)
+        dataset
       end
 
       def blocking?

@@ -32,6 +32,14 @@ module Coupler
         end
       end
 
+      def local_database(&block)
+        Sequel.connect(local_connection_string, {
+          :loggers => [Coupler::Logger.instance],
+          :max_connections => 50,
+          :pool_timeout => 60
+        }, &block)
+      end
+
       def run!
         case status
         when 'no_matchers'            then raise NoMatchersError
@@ -67,6 +75,13 @@ module Coupler
             end
         end
 
+        def local_connection_string
+          Config.connection_string(:"scenario_#{id}", {
+            :create_database => true,
+            :zero_date_time_behavior => :convert_to_null
+          })
+        end
+
         def before_validation
           super
           if @resource_ids.is_a?(Array)
@@ -99,5 +114,8 @@ module Coupler
   end
 end
 
-require File.join(File.dirname(__FILE__), 'scenario', 'runner')
+#require File.join(File.dirname(__FILE__), 'scenario', 'runner')
+require File.join(File.dirname(__FILE__), 'scenario', 'group_manager')
+require File.join(File.dirname(__FILE__), 'scenario', 'group_worker')
+require File.join(File.dirname(__FILE__), 'scenario', 'record_matcher')
 require File.join(File.dirname(__FILE__), 'scenario', 'ruby_runner')

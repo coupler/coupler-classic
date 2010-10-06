@@ -1,7 +1,7 @@
 module Coupler
   # This class is used during resource transformation.  Its purpose
   # is for mass inserts into the local database for speed.
-  class RowBuffer
+  class ImportBuffer
     attr_writer :dataset
     def initialize(columns, dataset, &progress)
       @columns = columns
@@ -14,15 +14,14 @@ module Coupler
       @max_allowed_packet = dataset.
         db["SHOW VARIABLES LIKE ?", 'max_allowed_packet'].
         first[:Value].to_i - 4
-
-      init_query
     end
 
     def add(row)
       fragment = " " + @dataset.literal(row.is_a?(Hash) ? row.values_at(*@columns) : row) + ","
       @mutex.synchronize do
+        init_query  if @query.nil?
         if (@query.length + fragment.length) > @max_allowed_packet
-          flush
+          flush(false)
           init_query
         end
         @query << fragment
@@ -30,12 +29,17 @@ module Coupler
       end
     end
 
-    def flush
+    def flush(lock = true)
       if @query
-        @dataset.db.run(@query.chomp(","))
-        @progress.call(@pending) if @progress
-        @pending = 0
-        @query = nil
+        begin
+          @mutex.lock   if lock
+          @dataset.db.run(@query.chomp(","))
+          @progress.call(@pending) if @progress
+          @pending = 0
+          @query = nil
+        ensure
+          @mutex.unlock if lock
+        end
       end
     end
 

@@ -122,6 +122,10 @@ module Coupler
         { :fields => fields, :data => result }
       end
 
+      def primary_key_sym
+        primary_key_name.to_sym
+      end
+
       private
         def transformation_ids
           transformations_dataset.select(:id).order(:id).all.collect(&:id)
@@ -160,7 +164,7 @@ module Coupler
         def _transform(&progress)
           local_dataset do |l_ds|
             field_names = selected_fields_dataset.order(:id).naked.select(:name).map { |r| r[:name].to_sym }
-            buffer = RowBuffer.new(field_names, l_ds, &progress)
+            buffer = ImportBuffer.new(field_names, l_ds, &progress)
             _iterate_over_source_and_transform { |r| buffer.add(r) }
             buffer.flush
           end

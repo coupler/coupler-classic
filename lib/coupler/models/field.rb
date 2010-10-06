@@ -32,6 +32,10 @@ module Coupler
           filter({:lhs_type => 'field', :lhs_value => marshalled_id} | {:rhs_type => 'field', :rhs_value => marshalled_id})
       end
 
+      def name_sym
+        @name_sym ||= name.to_sym
+      end
+
       private
         def validate
           super

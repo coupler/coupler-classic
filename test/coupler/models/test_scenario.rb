@@ -3,6 +3,10 @@ require File.dirname(__FILE__) + '/../../helper'
 module Coupler
   module Models
     class TestScenario < Test::Unit::TestCase
+      def db(&block)
+        Sequel.connect(Config.connection_string("information_schema"), &block)
+      end
+
       def test_sequel_model
         assert_equal ::Sequel::Model, Scenario.superclass
         assert_equal :scenarios, Scenario.table_name
@@ -273,6 +277,23 @@ module Coupler
 
       def test_destroying
         flunk
+      end
+
+      def test_local_database
+        scenario = Factory(:scenario)
+        db do |inf|
+          databases = inf["SHOW DATABASES"].collect { |x| x[:Database] }
+          inf.run("DROP DATABASE scenario_#{scenario.id}")  if databases.include?("scenario_#{scenario.id}")
+        end
+
+        scenario.local_database do |db|
+          assert_kind_of Sequel::JDBC::Database, db
+          assert_match /scenario_#{scenario.id}/, db.uri
+          assert db.test_connection
+        end
+      end
+
+      def test_deletes_local_database_after_destroy
       end
     end
   end

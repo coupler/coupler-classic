@@ -196,6 +196,24 @@ module Coupler
         assert_equal dataset, comparison.apply(dataset)
       end
 
+      def test_apply_field_equality_to_one_side_only
+        field = @resource.fields_dataset[:name => 'first_name']
+        comparison = Factory(:comparison, {
+          :lhs_type => 'field', :lhs_value => field.id, :lhs_which => 1,
+          :rhs_type => 'field', :rhs_value => field.id, :rhs_which => 2,
+          :operator => 'equals'
+        })
+        dataset_1 = mock('dataset', :opts => {})
+        dataset_1.expects(:clone).with({:select => [:first_name], :order => [:first_name]}).returns(dataset_1)
+        dataset_1.expects(:filter).with(~{:first_name => nil}).returns(dataset_1)
+        dataset_2 = mock('dataset', :opts => {})
+        dataset_2.expects(:clone).with({:select => [:first_name], :order => [:first_name]}).returns(dataset_2)
+        dataset_2.expects(:filter).with(~{:first_name => nil}).returns(dataset_2)
+
+        assert_equal dataset_1, comparison.apply(dataset_1, 0)
+        assert_equal dataset_2, comparison.apply(dataset_2, 1)
+      end
+
       def test_apply_two_field_equality
         field_1 = @resource.fields_dataset[:name => 'first_name']
         field_2 = @resource.fields_dataset[:name => 'last_name']
@@ -210,7 +228,27 @@ module Coupler
         assert_equal dataset, comparison.apply(dataset)
       end
 
-      def test_apply_field_inequality
+      def test_apply_two_field_equality_to_one_side_only
+        field_1 = @resource.fields_dataset[:name => 'first_name']
+        field_2 = @resource.fields_dataset[:name => 'last_name']
+        comparison = Factory(:comparison, {
+          :lhs_type => 'field', :lhs_value => field_1.id, :lhs_which => 1,
+          :rhs_type => 'field', :rhs_value => field_2.id, :rhs_which => 2,
+          :operator => 'equals'
+        })
+        dataset_1 = mock('dataset', :opts => {})
+        dataset_1.expects(:clone).with({:select => [:first_name], :order => [:first_name]}).returns(dataset_1)
+        dataset_1.expects(:filter).with(~{:first_name => nil}).returns(dataset_1)
+        dataset_2 = mock('dataset', :opts => {})
+        dataset_2.expects(:clone).with({:select => [:last_name], :order => [:last_name]}).returns(dataset_2)
+        dataset_2.expects(:filter).with(~{:last_name => nil}).returns(dataset_2)
+
+        assert_equal dataset_1, comparison.apply(dataset_1, 0)
+        assert_equal dataset_2, comparison.apply(dataset_2, 1)
+      end
+
+=begin
+      def test_apply_field_inequality_to_single_dataset
         field = @resource.fields_dataset[:name => 'first_name']
         comparison = Factory(:comparison, {
           :lhs_type => 'field', :lhs_value => field.id, :lhs_which => 1,
@@ -223,17 +261,73 @@ module Coupler
         assert_equal dataset, comparison.apply(dataset)
       end
 
-      def test_apply_same_row_field_equality
+      def test_apply_field_inequality_to_dual_datasets
+        field = @resource.fields_dataset[:name => 'first_name']
+        comparison = Factory(:comparison, {
+          :lhs_type => 'field', :lhs_value => field.id, :lhs_which => 1,
+          :rhs_type => 'field', :rhs_value => field.id, :rhs_which => 2,
+          :operator => 'does_not_equal'
+        })
+        dataset_1 = mock('dataset_1', :opts => {})
+        dataset_1.expects(:clone).with({:select => [:first_name], :order => [:first_name]}).returns(dataset_1)
+        dataset_1.expects(:filter).with(~{:first_name => nil}).returns(dataset_1)
+        dataset_2 = mock('dataset_2', :opts => {})
+        dataset_2.expects(:clone).with({:select => [:first_name], :order => [:first_name]}).returns(dataset_2)
+        dataset_2.expects(:filter).with(~{:first_name => nil}).returns(dataset_2)
+        assert_equal [dataset_1, dataset_2], comparison.apply(dataset_1, dataset_2)
+      end
+=end
+
+      def test_apply_same_row_field_equality_indifferently
+        # Obviously these comparisons don't really make any sense IRL
         field_1 = @resource.fields_dataset[:name => 'first_name']
         field_2 = @resource.fields_dataset[:name => 'last_name']
-        comparison = Factory(:comparison, {
+        field_3 = @resource.fields_dataset[:name => 'age']
+        comparison_1 = Factory(:comparison, {
           :lhs_type => 'field', :lhs_value => field_1.id, :lhs_which => 1,
           :rhs_type => 'field', :rhs_value => field_2.id, :rhs_which => 1,
           :operator => 'equals'
         })
+        comparison_2 = Factory(:comparison, {
+          :lhs_type => 'field', :lhs_value => field_2.id, :lhs_which => 2,
+          :rhs_type => 'field', :rhs_value => field_3.id, :rhs_which => 2,
+          :operator => 'equals'
+        })
         dataset = mock('dataset')
+
         dataset.expects(:filter).with(sequel_expr(:first_name => :last_name)).returns(dataset)
-        assert_equal dataset, comparison.apply(dataset)
+        assert_equal dataset, comparison_1.apply(dataset)
+
+        dataset.expects(:filter).with(sequel_expr(:last_name => :age)).returns(dataset)
+        assert_equal dataset, comparison_2.apply(dataset)
+      end
+
+      def test_apply_same_row_field_equality_to_one_side_only
+        field_1 = @resource.fields_dataset[:name => 'first_name']
+        field_2 = @resource.fields_dataset[:name => 'last_name']
+        field_3 = @resource.fields_dataset[:name => 'age']
+        comparison_1 = Factory(:comparison, {
+          :lhs_type => 'field', :lhs_value => field_1.id, :lhs_which => 1,
+          :rhs_type => 'field', :rhs_value => field_2.id, :rhs_which => 1,
+          :operator => 'equals'
+        })
+        comparison_2 = Factory(:comparison, {
+          :lhs_type => 'field', :lhs_value => field_2.id, :lhs_which => 2,
+          :rhs_type => 'field', :rhs_value => field_3.id, :rhs_which => 2,
+          :operator => 'equals'
+        })
+        dataset_1 = mock('dataset')
+        dataset_2 = mock('dataset')
+
+        dataset_1.expects(:filter).with(sequel_expr(:first_name => :last_name)).returns(dataset_1)
+        assert_equal dataset_1, comparison_1.apply(dataset_1, 0)
+        dataset_1.expects(:filter).never
+        assert_equal dataset_1, comparison_2.apply(dataset_1, 0)
+
+        dataset_2.expects(:filter).never
+        assert_equal dataset_2, comparison_1.apply(dataset_2, 1)
+        dataset_2.expects(:filter).with(sequel_expr(:last_name => :age)).returns(dataset_2)
+        assert_equal dataset_2, comparison_2.apply(dataset_2, 1)
       end
 
 =begin
@@ -266,23 +360,58 @@ module Coupler
         assert_equal dataset, comparison.apply(dataset)
       end
 
-      def test_apply_field_equals_non_field
-        field = @resource.fields_dataset[:name => 'first_name']
-        comparison = Factory(:comparison, {
-          :lhs_type => 'field', :lhs_value => field.id,
+      def test_apply_field_equals_non_field_indifferently
+        field_1 = @resource.fields_dataset[:name => 'first_name']
+        field_2 = @resource.fields_dataset[:name => 'last_name']
+        comparison_1 = Factory(:comparison, {
+          :lhs_type => 'field', :lhs_value => field_1.id, :lhs_which => 1,
+          :rhs_type => 'integer', :rhs_value => 123,
+          :operator => 'equals'
+        })
+        comparison_2 = Factory(:comparison, {
+          :lhs_type => 'field', :lhs_value => field_2.id, :lhs_which => 2,
           :rhs_type => 'integer', :rhs_value => 123,
           :operator => 'equals'
         })
         dataset = mock('dataset')
         dataset.expects(:filter).with(sequel_expr({:first_name => 123})).returns(dataset)
-        assert_equal dataset, comparison.apply(dataset)
+        assert_equal dataset, comparison_1.apply(dataset)
+        dataset.expects(:filter).with(sequel_expr({:last_name => 123})).returns(dataset)
+        assert_equal dataset, comparison_2.apply(dataset)
+      end
+
+      def test_apply_field_equals_non_field_to_one_side_only
+        field_1 = @resource.fields_dataset[:name => 'first_name']
+        field_2 = @resource.fields_dataset[:name => 'last_name']
+        comparison_1 = Factory(:comparison, {
+          :lhs_type => 'field', :lhs_value => field_1.id, :lhs_which => 1,
+          :rhs_type => 'integer', :rhs_value => 123,
+          :operator => 'equals'
+        })
+        comparison_2 = Factory(:comparison, {
+          :lhs_type => 'field', :lhs_value => field_2.id, :lhs_which => 2,
+          :rhs_type => 'integer', :rhs_value => 123,
+          :operator => 'equals'
+        })
+        dataset_1 = mock('dataset 1')
+        dataset_2 = mock('dataset 2')
+
+        dataset_1.expects(:filter).with(sequel_expr({:first_name => 123})).returns(dataset_1)
+        assert_equal dataset_1, comparison_1.apply(dataset_1, 0)
+        dataset_1.expects(:filter).never
+        assert_equal dataset_1, comparison_2.apply(dataset_1, 0)
+
+        dataset_2.expects(:filter).never
+        assert_equal dataset_2, comparison_1.apply(dataset_2, 1)
+        dataset_2.expects(:filter).with(sequel_expr({:last_name => 123})).returns(dataset_2)
+        assert_equal dataset_2, comparison_2.apply(dataset_2, 1)
       end
 
       def test_apply_non_field_equals_field
         field = @resource.fields_dataset[:name => 'first_name']
         comparison = Factory(:comparison, {
           :lhs_type => 'integer', :lhs_value => 123,
-          :rhs_type => 'field', :rhs_value => field.id,
+          :rhs_type => 'field', :rhs_value => field.id, :rhs_which => 1,
           :operator => 'equals'
         })
         dataset = mock('dataset')
@@ -362,6 +491,32 @@ module Coupler
         assert_equal dataset, comparison.apply(dataset)
       end
 
+      def test_apply_non_field_equal_non_field
+        comparison = Factory(:comparison, {
+          :lhs_type => 'integer', :lhs_value => 123,
+          :rhs_type => 'integer', :rhs_value => 123,
+          :operator => 'equals'
+        })
+        dataset = mock('dataset')
+        dataset.expects(:filter).with(sequel_expr(123 => 123)).returns(dataset)
+        assert_equal dataset, comparison.apply(dataset)
+      end
+
+      def test_apply_non_field_equal_non_field_regardless_of_side
+        comparison = Factory(:comparison, {
+          :lhs_type => 'integer', :lhs_value => 123,
+          :rhs_type => 'integer', :rhs_value => 123,
+          :operator => 'equals'
+        })
+        dataset_1 = mock('dataset 1')
+        dataset_2 = mock('dataset 2')
+
+        dataset_1.expects(:filter).with(sequel_expr(123 => 123)).returns(dataset_1)
+        assert_equal dataset_1, comparison.apply(dataset_1, 0)
+        dataset_2.expects(:filter).with(sequel_expr(123 => 123)).returns(dataset_2)
+        assert_equal dataset_2, comparison.apply(dataset_2, 1)
+      end
+
       def test_blocking?
         field = @resource.fields_dataset[:name => 'first_name']
         comparison = Factory(:comparison, {
@@ -370,6 +525,10 @@ module Coupler
           :operator => 'equals'
         })
         assert !comparison.blocking?
+      end
+
+      def test_does_not_allow_comparisons_of_two_fields_of_different_types
+        flunk
       end
     end
   end
