@@ -43,7 +43,7 @@ module Coupler
               end
               rows = Array.new(21000) do |i|
                 [
-                  i < 10500 ? "1234567%02d" % (i % 30) : "9876%05d" % (i % 10000),
+                  i < 10500 ? "1234567%02d" % (i % 30) : "9876%05d" % i,
                 ]
               end
               db[:resource_2].import([:SocialSecurityNumber], rows)
@@ -220,6 +220,7 @@ module Coupler
 
         def test_dual_linkage_with_one_comparison
           scenario = Factory(:scenario, :resource_1 => @resource_1, :resource_2 => @resource_2, :project => @project)
+          puts "Scenario ID: #{scenario.id}"
           field_1 = @resource_1.fields_dataset[:name => 'ssn']
           field_2 = @resource_2.fields_dataset[:name => 'SocialSecurityNumber']
           matcher = Factory(:matcher, {
@@ -234,18 +235,20 @@ module Coupler
 
           groups = {}
           scenario.local_database do |db|
-            p db.uri
             assert db.tables.include?(:groups_records_1)
             ds = db[:groups_records_1]
             assert_equal 32000, ds.count
 
             counts = ds.group_and_count(:group_id).all
-            assert_equal 10560, counts.length
+            assert_equal 11060, counts.length
             counts = counts.inject({}) { |h, r| h[r[:count]] ||= 0; h[r[:count]] += 1; h }
             assert_equal 60, counts[350]
-            assert_equal 10000, counts[1]
-            assert_equal 500, counts[2]
+            assert_equal 11000, counts[1]
             assert ds.group_and_count(:record_id, :resource_id).all? { |r| r[:count] == 1 }
+
+            assert db.tables.include?(:groups_groups_1)
+            ds = db[:groups_groups_1]
+            assert_equal 530, ds.count
           end
 
           notify("Complete me!")
