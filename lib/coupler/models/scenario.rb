@@ -46,13 +46,7 @@ module Coupler
         when 'resources_out_of_date'  then raise ResourcesOutOfDateError
         end
 
-        #runner = case linkage_type
-                 #when "self-linkage"
-                   #SingleRunner.new(self)
-                 #when "dual-linkage"
-                   #DualRunner.new(self)
-                 #end
-        runner = RubyRunner.new(self)
+        runner = Runner.new(self)
 
         result = Result.new(:scenario => self)
         types = resources.values_at(0, -1).collect(&:primary_key_type)
@@ -114,5 +108,4 @@ module Coupler
   end
 end
 
-#require File.join(File.dirname(__FILE__), 'scenario', 'runner')
-require File.join(File.dirname(__FILE__), 'scenario', 'ruby_runner')
+require File.join(File.dirname(__FILE__), 'scenario', 'runner')
