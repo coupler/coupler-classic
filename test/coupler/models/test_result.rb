@@ -53,6 +53,7 @@ module Coupler
       end
 
       def test_to_csv
+        pend
         project = Factory(:project)
         resource_1 = Factory(:resource, :project => project, :name => "Uno")
         resource_2 = Factory(:resource, :project => project, :name => "Dos")

@@ -1,7 +1,7 @@
 module Coupler
   module Models
     class Scenario
-      class RubyRunner
+      class Runner
         LIMIT = 10000
 
         def initialize(parent)

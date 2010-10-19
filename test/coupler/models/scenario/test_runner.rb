@@ -4,408 +4,254 @@ module Coupler
   module Models
     class Scenario
       class TestRunner < Test::Unit::TestCase
+        @@datasets_created = false
+
         def setup
           super
+          # set up test datasets
+          if !@@datasets_created
+            Sequel.connect(Config.connection_string('ruby_runner_test', :create_database => true)) do |db|
+              db.create_table!(:resource_1) do
+                primary_key :id
+                String :ssn, :index => true
+                String :dob, :index => true
+                Integer :foo, :index => true
+                Integer :bar, :index => true
+                Integer :age, :index => true
+                Integer :height, :index => true
+                index [:id, :ssn]
+                index [:id, :ssn, :dob]
+                index [:id, :foo, :bar]
+                index [:id, :age]
+              end
+              rows = Array.new(11000) do |i|
+                [
+                  i < 10500 ? "1234567%02d"  % (i / 350) : "9876%05d" % i,
+                  i < 10500 ? "2000-01-%02d" % (i / 525) : nil,
+                  i < 1000 ? i / 125 : nil,
+                  i < 1000 ? i / 100 : nil,
+                  i % 20 + 25,
+                  i % 50 + 125,
+                ]
+              end
+              db[:resource_1].import([:ssn, :dob, :foo, :bar, :age, :height], rows)
+
+              db.create_table!(:resource_2) do
+                primary_key :id
+                String :SocialSecurityNumber
+                index [:id, :SocialSecurityNumber]
+              end
+              rows = Array.new(21000) do |i|
+                [
+                  i < 10500 ? "1234567%02d" % (i % 30) : "9876%05d" % i,
+                ]
+              end
+              db[:resource_2].import([:SocialSecurityNumber], rows)
+            end
+            @@datasets_created = true
+          end
           @connection = Factory(:connection)
           @project = Factory(:project)
-          @resource_1 = Factory(:resource, :table_name => "people", :project => @project, :connection => @connection)
-          @resource_2 = Factory(:resource, :table_name => "pets", :project => @project, :connection => @connection)
-          @first_name = @resource_1.fields_dataset[:name => 'first_name']
-          @last_name = @resource_1.fields_dataset[:name => 'last_name']
-          @age = @resource_1.fields_dataset[:name => 'age']
-          @owner_first_name = @resource_2.fields_dataset[:name => 'owner_first_name']
-          @owner_last_name = @resource_2.fields_dataset[:name => 'owner_last_name']
+          @resource_1 = Factory(:resource, :database_name => "ruby_runner_test", :table_name => "resource_1", :connection => @connection, :project => @project)
+          @resource_2 = Factory(:resource, :database_name => "ruby_runner_test", :table_name => "resource_2", :connection => @connection, :project => @project)
         end
 
-        def create_matcher_for(scenario, *comparisons)
-          comparisons.collect! do |comparison|
-            op = comparison.length == 3 ? comparison.pop : 'equals'
-            which = []; types = []; values = []
-            comparison.each do |value|
-              if value.is_a?(Array)
-                values << value[0]
-                which << value[1]
+        def test_self_linkage_with_one_comparison
+          scenario = Factory(:scenario, :resource_1 => @resource_1, :project => @project)
+          field = @resource_1.fields_dataset[:name => 'ssn']
+          matcher = Factory(:matcher, {
+            :scenario => scenario, :comparisons_attributes => [{
+              'lhs_type' => 'field', 'lhs_value' => field.id, 'lhs_which' => 1,
+              'rhs_type' => 'field', 'rhs_value' => field.id, 'rhs_which' => 2,
+              'operator' => 'equals'
+            }]
+          })
+          runner = Runner.new(scenario)
+          runner.run!
+
+          groups = {}
+          scenario.local_database do |db|
+            assert db.tables.include?(:groups_records_1)
+            ds = db[:groups_records_1]
+            assert_equal 10500, ds.count
+            counts = ds.group_and_count(:group_id).all
+            assert_equal 30, counts.length
+            assert counts.all? { |g| g[:count] == 350 }
+            assert ds.group_and_count(:record_id).all? { |r| r[:count] == 1 }
+            ds.each do |row|
+              record_id = groups[row[:group_id]]
+              if record_id
+                assert_equal (record_id - 1) / 350, (row[:record_id].to_i - 1) / 350, "Record #{row[:record_id]} should not have been in the same group as Record #{record_id}."
               else
-                values << value
-                which << nil
+                groups[row[:group_id]] = row[:record_id].to_i
               end
-              types << case values[-1]
-                when Field then 'field'
-                when Fixnum then 'integer'
-                when String then 'string'
-              end
+              assert_equal @resource_1.id, row[:resource_id]
             end
-            { 'lhs_type' => types[0], 'lhs_value' => types[0] == 'field' ? values[0].id : values[0], 'lhs_which' => which[0],
-              'rhs_type' => types[1], 'rhs_value' => types[1] == 'field' ? values[1].id : values[1], 'rhs_which' => which[1],
-              'operator' => op }
           end
-          Factory(:matcher, :scenario => scenario, :comparisons_attributes => comparisons)
         end
 
-        def expr(hash)
-          ::Sequel::SQL::BooleanExpression.from_value_pairs(hash)
+        def test_self_linkage_with_two_comparisons
+          scenario = Factory(:scenario, :resource_1 => @resource_1, :project => @project)
+          field_1 = @resource_1.fields_dataset[:name => 'ssn']
+          field_2 = @resource_1.fields_dataset[:name => 'dob']
+          matcher = Factory(:matcher, {
+            :scenario => scenario, :comparisons_attributes => [
+              {
+                'lhs_type' => 'field', 'lhs_value' => field_1.id, 'lhs_which' => 1,
+                'rhs_type' => 'field', 'rhs_value' => field_1.id, 'rhs_which' => 2,
+                'operator' => 'equals'
+              },
+              {
+                'lhs_type' => 'field', 'lhs_value' => field_2.id, 'lhs_which' => 1,
+                'rhs_type' => 'field', 'rhs_value' => field_2.id, 'rhs_which' => 2,
+                'operator' => 'equals'
+              },
+            ]
+          })
+          runner = Runner.new(scenario)
+          runner.run!
+
+          groups = {}
+          scenario.local_database do |db|
+            assert db.tables.include?(:groups_records_1)
+            ds = db[:groups_records_1]
+            assert_equal 10500, ds.count
+
+            counts = ds.group_and_count(:group_id)
+            assert_equal 20, counts.having(:count => 175).count
+            assert_equal 20, counts.having(:count => 350).count
+            assert ds.group_and_count(:record_id).all? { |r| r[:count] == 1 }
+            ds.each do |row|
+              record_id = groups[row[:group_id]]
+              if record_id
+                assert_equal (record_id - 1) / 350, (row[:record_id].to_i - 1) / 350, "Record #{row[:record_id]} should not have been in the same group as Record #{record_id}."
+                assert_equal (record_id - 1) / 525, (row[:record_id].to_i - 1) / 525, "Record #{row[:record_id]} should not have been in the same group as Record #{record_id}."
+              else
+                groups[row[:group_id]] = row[:record_id].to_i
+              end
+              assert_equal @resource_1.id, row[:resource_id]
+            end
+          end
         end
 
-        def test_single_dataset_and_one_field_to_field_equality_comparison
-          scenario = Factory(:scenario, :project => @project, :resource_1 => @resource_1)
-          matcher = create_matcher_for(scenario, [@first_name, @first_name])
-          matcher_id = matcher.id
+        def test_self_linkage_with_cross_match
+          scenario = Factory(:scenario, :resource_1 => @resource_1, :project => @project)
+          field_1 = @resource_1.fields_dataset[:name => 'foo']
+          field_2 = @resource_1.fields_dataset[:name => 'bar']
+          matcher = Factory(:matcher, {
+            :scenario => scenario, :comparisons_attributes => [
+              {
+                'lhs_type' => 'field', 'lhs_value' => field_1.id, 'lhs_which' => 1,
+                'rhs_type' => 'field', 'rhs_value' => field_2.id, 'rhs_which' => 2,
+                'operator' => 'equals'
+              },
+            ]
+          })
+          runner = Runner.new(scenario)
+          runner.run!
 
-          database = mock("Database", :uri => "jdbc:mysql://localhost/foo")
-          dataset = mock("Dataset", :db => database)
-          dataset.expects(:first_source_table).twice.returns(:people)
-          dataset.expects(:from).with({:foo__people => :t1}).returns(dataset)
+          groups = {}
+          scenario.local_database do |db|
+            assert db.tables.include?(:groups_records_1)
+            ds = db[:groups_records_1]
+            assert_equal 250, ds.count
 
-          joined_dataset = mock("Joined dataset")
-          dataset.expects(:join).with(:foo__people,
-            [:t1__id < :t2__id, expr(:t1__first_name => :t2__first_name)],
-            {:table_alias => :t2}
-          ).returns(joined_dataset)
-          joined_dataset.expects(:select).with({:t1__id => :first_id, :t2__id => :second_id}).returns(joined_dataset)
-          joined_dataset.expects(:filter).with(
-            ~{:t1__first_name => nil},
-            ~{:t2__first_name => nil}
-          ).returns(joined_dataset)
-          joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset)
-          joined_dataset.expects(:each).multiple_yields([{:first_id => 123, :second_id => 456}], [{:first_id => 789, :second_id => 369}])
-          #joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
-
-          scenario.resource_1.stubs(:final_dataset).yields(dataset)
-
-          score_set = stub("ScoreSet")
-          score_set.expects(:import).with(
-            [:first_id, :second_id, :score, :matcher_id],
-            [[123, 456, 100, matcher_id], [789, 369, 100, matcher_id]]
-          )
-
-          runner = SingleRunner.new(scenario)
-          runner.run(score_set)
+            counts = ds.group_and_count(:group_id).order(:group_id).all.collect { |g| g[:count] }
+            assert_equal [100, 75, 50, 25], counts
+            assert ds.group_and_count(:record_id).all? { |r| r[:count] == 1 }
+            ds.each do |row|
+              record_id = groups[row[:group_id]]
+              if record_id
+                assert_equal (record_id - 1) / 125, (row[:record_id].to_i - 1) / 100, "Record #{row[:record_id]} should not have been in the same group as Record #{record_id}."
+              else
+                groups[row[:group_id]] = row[:record_id].to_i
+              end
+              assert_equal @resource_1.id, row[:resource_id]
+            end
+          end
         end
 
-        def test_single_dataset_and_one_field_to_field_inequality_comparison
-          scenario = Factory(:scenario, :project => @project, :resource_1 => @resource_1)
-          matcher = create_matcher_for(scenario, [@first_name, @first_name, 'does_not_equal'])
-          matcher_id = matcher.id
+        def test_self_linkage_with_blocking
+          scenario = Factory(:scenario, :resource_1 => @resource_1, :project => @project)
+          field_1 = @resource_1.fields_dataset[:name => 'age']
+          field_2 = @resource_1.fields_dataset[:name => 'height']
+          matcher = Factory(:matcher, {
+            :scenario => scenario, :comparisons_attributes => [
+              {
+                'lhs_type' => 'field', 'lhs_value' => field_1.id, 'lhs_which' => 1,
+                'rhs_type' => 'field', 'rhs_value' => field_1.id, 'rhs_which' => 2,
+                'operator' => 'equals'
+              },
+              {
+                'lhs_type' => 'field', 'lhs_value' => field_1.id, 'lhs_which' => 1,
+                'rhs_type' => 'integer', 'rhs_value' => 30,
+                'operator' => 'greater_than'
+              },
+              {
+                'lhs_type' => 'field', 'lhs_value' => field_2.id, 'lhs_which' => 1,
+                'rhs_type' => 'integer', 'rhs_value' => 150,
+                'operator' => 'greater_than'
+              },
+            ]
+          })
+          runner = Runner.new(scenario)
+          runner.run!
 
-          database = mock("Database", :uri => "jdbc:mysql://localhost/foo")
-          dataset = mock("Dataset", :db => database)
-          dataset.expects(:first_source_table).twice.returns(:people)
-          dataset.expects(:from).with({:foo__people => :t1}).returns(dataset)
+          groups = {}
+          scenario.local_database do |db|
+            assert db.tables.include?(:groups_records_1)
+            ds = db[:groups_records_1]
+            assert ds.group_and_count(:record_id).all? { |r| r[:count] == 1 }
+            ds.each do |row|
+              index = row[:record_id].to_i - 1
+              assert index % 20 > 5,  "#{row[:record_id]}'s age is too small"
+              assert index % 50 > 25, "#{row[:record_id]}'s height is too small"
 
-          joined_dataset = mock("Joined dataset")
-          dataset.expects(:join).with(:foo__people,
-            [:t1__id < :t2__id, ~{:t1__first_name => :t2__first_name}],
-            {:table_alias => :t2}
-          ).returns(joined_dataset)
-          joined_dataset.expects(:select).with({:t1__id => :first_id, :t2__id => :second_id}).returns(joined_dataset)
-          joined_dataset.expects(:filter).with(
-            ~{:t1__first_name => nil},
-            ~{:t2__first_name => nil}
-          ).returns(joined_dataset)
-          joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset)
-          joined_dataset.expects(:each).multiple_yields([{:first_id => 123, :second_id => 456}], [{:first_id => 789, :second_id => 369}])
-          #joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
-
-          scenario.resource_1.stubs(:final_dataset).yields(dataset)
-
-          score_set = stub("ScoreSet")
-          score_set.expects(:import).with(
-            [:first_id, :second_id, :score, :matcher_id],
-            [[123, 456, 100, matcher_id], [789, 369, 100, matcher_id]]
-          )
-
-          runner = SingleRunner.new(scenario)
-          runner.run(score_set)
+              record_id = groups[row[:group_id]]
+              if record_id
+                assert_equal (record_id - 1) % 20 + 25, (row[:record_id].to_i - 1) % 20 + 25, "Record #{row[:record_id]} should not have been in the same group as Record #{record_id}."
+              else
+                groups[row[:group_id]] = row[:record_id].to_i
+              end
+              assert_equal @resource_1.id, row[:resource_id]
+            end
+          end
         end
 
-        def test_single_dataset_with_a_greater_than_comparison
-          scenario = Factory(:scenario, :project => @project, :resource_1 => @resource_1)
-          matcher = create_matcher_for(scenario, [@first_name, @first_name], [@age, 30, 'greater_than'])
-          matcher_id = matcher.id
+        def test_dual_linkage_with_one_comparison
+          scenario = Factory(:scenario, :resource_1 => @resource_1, :resource_2 => @resource_2, :project => @project)
+          #puts "Scenario ID: #{scenario.id}"
+          field_1 = @resource_1.fields_dataset[:name => 'ssn']
+          field_2 = @resource_2.fields_dataset[:name => 'SocialSecurityNumber']
+          matcher = Factory(:matcher, {
+            :scenario => scenario, :comparisons_attributes => [{
+              'lhs_type' => 'field', 'lhs_value' => field_1.id, 'lhs_which' => 1,
+              'rhs_type' => 'field', 'rhs_value' => field_2.id, 'rhs_which' => 2,
+              'operator' => 'equals'
+            }]
+          })
+          runner = Runner.new(scenario)
+          runner.run!
 
-          database = mock("Database", :uri => "jdbc:mysql://localhost/foo")
-          dataset = mock("Dataset", :db => database)
-          dataset.expects(:first_source_table).twice.returns(:people)
-          dataset.expects(:from).with({:foo__people => :t1}).returns(dataset)
+          groups = {}
+          scenario.local_database do |db|
+            assert db.tables.include?(:groups_records_1)
+            ds = db[:groups_records_1]
+            assert_equal 32000, ds.count
 
-          joined_dataset = mock("Joined dataset")
-          dataset.expects(:join).with(:foo__people, 
-            [:t1__id < :t2__id, expr(:t1__first_name => :t2__first_name)],
-            {:table_alias => :t2}
-          ).returns(joined_dataset)
-          joined_dataset.expects(:select).with({:t1__id => :first_id, :t2__id => :second_id}).returns(joined_dataset)
-          joined_dataset.expects(:filter).with(
-            ~{:t1__first_name => nil},
-            ~{:t2__first_name => nil},
-            ~{:t1__age => nil},
-            :t1__age > 30
-          ).returns(joined_dataset)
-          joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset)
-          joined_dataset.expects(:each).multiple_yields([{:first_id => 123, :second_id => 456}], [{:first_id => 789, :second_id => 369}])
-          #joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
+            counts = ds.group_and_count(:group_id).all
+            assert_equal 11060, counts.length
+            counts = counts.inject({}) { |h, r| h[r[:count]] ||= 0; h[r[:count]] += 1; h }
+            assert_equal 60, counts[350]
+            assert_equal 11000, counts[1]
+            assert ds.group_and_count(:record_id, :resource_id).all? { |r| r[:count] == 1 }
 
-          scenario.resource_1.stubs(:final_dataset).yields(dataset)
+            assert db.tables.include?(:groups_groups_1)
+            ds = db[:groups_groups_1]
+            assert_equal 530, ds.count
+          end
 
-          score_set = stub("ScoreSet")
-          score_set.expects(:import).with(
-            [:first_id, :second_id, :score, :matcher_id],
-            [[123, 456, 100, matcher_id], [789, 369, 100, matcher_id]]
-          )
-
-          runner = SingleRunner.new(scenario)
-          runner.run(score_set)
-        end
-
-        def test_single_dataset_and_two_field_to_field_equality_comparisons
-          scenario = Factory(:scenario, :project => @project, :resource_1 => @resource_1)
-          matcher = create_matcher_for(scenario, [@first_name, @first_name], [@last_name, @last_name])
-          matcher_id = matcher.id
-
-          database = mock("Database", :uri => "jdbc:mysql://localhost/foo")
-          dataset = mock("Dataset", :db => database)
-          dataset.expects(:first_source_table).twice.returns(:people)
-          dataset.expects(:from).with({:foo__people => :t1}).returns(dataset)
-
-          joined_dataset = mock("Joined dataset")
-          dataset.expects(:join).with(:foo__people,
-            [:t1__id < :t2__id,
-              expr(:t1__first_name => :t2__first_name),
-              expr(:t1__last_name => :t2__last_name)],
-            {:table_alias => :t2}
-          ).returns(joined_dataset)
-          joined_dataset.expects(:select).with({:t1__id => :first_id, :t2__id => :second_id}).returns(joined_dataset)
-          joined_dataset.expects(:filter).with(
-            ~{:t1__first_name => nil},
-            ~{:t2__first_name => nil},
-            ~{:t1__last_name => nil},
-            ~{:t2__last_name => nil}
-          ).returns(joined_dataset)
-          joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset)
-          joined_dataset.expects(:each).multiple_yields([{:first_id => 123, :second_id => 456}], [{:first_id => 789, :second_id => 369}])
-          #joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
-
-          scenario.resource_1.stubs(:final_dataset).yields(dataset)
-
-          score_set = stub("ScoreSet")
-          score_set.expects(:import).with(
-            [:first_id, :second_id, :score, :matcher_id],
-            [[123, 456, 100, matcher_id], [789, 369, 100, matcher_id]]
-          )
-
-          runner = SingleRunner.new(scenario)
-          runner.run(score_set)
-        end
-
-        def test_single_dataset_and_cross_matching
-          scenario = Factory(:scenario, :project => @project, :resource_1 => @resource_1)
-          matcher = create_matcher_for(scenario, [@first_name, @last_name])
-          matcher_id = matcher.id
-
-          database = mock("Database", :uri => "jdbc:mysql://localhost/foo")
-          dataset = mock("Dataset", :db => database)
-          dataset.expects(:first_source_table).twice.returns(:people)
-          dataset.expects(:from).with({:foo__people => :t1}).returns(dataset)
-
-          joined_dataset = mock("Joined dataset")
-          dataset.expects(:join).with(:foo__people,
-            [:t1__id < :t2__id, expr(:t1__first_name => :t2__last_name)],
-            {:table_alias => :t2}
-          ).returns(joined_dataset)
-          joined_dataset.expects(:select).with({:t1__id => :first_id, :t2__id => :second_id}).returns(joined_dataset)
-          joined_dataset.expects(:filter).with(
-            ~{:t1__first_name => nil},
-            ~{:t2__last_name => nil}
-          ).returns(joined_dataset)
-          joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset)
-          joined_dataset.expects(:each).multiple_yields([{:first_id => 123, :second_id => 456}], [{:first_id => 789, :second_id => 369}])
-          #joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
-
-          scenario.resource_1.stubs(:final_dataset).yields(dataset)
-
-          score_set = stub("ScoreSet")
-          score_set.expects(:import).with(
-            [:first_id, :second_id, :score, :matcher_id],
-            [[123, 456, 100, matcher_id], [789, 369, 100, matcher_id]]
-          )
-
-          runner = SingleRunner.new(scenario)
-          runner.run(score_set)
-        end
-
-        def test_single_dataset_with_ambiguous_fields
-          scenario = Factory(:scenario, :project => @project, :resource_1 => @resource_1)
-          matcher = create_matcher_for(scenario,
-            [[@first_name, 1], [@first_name, 2]],
-            [[@first_name, 1], "Buddy", "does_not_equal"],
-            [[@first_name, 2], "Pal", "does_not_equal"]
-          )
-          matcher_id = matcher.id
-
-          database = mock("Database", :uri => "jdbc:mysql://localhost/foo")
-          dataset = mock("Dataset", :db => database)
-          dataset.expects(:first_source_table).twice.returns(:people)
-          dataset.expects(:from).with({:foo__people => :t1}).returns(dataset)
-
-          joined_dataset = mock("Joined dataset")
-          dataset.expects(:join).with(:foo__people,
-            [:t1__id < :t2__id, expr(:t1__first_name => :t2__first_name)],
-            {:table_alias => :t2}
-          ).returns(joined_dataset)
-          joined_dataset.expects(:select).with({:t1__id => :first_id, :t2__id => :second_id}).returns(joined_dataset)
-          joined_dataset.expects(:filter).with(
-            ~{:t1__first_name => nil},
-            ~{:t2__first_name => nil},
-            ~{:t1__first_name => "Buddy"},
-            ~{:t2__first_name => "Pal"}
-          ).returns(joined_dataset)
-          joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset)
-          joined_dataset.expects(:each).multiple_yields([{:first_id => 123, :second_id => 456}], [{:first_id => 789, :second_id => 369}])
-          #joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
-
-          scenario.resource_1.stubs(:final_dataset).yields(dataset)
-
-          score_set = stub("ScoreSet")
-          score_set.expects(:import).with(
-            [:first_id, :second_id, :score, :matcher_id],
-            [[123, 456, 100, matcher_id], [789, 369, 100, matcher_id]]
-          )
-
-          runner = SingleRunner.new(scenario)
-          runner.run(score_set)
-        end
-
-        def test_two_datasets_with_one_field_to_field_equality_comparison
-          scenario = Factory(:scenario, :project => @project, :resource_1 => @resource_1, :resource_2 => @resource_2)
-          matcher = create_matcher_for(scenario, [@first_name, @owner_first_name])
-          matcher_id = matcher.id
-
-          database_1 = mock("Database", :uri => "jdbc:mysql://localhost/foo")
-          database_2 = mock("Database", :uri => "jdbc:mysql://localhost/bar")
-          dataset_1 = mock("Dataset 1", :db => database_1, :first_source_table => :people)
-          dataset_2 = mock("Dataset 2", :db => database_2, :first_source_table => :pets)
-          joined_dataset = mock("Joined dataset")
-          dataset_1.expects(:from).with({:foo__people => :t1}).returns(dataset_1)
-          dataset_1.expects(:join).with(:bar__pets,
-            [expr(:t1__first_name => :t2__owner_first_name)],
-            {:table_alias => :t2}
-          ).returns(joined_dataset)
-          joined_dataset.expects(:select).with({:t1__id => :first_id, :t2__id => :second_id}).returns(joined_dataset)
-          joined_dataset.expects(:filter).with(
-            ~{:t1__first_name => nil},
-            ~{:t2__owner_first_name => nil}
-          ).returns(joined_dataset)
-          joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset)
-          joined_dataset.expects(:each).multiple_yields([{:first_id => 123, :second_id => 456}], [{:first_id => 789, :second_id => 369}])
-          #joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
-          scenario.resource_1.stubs(:final_dataset).yields(dataset_1)
-          scenario.resource_2.stubs(:final_dataset).yields(dataset_2)
-
-          score_set = stub("ScoreSet")
-          score_set.expects(:import).with(
-            [:first_id, :second_id, :score, :matcher_id],
-            [[123, 456, 100, matcher_id], [789, 369, 100, matcher_id]]
-          )
-
-          runner = DualRunner.new(scenario)
-          runner.run(score_set)
-        end
-
-        def test_two_datasets_with_two_field_to_field_equality_comparisons
-          scenario = Factory(:scenario, :project => @project, :resource_1 => @resource_1, :resource_2 => @resource_2)
-          matcher = create_matcher_for(scenario, [@first_name, @owner_first_name], [@last_name, @owner_last_name])
-          matcher_id = matcher.id
-
-          database_1 = mock("Database", :uri => "jdbc:mysql://localhost/foo")
-          database_2 = mock("Database", :uri => "jdbc:mysql://localhost/bar")
-          dataset_1 = mock("Dataset 1", :db => database_1, :first_source_table => :people)
-          dataset_2 = mock("Dataset 2", :db => database_2, :first_source_table => :pets)
-          joined_dataset = mock("Joined dataset")
-          dataset_1.expects(:from).with({:foo__people => :t1}).returns(dataset_1)
-          dataset_1.expects(:join).with(:bar__pets,
-            [expr(:t1__first_name => :t2__owner_first_name),
-              expr(:t1__last_name => :t2__owner_last_name)],
-            {:table_alias => :t2}
-          ).returns(joined_dataset)
-          joined_dataset.expects(:select).with({:t1__id => :first_id, :t2__id => :second_id}).returns(joined_dataset)
-          joined_dataset.expects(:filter).with(
-            ~{:t1__first_name => nil},
-            ~{:t2__owner_first_name => nil},
-            ~{:t1__last_name => nil},
-            ~{:t2__owner_last_name => nil}
-          ).returns(joined_dataset)
-          joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset)
-          joined_dataset.expects(:each).multiple_yields([{:first_id => 123, :second_id => 456}], [{:first_id => 789, :second_id => 369}])
-          #joined_dataset.expects(:order).with(:t1__id, :t2__id).returns(joined_dataset)
-          scenario.resource_1.stubs(:final_dataset).yields(dataset_1)
-          scenario.resource_2.stubs(:final_dataset).yields(dataset_2)
-
-          score_set = stub("ScoreSet")
-          score_set.expects(:import).with(
-            [:first_id, :second_id, :score, :matcher_id],
-            [[123, 456, 100, matcher_id], [789, 369, 100, matcher_id]]
-          )
-
-          runner = DualRunner.new(scenario)
-          runner.run(score_set)
-        end
-
-        def test_single_dataset_uses_limit_correctly
-          scenario = Factory(:scenario, :project => @project, :resource_1 => @resource_1)
-          matcher = create_matcher_for(scenario, [@first_name, @first_name])
-          matcher_id = matcher.id
-
-          database = mock("Database", :uri => "jdbc:mysql://localhost/foo")
-          dataset = stub("Dataset", :db => database, :first_source_table => :people)
-          joined_dataset = stub("Joined dataset")
-          dataset.stubs(:from => dataset, :join => joined_dataset)
-          joined_dataset.stubs(:select => joined_dataset, :filter => joined_dataset, :order => joined_dataset)
-
-          seq = sequence("selecting")
-          joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset).in_sequence(seq)
-          records_1 = Array.new(1000) { |i| [{:first_id => 123+i, :second_id => 456+i}] }
-          joined_dataset.expects(:each).multiple_yields(*records_1).in_sequence(seq)
-
-          joined_dataset.expects(:limit).with(1000, 1000).returns(joined_dataset).in_sequence(seq)
-          records_2 = Array.new(123) { |i| [{:first_id => 1234+i, :second_id => 4567+i}] }
-          joined_dataset.expects(:each).multiple_yields(*records_2).in_sequence(seq)
-
-          scenario.resource_1.stubs(:final_dataset).yields(dataset)
-
-          score_set = stub("ScoreSet", :import => nil)
-
-          runner = SingleRunner.new(scenario)
-          runner.run(score_set)
-        end
-
-        def test_score_with_two_datasets_uses_limit_correctly
-          scenario = Factory(:scenario, :project => @project, :resource_1 => @resource_1, :resource_2 => @resource_2)
-          matcher = create_matcher_for(scenario, [@first_name, @owner_first_name])
-          matcher_id = matcher.id
-
-          database_1 = mock("Database", :uri => "jdbc:mysql://localhost/foo")
-          database_2 = mock("Database", :uri => "jdbc:mysql://localhost/bar")
-          dataset_1 = mock("Dataset 1", :db => database_1, :first_source_table => :people)
-          dataset_2 = mock("Dataset 2", :db => database_2, :first_source_table => :pets)
-          joined_dataset = mock("Joined dataset")
-          dataset_1.stubs(:from => dataset_1, :join => joined_dataset)
-          joined_dataset.stubs(:select => joined_dataset, :filter => joined_dataset, :order => joined_dataset)
-
-          seq = sequence("selecting")
-          joined_dataset.expects(:limit).with(1000, 0).returns(joined_dataset).in_sequence(seq)
-          records_1 = Array.new(1000) { |i| [{:first_id => 123+i, :second_id => 456+i}] }
-          joined_dataset.expects(:each).multiple_yields(*records_1).in_sequence(seq)
-
-          joined_dataset.expects(:limit).with(1000, 1000).returns(joined_dataset).in_sequence(seq)
-          records_2 = Array.new(123) { |i| [{:first_id => 1234+i, :second_id => 4567+i}] }
-          joined_dataset.expects(:each).multiple_yields(*records_2).in_sequence(seq)
-
-          scenario.resource_1.stubs(:final_dataset).yields(dataset_1)
-          scenario.resource_2.stubs(:final_dataset).yields(dataset_2)
-
-          score_set = stub("ScoreSet", :import => nil)
-
-          runner = DualRunner.new(scenario)
-          runner.run(score_set)
+          notify("Complete me!")
         end
       end
     end

@@ -43,10 +43,16 @@ module Coupler
         Resource.any_instance.stubs(:source_dataset_count).returns(12345)
         seq = sequence("update")
         job.expects(:update).with(:status => 'running', :total => 12345, :started_at => now).in_sequence(seq)
-        Resource.any_instance.expects(:transform!).raises(RuntimeError).in_sequence(seq)
+        fake_exception_klass = Class.new(Exception)
+        Resource.any_instance.expects(:transform!).raises(fake_exception_klass.new).in_sequence(seq)
         job.expects(:update).with(:status => 'failed', :completed_at => now).in_sequence(seq)
 
-        Timecop.freeze(now) { job.execute }
+        Timecop.freeze(now) do
+          begin
+            job.execute
+          rescue fake_exception_klass
+          end
+        end
       end
 
       def test_execute_run_scenario
@@ -67,10 +73,16 @@ module Coupler
         now = Time.now
         seq = sequence("update")
         job.expects(:update).with(:status => 'running', :started_at => now).in_sequence(seq)
-        Scenario.any_instance.expects(:run!).raises(RuntimeError).in_sequence(seq)
+        fake_exception_klass = Class.new(Exception)
+        Scenario.any_instance.expects(:run!).raises(fake_exception_klass.new).in_sequence(seq)
         job.expects(:update).with(:status => 'failed', :completed_at => now).in_sequence(seq)
 
-        Timecop.freeze(now) { job.execute }
+        Timecop.freeze(now) do
+          begin
+            job.execute
+          rescue fake_exception_klass
+          end
+        end
       end
     end
   end

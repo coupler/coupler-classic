@@ -123,7 +123,7 @@ module Coupler
         assert_raises(Scenario::ResourcesOutOfDateError) { scenario.run! }
       end
 
-      def test_run_self_linkage
+      def test_run!
         project = Factory(:project, :name => "Test without transformations")
         resource = Factory(:resource, :name => "Resource 1", :project => project)
         first_name = resource.fields_dataset[:name => 'first_name']
@@ -137,16 +137,8 @@ module Coupler
           :scenario => scenario
         })
 
-        score_set = stub("score set", :id => 123)
-        ScoreSet.expects(:create).yields(score_set)
-
-        runner = mock("single runner") do
-          expects(:run).with(score_set)
-        end
-        Scenario::SingleRunner.expects(:new).with(scenario).returns(runner)
-
-        result = mock("result", :[]= => nil, :save => true)
-        Result.expects(:new).with(:scenario => scenario).returns(result)
+        runner = mock("runner", :run! => nil)
+        Scenario::Runner.expects(:new).with(scenario).returns(runner)
 
         Timecop.freeze(Time.now) do
           scenario.run!
@@ -194,73 +186,6 @@ module Coupler
         resource_2 = Factory(:resource, :project => project)
         scenario = Factory(:scenario, :project => project, :resource_1 => resource_1, :resource_2 => resource_2)
         assert_equal "dual-linkage", scenario.linkage_type
-      end
-
-      def test_run_dual_join_without_transformations
-        project = Factory(:project, :name => "Test without transformations")
-        resource_1 = Factory(:resource, :name => "People", :project => project)
-        resource_2 = Factory(:resource, :name => "Pets", :project => project, :table_name => 'pets')
-        scenario = Factory(:scenario, {
-          :name => "Scenario 1", :project => project,
-          :resource_1 => resource_1, :resource_2 => resource_2
-        })
-
-        first_name = resource_1.fields_dataset[:name => "first_name"]
-        last_name = resource_1.fields_dataset[:name => "last_name"]
-        owner_first_name = resource_2.fields_dataset[:name => "owner_first_name"]
-        owner_last_name = resource_2.fields_dataset[:name => "owner_last_name"]
-        matcher = Factory(:matcher, {
-          :comparisons_attributes => [
-            {:lhs_type => 'field', :lhs_value => first_name.id, :rhs_type => 'field', :rhs_value => owner_first_name.id, :operator => 'equals'},
-            {:lhs_type => 'field', :lhs_value => last_name.id, :rhs_type => 'field', :rhs_value => owner_last_name.id, :operator => 'equals'},
-          ],
-          :scenario => scenario
-        })
-
-        score_set = stub("score set", :id => 123)
-        ScoreSet.expects(:create).yields(score_set)
-
-        runner = mock("dual runner") do
-          expects(:run).with(score_set)
-        end
-        Scenario::DualRunner.expects(:new).with(scenario).returns(runner)
-
-        result = mock("result", :[]= => nil, :save => true)
-        Result.expects(:new).with(:scenario => scenario).returns(result)
-
-        Timecop.freeze(Time.now) do
-          scenario.run!
-          assert_equal Time.now, scenario.last_run_at
-        end
-      end
-
-      def test_creates_score_set_with_string_keys
-        project = Factory(:project)
-        resource = Factory(:resource, :table_name => 'string_primary_key', :project => project)
-        foo = resource.fields_dataset[:name => 'foo']
-        scenario = Factory(:scenario, :project => project, :resource_1 => resource)
-        matcher = Factory(:matcher, {
-          :comparisons_attributes => [
-            {:lhs_type => 'field', :lhs_value => foo.id, :rhs_type => 'field', :rhs_value => foo.id, :operator => 'equals'},
-          ],
-          :scenario => scenario
-        })
-
-        score_set = stub("score set", :id => 123)
-        ScoreSet.expects(:create).with('string', 'string').yields(score_set)
-
-        runner = mock("single runner") do
-          expects(:run).with(score_set)
-        end
-        Scenario::SingleRunner.expects(:new).with(scenario).returns(runner)
-
-        result = mock("result", :[]= => nil, :save => true)
-        Result.expects(:new).with(:scenario => scenario).returns(result)
-
-        Timecop.freeze(Time.now) do
-          scenario.run!
-          assert_equal Time.now, scenario.last_run_at
-        end
       end
 
       def test_running_jobs

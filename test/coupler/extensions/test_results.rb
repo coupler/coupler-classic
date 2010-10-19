@@ -33,6 +33,7 @@ module Coupler
       end
 
       def test_show_sends_csv
+        pend
         ScoreSet.create do |score_set|
           @result.update(:score_set_id => score_set.id)
           score_set.insert(:first_id => 1, :second_id => 2, :score => 100)

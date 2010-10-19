@@ -47,13 +47,8 @@ module Coupler
         end
 
         runner = Runner.new(self)
-
+        runner.run!
         result = Result.new(:scenario => self)
-        types = resources.values_at(0, -1).collect(&:primary_key_type)
-        ScoreSet.create(*types) do |score_set|
-          result[:score_set_id] = score_set.id
-          runner.run(score_set)
-        end
         result.save
 
         update(:last_run_at => Time.now)
