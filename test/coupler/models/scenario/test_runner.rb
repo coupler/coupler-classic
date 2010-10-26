@@ -29,7 +29,7 @@ module Coupler
                   i < 10500 ? "1234567%02d"  % (i / 350) : "9876%05d" % i,
                   i < 10500 ? "2000-01-%02d" % (i / 525) : nil,
                   i < 1000 ? i / 125 : nil,
-                  i < 1000 ? i / 100 : nil,
+                  i < 1000 ? i % 10 : nil,
                   i % 20 + 25,
                   i % 50 + 125,
                 ]
@@ -249,9 +249,14 @@ module Coupler
             assert db.tables.include?(:groups_groups_1)
             ds = db[:groups_groups_1]
             assert_equal 530, ds.count
+            ds = db[:groups_groups_1.as(:t1)].
+              select(:t2__pair_0.as(:x), :t3__pair_0.as(:y)).
+              join(:groups_1, {:id => :group_1_id}, :table_alias => :t2).
+              join(:groups_1, {:id => :t1__group_2_id}, :table_alias => :t3)
+            ds.each do |row|
+              assert_equal row[:x], row[:y]
+            end
           end
-
-          notify("Complete me!")
         end
       end
     end
