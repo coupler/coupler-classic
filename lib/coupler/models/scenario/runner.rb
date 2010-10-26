@@ -6,9 +6,14 @@ module Coupler
 
         def initialize(parent)
           @parent = parent
-          @resources = parent.resources
           @matcher = parent.matcher
-          @type = parent.linkage_type
+          if @matcher.cross_match?
+            @resources = [parent.resource_1, parent.resource_1]
+            @type = 'cross-linkage'
+          else
+            @resources = parent.resources
+            @type = parent.linkage_type
+          end
           @run_number = @parent.run_count + 1
           @mutex = Mutex.new
           @group_number = 0
@@ -27,6 +32,9 @@ module Coupler
             # self-linkage and dual-linkage.  However, this is the only step
             # for self-linkage.  Dual-linkage requires another pass after
             # this.
+            #
+            # Cross-matching on a single dataset is treated as a dual-linkage.
+            #
             @pairs = @phase_one_pairs
             tw = ThreadsWait.new
             databases_to_close = []
@@ -45,7 +53,7 @@ module Coupler
               ::Sequel::DATABASES.delete(db)
             end
 
-            if @type == 'dual-linkage'
+            if @type != 'self-linkage'
               # Phase 2!
               @join_buffer = ImportBuffer.new([:group_1_id, :group_2_id], scenario_db[@secondary_groups_table_name])
               @pairs = @phase_two_pairs
@@ -59,7 +67,7 @@ module Coupler
           def setup_pairs
             @field_pairs = []
             @phase_one_pairs = []
-            @phase_two_pairs = @type == 'dual-linkage' ? [] : nil
+            @phase_two_pairs = @type == 'self-linkage' ? nil : []
             @matcher.comparisons.each do |comparison|
               if !comparison.blocking?
                 fields = comparison.fields
@@ -106,7 +114,7 @@ module Coupler
                 Integer :resource_id
                 Integer :group_id, :index => true
               end
-              if @type == 'dual-linkage'
+              if @type != 'self-linkage'
                 # Need another groups table
                 @secondary_groups_table_name = :"groups_groups_#{@run_number}"
                 scenario_db.create_table!(@secondary_groups_table_name) do

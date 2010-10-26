@@ -8,6 +8,10 @@ module Coupler
       plugin :nested_attributes
       nested_attributes :comparisons, :destroy => true
 
+      def cross_match?
+        comparisons.any? { |c| c.cross_match? }
+      end
+
       private
         def validate
           super

@@ -527,6 +527,17 @@ module Coupler
         assert !comparison.blocking?
       end
 
+      def test_cross_match?
+        field_1 = @resource.fields_dataset[:name => 'first_name']
+        field_2 = @resource.fields_dataset[:name => 'last_name']
+        comparison = Factory(:comparison, {
+          :lhs_type => 'field', :lhs_value => field_1.id, :lhs_which => 1,
+          :rhs_type => 'field', :rhs_value => field_2.id, :rhs_which => 2,
+          :operator => 'equals'
+        })
+        assert comparison.cross_match?
+      end
+
       def test_does_not_allow_comparisons_of_two_fields_of_different_types
         flunk
       end

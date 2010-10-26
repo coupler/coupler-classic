@@ -119,6 +119,10 @@ module Coupler
         lhs_type != 'field' || rhs_type != 'field' || lhs_which == rhs_which || operator != 'equals'
       end
 
+      def cross_match?
+        lhs_type == 'field' && rhs_type == 'field' && lhs_which != rhs_which && lhs_value.id != rhs_value.id && lhs_value.resource_id == rhs_value.resource_id
+      end
+
       private
         def coerce_value(type, value)
           case type

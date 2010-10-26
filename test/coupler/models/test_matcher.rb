@@ -89,6 +89,22 @@ module Coupler
         })
         assert !matcher.valid?
       end
+
+      def test_cross_match_is_true_when_a_comparison_is_a_cross_match
+        resource = Factory(:resource)
+        scenario = Factory(:scenario, :project => resource.project, :resource_1 => resource)
+        matcher = Factory(:matcher, {
+          :scenario => scenario,
+          :comparisons_attributes => {
+            '1' => {
+              'lhs_type' => 'field', 'lhs_value' => resource.fields_dataset[:name => 'first_name'].id,
+              'rhs_type' => 'field', 'rhs_value' => resource.fields_dataset[:name => 'last_name'].id,
+              'operator' => 'equals'
+            }
+          }
+        })
+        assert matcher.cross_match?
+      end
     end
   end
 end
