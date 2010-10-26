@@ -152,6 +152,15 @@ module Coupler
           validates_includes OPERATORS, :operator
           validates_includes [1, 2], :lhs_which   if lhs_type == 'field'
           validates_includes [1, 2], :rhs_which   if rhs_type == 'field'
+
+          if lhs_type == 'field' && rhs_type == 'field' && (lhs_field = lhs_value) && (rhs_field = rhs_value)
+            if lhs_field[:type] != rhs_field[:type]
+              errors.add(:base, "Comparing fields of different types is currently disallowed.")
+            end
+            if lhs_which != rhs_which && operator != 'equals'
+              errors.add(:operator, "is invalid; can't compare fields with anything but equals at the moment.")
+            end
+          end
         end
 
         def before_save

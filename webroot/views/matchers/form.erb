@@ -2,8 +2,6 @@
 <%- add_javascript('jquery-ui.min.js') -%>
 <%= error_messages_for @matcher %>
 <%= form_tag_for(@matcher, :base_url => "/projects/#{@project.id}/scenarios/#{@scenario.id}/matchers") %>
-  ADD BLOCKING SECTION
-  DON'T ALLOW FIELD TO FIELD COMPARISONS IN BLOCKING!
   <h3>Comparisons</h3>
   <%- if @matcher.comparisons.count == 0 -%>
   <div id="no-comparisons" style="margin-bottom: 1em;">
