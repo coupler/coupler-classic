@@ -55,8 +55,8 @@ body {
 #about {
   position: absolute;
   bottom: 0;
-  width: 170px;
-  height: 335px;
+  width: 180px;
+  height: 440px;
   background: url(/images/sidebar-bottom.png) left bottom no-repeat;
   z-index: 100;
   -webkit-border-bottom-left-radius: 5px;
@@ -64,10 +64,10 @@ body {
 }
 #about .text {
   position: absolute;
-  bottom: 0;
-  height: 53px;
-  padding: 10px 5px;
+  bottom: 0px;
+  padding: 10px 12px 20px 2px;
   font-size: smaller;
+  text-shadow: 0px 1px 1px black;
   text-align: center;
   vertical-align: bottom;
   color: white;
