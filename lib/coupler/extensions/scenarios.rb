@@ -3,22 +3,16 @@ module Coupler
     module Scenarios
       def self.registered(app)
         app.get '/projects/:project_id/scenarios' do
-          @project = Models::Project[:id => params[:project_id]]
-          raise ProjectNotFound   unless @project
           @scenarios = @project.scenarios
           erb :'scenarios/index'
         end
 
         app.get '/projects/:project_id/scenarios/new' do
-          @project = Models::Project[:id => params[:project_id]]
-          raise ProjectNotFound   unless @project
           @scenario = Models::Scenario.new
           erb 'scenarios/new'.to_sym
         end
 
         app.post "/projects/:project_id/scenarios" do
-          @project = Models::Project[:id => params[:project_id]]
-          raise ProjectNotFound   unless @project
           @scenario = Models::Scenario.new(params[:scenario])
           @scenario.project = @project
 
@@ -31,8 +25,6 @@ module Coupler
         end
 
         app.get '/projects/:project_id/scenarios/:id' do
-          @project = Models::Project[:id => params[:project_id]]
-          raise ProjectNotFound   unless @project
           @scenario = @project.scenarios_dataset[:id => params[:id]]
           @resources = @scenario.resources
           @matcher = @scenario.matcher
@@ -42,8 +34,6 @@ module Coupler
         end
 
         app.get "/projects/:project_id/scenarios/:id/run" do
-          @project = Models::Project[:id => params[:project_id]]
-          raise ProjectNotFound   unless @project
           @scenario = @project.scenarios_dataset[:id => params[:id]]
           Scheduler.instance.schedule_run_scenario_job(@scenario)
           redirect "/projects/#{@project.id}/scenarios/#{@scenario.id}"

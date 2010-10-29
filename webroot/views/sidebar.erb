@@ -1,26 +1,38 @@
-<ul>
-  <li><a href="/connections">Connections</a></li>
-  <li>
-    <a href="/projects">Projects</a>
+<div class='accordion'>
+  <h3><a href="/projects">Projects</a></h3>
+  <div>
+    <%- projects = Coupler::Models::Project.recently_accessed -%>
+    <%- if projects.empty? -%>
+    <%- else -%>
+      <ul>
+      <%- projects.each_with_index do |project, i| -%>
+        <li<%= ' class="alt"' if i % 2 == 1 %>>
+          <span class="ui-icon ui-icon-arrow-1-e"></span>
+          <a href="/projects/<%= project.id %>"><%= project.name %></a>
+        </li>
+      <%- end -%>
+      </ul>
+      <ul class="buttons">
+      <%- if Coupler::Models::Project.count > projects.count -%>
+        <li><button class="more-projects">More</button></li>
+      <%- end -%>
+        <li><button class="new-project">New</button></li>
+      </ul>
+    <%- end -%>
+  </div>
+  <h3><a href="/connections">Connections</a></h3>
+  <div></div>
+  <h3><a href="/transformers">Transformers</a></h3>
+  <div></div>
+  <h3><a href="/jobs">Jobs</a></h3>
+  <div></div>
+  <%- if @project -%>
+  <h3 class='project'><a href="/projects/<%= @project.id %>">Project: <%= @project.name %></a></h3>
+  <div>
     <ul>
-    <%- Coupler::Models::Project.each do |project| -%>
-      <li>
-        <a href="/projects/<%= project.id %>"><%= project.name %></a>
-        <ul style="display: <%= @project == project ? "block" : "none" %>;">
-          <li><a href="/projects/<%= project.id %>/resources">Resources</a></li>
-          <li class="last"><a href="/projects/<%= project.id %>/scenarios">Scenarios</a></li>
-        </ul>
-      </li>
-    <%- end -%>
+      <li><a href="/projects/<%= @project.id %>/resources">Resources</a></li>
+      <li class="last"><a href="/projects/<%= @project.id %>/scenarios">Scenarios</a></li>
     </ul>
-  </li>
-  <li>
-    <a href="/jobs">Jobs</a>
-    <div id="job-count">
-    <%- if (num = Coupler::Models::Job.filter(:completed_at => nil).count) > 0 -%>
-      (<%= num %>)
-    <%- end -%>
-    </div>
-  </li>
-  <li><a href="/transformers">Transformers</a></li>
-</ul>
+  </div>
+  <%- end -%>
+</div>

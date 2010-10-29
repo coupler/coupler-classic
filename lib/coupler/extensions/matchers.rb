@@ -3,8 +3,6 @@ module Coupler
     module Matchers
       def self.registered(app)
         app.get "/projects/:project_id/scenarios/:scenario_id/matchers/new" do
-          @project = Models::Project[:id => params[:project_id]]
-          raise ProjectNotFound   unless @project
           @scenario = @project.scenarios_dataset[:id => params[:scenario_id]]
           raise ScenarioNotFound  unless @scenario
           @resources = @scenario.resources
@@ -13,8 +11,6 @@ module Coupler
         end
 
         app.get "/projects/:project_id/scenarios/:scenario_id/matchers/:id/edit" do
-          @project = Models::Project[:id => params[:project_id]]
-          raise ProjectNotFound   unless @project
           @scenario = @project.scenarios_dataset[:id => params[:scenario_id]]
           raise ScenarioNotFound  unless @scenario
           @matcher = @scenario.matcher_dataset[:id => params[:id]]
@@ -24,8 +20,6 @@ module Coupler
         end
 
         app.post "/projects/:project_id/scenarios/:scenario_id/matchers" do
-          @project = Models::Project[:id => params[:project_id]]
-          raise ProjectNotFound   unless @project
           @scenario = @project.scenarios_dataset[:id => params[:scenario_id]]
           raise ScenarioNotFound  unless @scenario
           @matcher = Models::Matcher.new(params[:matcher])
@@ -41,8 +35,6 @@ module Coupler
         end
 
         app.put "/projects/:project_id/scenarios/:scenario_id/matchers/:id" do
-          @project = Models::Project[:id => params[:project_id]]
-          raise ProjectNotFound   unless @project
           @scenario = @project.scenarios_dataset[:id => params[:scenario_id]]
           raise ScenarioNotFound  unless @scenario
           @matcher = @scenario.matcher_dataset[:id => params[:id]]
@@ -59,8 +51,6 @@ module Coupler
         end
 
         app.delete "/projects/:project_id/scenarios/:scenario_id/matchers/:id" do
-          @project = Models::Project[:id => params[:project_id]]
-          raise ProjectNotFound   unless @project
           @scenario = @project.scenarios_dataset[:id => params[:scenario_id]]
           raise ScenarioNotFound  unless @scenario
           @matcher = @scenario.matcher_dataset[:id => params[:id]]

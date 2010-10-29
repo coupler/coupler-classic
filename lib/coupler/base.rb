@@ -26,12 +26,6 @@ module Coupler
     register Extensions::Imports
     register Extensions::Exceptions
 
-    helpers do
-      include Coupler::Helpers
-      include Rack::Utils
-      alias_method :h, :escape_html
-    end
-
     # Monkey patch :/
     def self.run!(options={})
       set options
@@ -62,6 +56,15 @@ EOF
     rescue Errno::EADDRINUSE => e
       puts "== Someone is already performing on port #{port}!"
     end
+
+    helpers do
+      include Coupler::Helpers
+      include Rack::Utils
+      alias_method :h, :escape_html
+    end
+
+    #before do
+    #end
 
     get "/" do
       if Models::Project.count > 0

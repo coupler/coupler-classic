@@ -17,7 +17,7 @@ module Coupler
     end
 
     def javascripts
-      @javascripts ||= %w{jquery.min.js jquery.timeago.js jquery.treeview.min.js}
+      @javascripts ||= %w{jquery.min.js jquery.timeago.js jquery-ui.min.js}
     end
 
     def javascript_includes

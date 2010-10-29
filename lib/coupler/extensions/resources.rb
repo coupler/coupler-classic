@@ -1,22 +1,13 @@
 module Coupler
   module Extensions
     module Resources
-      module Helpers
-      end
-
       def self.registered(app)
-        app.helpers Helpers
-
         app.get "/projects/:project_id/resources" do
-          @project = Models::Project[:id => params[:project_id]]
-          raise ProjectNotFound   unless @project
           @resources = @project.resources
           erb 'resources/index'.to_sym
         end
 
         app.get "/projects/:project_id/resources/new" do
-          @project = Models::Project[:id => params[:project_id]]
-          raise ProjectNotFound   unless @project
           @connections = Models::Connection.all
           @resource = Models::Resource.new
           if @connections.empty?
@@ -26,9 +17,6 @@ module Coupler
         end
 
         app.post "/projects/:project_id/resources" do
-          @project = Models::Project[:id => params[:project_id]]
-          raise ProjectNotFound   unless @project
-
           @resource = Models::Resource.new(params[:resource])
           @resource.project = @project
 
@@ -42,8 +30,6 @@ module Coupler
         end
 
         app.get "/projects/:project_id/resources/:id" do
-          @project = Models::Project[:id => params[:project_id]]
-          raise ProjectNotFound   unless @project
           @resource = @project.resources_dataset[:id => params[:id]]
           raise ResourceNotFound  unless @resource
           @fields = @resource.fields_dataset.filter(:is_selected => 1).all
@@ -55,8 +41,6 @@ module Coupler
         end
 
         app.get "/projects/:project_id/resources/:id/transform" do
-          @project = Models::Project[:id => params[:project_id]]
-          raise ProjectNotFound   unless @project
           @resource = @project.resources_dataset[:id => params[:id]]
           raise ResourceNotFound  unless @resource
           Scheduler.instance.schedule_transform_job(@resource)
@@ -64,8 +48,6 @@ module Coupler
         end
 
         app.get "/projects/:project_id/resources/:id/edit" do
-          @project = Models::Project[:id => params[:project_id]]
-          raise ProjectNotFound   unless @project
           @resource = @project.resources_dataset[:id => params[:id]]
           raise ResourceNotFound  unless @resource
           @fields = @resource.fields
@@ -74,8 +56,6 @@ module Coupler
         end
 
         app.put "/projects/:project_id/resources/:id" do
-          @project = Models::Project[:id => params[:project_id]]
-          raise ProjectNotFound   unless @project
           @resource = @project.resources_dataset[:id => params[:id]]
           raise ResourceNotFound  unless @resource
 

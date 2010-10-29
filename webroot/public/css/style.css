@@ -17,36 +17,65 @@ body {
   background-color: #383538;
   position: relative;
 }
-#sidebar h3 {
-  font-size: 1.1em;
-  background-color: #6E3B3A;
-  text-align: center;
-  margin: 5px -10px;
-  border-bottom: 0;
+#sidebar .accordion {
+  margin-top: 1em;
+  width: 150px;
 }
-#sidebar ul {
-  list-style-type: none;
-  margin: 0;
-  display: block;
-  padding: 0;
+#sidebar .accordion h3 {
+  margin-top: 3px;
+  text-shadow: 1px 1px 1px black;
 }
-#sidebar li {
-  /*margin: 0.3em 0;*/
-  /*padding-top: 0px;*/
+#sidebar .accordion h3.project {
+  margin-top: 20px;
+  border-top: 2px solid white;
 }
-#sidebar a,
-#sidebar a:visited {
+#sidebar .accordion .ui-accordion-content {
+  background: #7e7b7e;
+  border-color: black;
+  padding: 0 5px 5px 5px;
+  color: white;
+}
+#sidebar .accordion .ui-accordion-content a,
+#sidebar .accordion .ui-accordion-content a:visited {
   color: white;
   text-decoration: none;
 }
-#sidebar a:hover {
+#sidebar .accordion .ui-accordion-content a:hover {
   text-decoration: underline;
 }
-#sidebar img {
-  display: block;
-  vertical-align: middle;
+#sidebar .accordion ul {
+  padding: 0;
+  margin: 0 0 0 5px;
+  list-style-type: none;
+}
+#sidebar .accordion ul li {
+  padding: 2px;
+  margin: 0;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+}
+#sidebar .accordion ul li.alt {
+  background: #6e6b6e;
+}
+#sidebar .accordion ul li .ui-icon {
   float: left;
-  margin-right: 0.7em;
+  margin-right: 3px;
+}
+#sidebar .accordion ul.buttons {
+  margin: 0;
+  padding: 0;
+  margin-top: 5px;
+  list-style-type: none;
+}
+#sidebar .accordion ul.buttons li {
+  display: inline;
+  padding: 0;
+}
+#sidebar .accordion .ui-button-icon-primary {
+  left: 3px;
+}
+#sidebar .accordion .ui-button-text {
+  padding: 2px 6px 2px 23px;
 }
 #sidebar #job-count {
   display: inline;
@@ -56,7 +85,7 @@ body {
   position: absolute;
   bottom: 0;
   width: 180px;
-  height: 440px;
+  height: 375px;
   background: url(/images/sidebar-bottom.png) left bottom no-repeat;
   z-index: 100;
   -webkit-border-bottom-left-radius: 5px;

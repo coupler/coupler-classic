@@ -47,7 +47,17 @@
   }
   $(function() {
     $('.timeago').timeago();
-    $('#sidebar ul').treeview({ unique: true, persist: "location" });
+    var accordion = $('#sidebar .accordion').accordion({
+      collapsible: true, icons: false,
+      navigation: true, autoHeight: false
+    });
+    accordion.find('button.more-projects').button({
+      icons: { primary: 'ui-icon-circle-arrow-e' },
+    }).click(function() { window.location.href = "/projects" });
+    accordion.find('button.new-project').button({
+      icons: { primary: 'ui-icon-circle-plus' },
+    }).click(function() { window.location.href = "/projects/new" });
+    <%#$('#sidebar ul').treeview({ unique: true, persist: "location" });%>
     //setInterval(updateJobCount, 30000);
   });
 </script>

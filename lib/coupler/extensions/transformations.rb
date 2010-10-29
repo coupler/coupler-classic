@@ -3,8 +3,6 @@ module Coupler
     module Transformations
       def self.registered(app)
         app.get "/projects/:project_id/resources/:resource_id/transformations" do
-          @project = Models::Project[:id => params[:project_id]]
-          raise ProjectNotFound   unless @project
           @resource = @project.resources_dataset[:id => params[:resource_id]]
           raise ResourceNotFound  unless @resource
           @transformations = @resource.transformations
@@ -12,8 +10,6 @@ module Coupler
         end
 
         app.get "/projects/:project_id/resources/:resource_id/transformations/new" do
-          @project = Models::Project[:id => params[:project_id]]
-          raise ProjectNotFound   unless @project
           @resource = @project.resources_dataset[:id => params[:resource_id]]
           raise ResourceNotFound  unless @resource
           @fields = @resource.selected_fields_dataset.order(:id).all
@@ -23,8 +19,6 @@ module Coupler
         end
 
         app.post "/projects/:project_id/resources/:resource_id/transformations" do
-          @project = Models::Project[:id => params[:project_id]]
-          raise ProjectNotFound   unless @project
           @resource = @project.resources_dataset[:id => params[:resource_id]]
           raise ResourceNotFound  unless @resource
           @fields = @resource.selected_fields_dataset.order(:id).all
@@ -42,8 +36,6 @@ module Coupler
         end
 
         app.delete "/projects/:project_id/resources/:resource_id/transformations/:id" do
-          @project = Models::Project[:id => params[:project_id]]
-          raise ProjectNotFound   unless @project
           @resource = @project.resources_dataset[:id => params[:resource_id]]
           raise ResourceNotFound  unless @resource
           @transformation = @resource.transformations_dataset[:id => params[:id]]
@@ -53,8 +45,6 @@ module Coupler
         end
 
         app.get "/projects/:project_id/resources/:resource_id/transformations/for/:field_name" do
-          @project = Models::Project[:id => params[:project_id]]
-          raise ProjectNotFound   unless @project
           @resource = @project.resources_dataset[:id => params[:resource_id]]
           raise ResourceNotFound  unless @resource
           @field = @resource.fields_dataset[:name => params[:field_name]]
@@ -67,8 +57,6 @@ module Coupler
         end
 
         app.post "/projects/:project_id/resources/:resource_id/transformations/preview" do
-          @project = Models::Project[:id => params[:project_id]]
-          raise ProjectNotFound   unless @project
           @resource = @project.resources_dataset[:id => params[:resource_id]]
           raise ResourceNotFound  unless @resource
 

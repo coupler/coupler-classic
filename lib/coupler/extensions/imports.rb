@@ -3,8 +3,6 @@ module Coupler
     module Imports
       def self.registered(app)
         app.post "/projects/:project_id/imports" do
-          @project = Models::Project[:id => params[:project_id]]
-          raise ProjectNotFound   unless @project
           @import = Models::Import.new(params[:import].merge(:project => @project))
           if @import.valid?
             @import.save
@@ -15,8 +13,6 @@ module Coupler
         end
 
         app.get "/projects/:project_id/imports/:id/edit" do
-          @project = Models::Project[:id => params[:project_id]]
-          raise ProjectNotFound   unless @project
           @import = Models::Import[:id => params[:id], :project_id => @project.id]
           raise ImportNotFound    unless @import
           @resource = Models::Resource.new
@@ -24,8 +20,6 @@ module Coupler
         end
 
         app.put "/projects/:project_id/imports/:id" do
-          @project = Models::Project[:id => params[:project_id]]
-          raise ProjectNotFound   unless @project
           @import = Models::Import[:id => params[:id], :project_id => @project.id]
           raise ImportNotFound    unless @import
           @import.set(params[:import])

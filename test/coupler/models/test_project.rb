@@ -186,6 +186,24 @@ module Coupler
       def test_local_database_uses_connection_class
         pend
       end
+
+      def test_touch!
+        project = Factory(:project)
+        version = project.version
+        time = Time.now - 50
+        Timecop.freeze(time) { project.touch! }
+        assert_equal time, project.last_accessed_at
+        assert_equal version, project.version
+      end
+
+      def test_recently_accessed
+        now = Time.now
+        project_1 = Factory(:project, :last_accessed_at => now - 50)
+        project_2 = Factory(:project, :last_accessed_at => now - 10)
+        project_3 = Factory(:project, :last_accessed_at => now - 30)
+        project_4 = Factory(:project, :last_accessed_at => now - 20)
+        assert_equal [project_2, project_4, project_3], Project.recently_accessed
+      end
     end
   end
 end

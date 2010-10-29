@@ -2,6 +2,10 @@ module Coupler
   module Models
     module CommonModel
       module ClassMethods
+        def recently_accessed
+          order(:last_accessed_at.desc).limit(3).all
+        end
+
         def as_of_version(id, version)
           versions_dataset[:current_id => id, :version => version]
         end
@@ -52,18 +56,22 @@ module Coupler
 
       def before_save
         super
-        if @@versioned[self.class]
+        if @@versioned[self.class] && !@skip_new_version
           self[:version] = self[:version].nil? ? 1 : self[:version] + 1
         end
       end
 
       def after_save
         super
-        if versions_table_name = @@versioned[self.class]
-          dataset = self.db[versions_table_name]
-          hash = self.values.clone
-          hash[:current_id] = hash.delete(:id)
-          dataset.insert(hash)
+        if @skip_new_version
+          @skip_new_version = nil
+        else
+          if versions_table_name = @@versioned[self.class]
+            dataset = self.db[versions_table_name]
+            hash = self.values.clone
+            hash[:current_id] = hash.delete(:id)
+            dataset.insert(hash)
+          end
         end
       end
 

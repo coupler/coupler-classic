@@ -1,0 +1,10 @@
+runner: console
+console_options:
+  use_color: true
+  color_scheme: coupler
+color_schemes:
+  coupler:
+    success:
+      name: green
+    failure:
+      name: red

@@ -2,6 +2,17 @@ module Coupler
   module Extensions
     module Projects
       def self.registered(app)
+        app.before do
+          md = request.path_info.match(%r{/projects/(\d+)/?})
+          if md
+            # NOTE: Using regex matching here sucks, but apparently Sinatra
+            #       calls before filters before params are parsed.
+            @project = Models::Project[:id => md[1]]
+            raise ProjectNotFound   unless @project
+            @project.touch!
+          end
+        end
+
         app.get "/projects" do
           @projects = Models::Project.order(:id)
           erb 'projects/index'.to_sym
@@ -18,23 +29,17 @@ module Coupler
           redirect "/projects/#{@project.id}"
         end
 
-        app.get "/projects/:id" do
-          @project = Models::Project[:id => params[:id]]
-          raise ProjectNotFound   unless @project
+        app.get "/projects/:project_id" do
           @resources = @project.resources
           @scenarios = @project.scenarios
           erb 'projects/show'.to_sym
         end
 
-        app.get "/projects/:id/edit" do
-          @project = Models::Project[:id => params[:id]]
-          raise ProjectNotFound   unless @project
+        app.get "/projects/:project_id/edit" do
           erb 'projects/form'.to_sym
         end
 
-        app.put "/projects/:id" do
-          @project = Models::Project[:id => params[:id]]
-          raise ProjectNotFound   unless @project
+        app.put "/projects/:project_id" do
           @project.set(params[:project])
           if @project.valid?
             @project.save
@@ -44,9 +49,7 @@ module Coupler
           end
         end
 
-        app.delete "/projects/:id" do
-          @project = Models::Project[:id => params[:id]]
-          raise ProjectNotFound   unless @project
+        app.delete "/projects/:project_id" do
           @project.delete_versions_on_destroy = true  if params[:nuke] == "true"
           @project.destroy
           redirect '/projects'

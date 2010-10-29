@@ -5,14 +5,20 @@ module Coupler
     class TestResources < Test::Unit::TestCase
       def setup
         super
-        @project = Factory(:project)
-        @connection = Factory(:connection)
+        Timecop.freeze(Time.now - 50) do
+          @project = Factory(:project)
+          @connection = Factory(:connection)
+        end
       end
 
       def test_index
         resource = Factory(:resource, :project => @project)
-        get "/projects/#{@project.id}/resources"
+        time = Time.now - 25
+        Timecop.freeze(time) do
+          get "/projects/#{@project.id}/resources"
+        end
         assert last_response.ok?
+        assert_equal time.to_i, @project.reload.last_accessed_at.to_i
       end
 
       def test_index_with_non_existant_project

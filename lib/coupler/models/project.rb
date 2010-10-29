@@ -13,6 +13,11 @@ module Coupler
         }, &block)
       end
 
+      def touch!
+        @skip_new_version = true
+        update(:last_accessed_at => Time.now)
+      end
+
       private
         def local_connection_string
           Config.connection_string(:"project_#{id}", {
