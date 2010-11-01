@@ -84,6 +84,16 @@ module Coupler
           end
         end
       end
+
+      def test_recently_accessed
+        now = Time.now
+        job_1 = job_2 = job_3 = job_4 = nil
+        Timecop.freeze(now - 3) { job_1 = Factory(:scenario_job, :scenario => Factory(:scenario)) }
+        Timecop.freeze(now - 2) { job_2 = Factory(:scenario_job, :scenario => Factory(:scenario)) }
+        Timecop.freeze(now - 1) { job_3 = Factory(:scenario_job, :scenario => Factory(:scenario)) }
+        Timecop.freeze(now)     { job_4 = Factory(:scenario_job, :scenario => Factory(:scenario)) }
+        assert_equal [job_4, job_3, job_2], Job.recently_accessed
+      end
     end
   end
 end

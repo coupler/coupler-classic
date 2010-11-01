@@ -4,35 +4,94 @@
     <%- projects = Coupler::Models::Project.recently_accessed -%>
     <%- if projects.empty? -%>
     <%- else -%>
-      <ul>
+      <ul class="top">
       <%- projects.each_with_index do |project, i| -%>
         <li<%= ' class="alt"' if i % 2 == 1 %>>
-          <span class="ui-icon ui-icon-arrow-1-e"></span>
+          <span class="ui-icon ui-icon-document"></span>
           <a href="/projects/<%= project.id %>"><%= project.name %></a>
+          <%- if @project && @project.id == project.id -%>
+          <ul>
+            <li>
+              <span class="ui-icon ui-icon-document"></span>
+              <a href="/projects/<%= @project.id %>/resources">Resources</a>
+            </li>
+            <li class="alt">
+              <span class="ui-icon ui-icon-document"></span>
+              <a href="/projects/<%= @project.id %>/scenarios">Scenarios</a>
+            </li>
+          </ul>
+          <%- end -%>
         </li>
       <%- end -%>
       </ul>
-      <ul class="buttons">
-      <%- if Coupler::Models::Project.count > projects.count -%>
-        <li><button class="more-projects">More</button></li>
+    <%- end -%>
+    <ul class="buttons">
+    <%- if Coupler::Models::Project.count > projects.count -%>
+      <li><button class="more-projects">More</button></li>
+    <%- end -%>
+      <li><button class="new-project">New</button></li>
+    </ul>
+  </div>
+  <h3><a href="/connections">Connections</a></h3>
+  <div>
+    <%- connections = Coupler::Models::Connection.recently_accessed -%>
+    <%- if connections.empty? -%>
+    <%- else -%>
+      <ul class="top">
+      <%- connections.each_with_index do |connection, i| -%>
+        <li<%= ' class="alt"' if i % 2 == 1 %>>
+          <span class="ui-icon ui-icon-document"></span>
+          <a href="/connections/<%= connection.id %>"><%= connection.name %></a>
+        </li>
       <%- end -%>
-        <li><button class="new-project">New</button></li>
+      </ul>
+    <%- end -%>
+    <ul class="buttons">
+    <%- if Coupler::Models::Connection.count > connections.count -%>
+      <li><button class="more-connections">More</button></li>
+    <%- end -%>
+      <li><button class="new-connection">New</button></li>
+    </ul>
+  </div>
+  <h3><a href="/transformers">Transformers</a></h3>
+  <div>
+    <%- transformers = Coupler::Models::Transformer.recently_accessed -%>
+    <%- if transformers.empty? -%>
+    <%- else -%>
+      <ul class="top">
+      <%- transformers.each_with_index do |transformer, i| -%>
+        <li<%= ' class="alt"' if i % 2 == 1 %>>
+          <span class="ui-icon ui-icon-document"></span>
+          <a href="/transformers"><%= transformer.name %></a>
+        </li>
+      <%- end -%>
+      </ul>
+    <%- end -%>
+    <ul class="buttons">
+    <%- if Coupler::Models::Transformer.count > transformers.count -%>
+      <li><button class="more-transformers">More</button></li>
+    <%- end -%>
+      <li><button class="new-transformer">New</button></li>
+    </ul>
+  </div>
+  <h3><a href="/jobs">Jobs</a></h3>
+  <div>
+    <%- jobs = Coupler::Models::Job.recently_accessed -%>
+    <%- if jobs.empty? -%>
+      There are no recent jobs.
+    <%- else -%>
+      <ul class="top">
+      <%- jobs.each_with_index do |job, i| -%>
+        <li<%= ' class="alt"' if i % 2 == 1 %>>
+          <span class="ui-icon ui-icon-clock"></span>
+          <%- if job.resource -%>
+            <a href="/jobs">Transform: <%= job.resource.name %></a>
+          <%- elsif job.scenario -%>
+            <a href="/jobs">Run: <%= job.scenario.name %></a>
+          <%- end -%>
+        </li>
+      <%- end -%>
       </ul>
     <%- end -%>
   </div>
-  <h3><a href="/connections">Connections</a></h3>
-  <div></div>
-  <h3><a href="/transformers">Transformers</a></h3>
-  <div></div>
-  <h3><a href="/jobs">Jobs</a></h3>
-  <div></div>
-  <%- if @project -%>
-  <h3 class='project'><a href="/projects/<%= @project.id %>">Project: <%= @project.name %></a></h3>
-  <div>
-    <ul>
-      <li><a href="/projects/<%= @project.id %>/resources">Resources</a></li>
-      <li class="last"><a href="/projects/<%= @project.id %>/scenarios">Scenarios</a></li>
-    </ul>
-  </div>
-  <%- end -%>
 </div>

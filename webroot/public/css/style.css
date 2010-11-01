@@ -23,10 +23,9 @@ body {
 }
 #sidebar .accordion h3 {
   margin-top: 3px;
-  text-shadow: 1px 1px 1px black;
+  text-shadow: 0px 1px 0px black;
 }
 #sidebar .accordion h3.project {
-  margin-top: 20px;
   border-top: 2px solid white;
 }
 #sidebar .accordion .ui-accordion-content {
@@ -34,6 +33,7 @@ body {
   border-color: black;
   padding: 0 5px 5px 5px;
   color: white;
+  overflow: hidden;
 }
 #sidebar .accordion .ui-accordion-content a,
 #sidebar .accordion .ui-accordion-content a:visited {
@@ -45,8 +45,11 @@ body {
 }
 #sidebar .accordion ul {
   padding: 0;
-  margin: 0 0 0 5px;
+  margin: 0 0 0 15px;
   list-style-type: none;
+}
+#sidebar .accordion ul.top {
+  margin: 0;
 }
 #sidebar .accordion ul li {
   padding: 2px;
@@ -62,9 +65,8 @@ body {
   margin-right: 3px;
 }
 #sidebar .accordion ul.buttons {
-  margin: 0;
+  margin: 5px 0 2px 0;
   padding: 0;
-  margin-top: 5px;
   list-style-type: none;
 }
 #sidebar .accordion ul.buttons li {
@@ -76,10 +78,6 @@ body {
 }
 #sidebar .accordion .ui-button-text {
   padding: 2px 6px 2px 23px;
-}
-#sidebar #job-count {
-  display: inline;
-  color: #ccc;
 }
 #about {
   position: absolute;

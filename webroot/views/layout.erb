@@ -34,32 +34,5 @@
 </div>
 
 </div>
-
-<script type="text/javascript">
-  function updateJobCount() {
-    $.get("/jobs/count", function(data) {
-      if (data == "0") {
-        $('#job-count').html("")
-      } else {
-        $('#job-count').html("("+data+")")
-      }
-    });
-  }
-  $(function() {
-    $('.timeago').timeago();
-    var accordion = $('#sidebar .accordion').accordion({
-      collapsible: true, icons: false,
-      navigation: true, autoHeight: false
-    });
-    accordion.find('button.more-projects').button({
-      icons: { primary: 'ui-icon-circle-arrow-e' },
-    }).click(function() { window.location.href = "/projects" });
-    accordion.find('button.new-project').button({
-      icons: { primary: 'ui-icon-circle-plus' },
-    }).click(function() { window.location.href = "/projects/new" });
-    <%#$('#sidebar ul').treeview({ unique: true, persist: "location" });%>
-    //setInterval(updateJobCount, 30000);
-  });
-</script>
 </body>
 </html>

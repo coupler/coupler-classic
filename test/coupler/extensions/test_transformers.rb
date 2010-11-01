@@ -59,6 +59,12 @@ module Coupler
         assert last_response.redirect?, last_response.inspect
         assert_equal "/transformers", last_response['location']
       end
+
+      def test_show
+        xformer = Factory(:transformer)
+        get "/transformers/#{xformer.id}"
+        assert last_response.ok?
+      end
     end
   end
 end

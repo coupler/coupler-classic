@@ -17,6 +17,11 @@ module Coupler
           erb :'transformers/new'
         end
 
+        app.get '/transformers/:id' do
+          @transformer = Models::Transformer[:id => params[:id]]
+          erb :'transformers/show'
+        end
+
         app.get "/transformers/:id/edit" do
           @transformer = Models::Transformer[:id => params[:id]]
           erb :'transformers/edit'

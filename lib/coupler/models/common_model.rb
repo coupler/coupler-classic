@@ -3,7 +3,8 @@ module Coupler
     module CommonModel
       module ClassMethods
         def recently_accessed
-          order(:last_accessed_at.desc).limit(3).all
+          col = columns.include?(:last_accessed_at) ? :last_accessed_at : :updated_at
+          order(col.desc).limit(3).all
         end
 
         def as_of_version(id, version)
