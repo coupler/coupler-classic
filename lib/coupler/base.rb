@@ -11,7 +11,7 @@ module Coupler
     set :logging, Proc.new { !test? }
     set :methodoverride, true
     set :host, '127.0.0.1'
-    set :server, %w{mongrel webrick}
+    #set :server, %w{mongrel webrick}
     enable :sessions
 
     use Rack::Flash

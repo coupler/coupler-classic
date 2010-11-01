@@ -48,7 +48,7 @@ body {
   margin: 0 0 0 15px;
   list-style-type: none;
 }
-#sidebar .accordion ul.top {
+#sidebar .accordion ul.accordion-top {
   margin: 0;
 }
 #sidebar .accordion ul li {

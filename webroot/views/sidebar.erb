@@ -4,7 +4,7 @@
     <%- projects = Coupler::Models::Project.recently_accessed -%>
     <%- if projects.empty? -%>
     <%- else -%>
-      <ul class="top">
+      <ul class="accordion-top">
       <%- projects.each_with_index do |project, i| -%>
         <li<%= ' class="alt"' if i % 2 == 1 %>>
           <span class="ui-icon ui-icon-document"></span>
@@ -37,7 +37,7 @@
     <%- connections = Coupler::Models::Connection.recently_accessed -%>
     <%- if connections.empty? -%>
     <%- else -%>
-      <ul class="top">
+      <ul class="accordion-top">
       <%- connections.each_with_index do |connection, i| -%>
         <li<%= ' class="alt"' if i % 2 == 1 %>>
           <span class="ui-icon ui-icon-document"></span>
@@ -58,7 +58,7 @@
     <%- transformers = Coupler::Models::Transformer.recently_accessed -%>
     <%- if transformers.empty? -%>
     <%- else -%>
-      <ul class="top">
+      <ul class="accordion-top">
       <%- transformers.each_with_index do |transformer, i| -%>
         <li<%= ' class="alt"' if i % 2 == 1 %>>
           <span class="ui-icon ui-icon-document"></span>
@@ -80,7 +80,7 @@
     <%- if jobs.empty? -%>
       There are no recent jobs.
     <%- else -%>
-      <ul class="top">
+      <ul class="accordion-top">
       <%- jobs.each_with_index do |job, i| -%>
         <li<%= ' class="alt"' if i % 2 == 1 %>>
           <span class="ui-icon ui-icon-clock"></span>
