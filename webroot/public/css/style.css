@@ -45,14 +45,14 @@ body {
 }
 #sidebar .accordion ul {
   padding: 0;
-  margin: 0 0 0 15px;
+  margin: 5px 0 0 0;
   list-style-type: none;
 }
 #sidebar .accordion ul.accordion-top {
-  margin: 0;
+  margin-top: 0;
 }
 #sidebar .accordion ul li {
-  padding: 2px;
+  padding: 2px 2px 2px 18px;
   margin: 0;
   -webkit-border-radius: 4px;
   -moz-border-radius: 4px;
@@ -62,7 +62,7 @@ body {
 }
 #sidebar .accordion ul li .ui-icon {
   float: left;
-  margin-right: 3px;
+  margin-left: -18px;
 }
 #sidebar .accordion ul.buttons {
   margin: 5px 0 2px 0;
@@ -73,10 +73,11 @@ body {
   display: inline;
   padding: 0;
 }
-#sidebar .accordion .ui-button-icon-primary {
+#sidebar .accordion ul.buttons li button .ui-button-icon-primary {
   left: 3px;
+  margin-left: 0;
 }
-#sidebar .accordion .ui-button-text {
+#sidebar .accordion ul.buttons li button .ui-button-text {
   padding: 2px 6px 2px 23px;
 }
 #about {

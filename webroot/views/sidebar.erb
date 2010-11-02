@@ -11,11 +11,11 @@
           <a href="/projects/<%= project.id %>"><%= project.name %></a>
           <%- if @project && @project.id == project.id -%>
           <ul>
-            <li>
+            <li class="alt">
               <span class="ui-icon ui-icon-document"></span>
               <a href="/projects/<%= @project.id %>/resources">Resources</a>
             </li>
-            <li class="alt">
+            <li>
               <span class="ui-icon ui-icon-document"></span>
               <a href="/projects/<%= @project.id %>/scenarios">Scenarios</a>
             </li>
@@ -83,7 +83,15 @@
       <ul class="accordion-top">
       <%- jobs.each_with_index do |job, i| -%>
         <li<%= ' class="alt"' if i % 2 == 1 %>>
+          <%- if job.status == 'done' -%>
+          <span class="ui-icon ui-icon-check"></span>
+          <%- elsif job.status == 'failed' -%>
+          <span class="ui-icon ui-icon-alert"></span>
+          <%- elsif job.status == 'running' -%>
+          <span class="ui-icon ui-icon-play"></span>
+          <%- elsif job.status == 'scheduled' -%>
           <span class="ui-icon ui-icon-clock"></span>
+          <%- end -%>
           <%- if job.resource -%>
             <a href="/jobs">Transform: <%= job.resource.name %></a>
           <%- elsif job.scenario -%>
