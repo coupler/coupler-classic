@@ -6,18 +6,19 @@
     <%- else -%>
       <ul class="accordion-top">
       <%- projects.each_with_index do |project, i| -%>
-        <li<%= ' class="alt"' if i % 2 == 1 %>>
-          <span class="ui-icon ui-icon-document"></span>
+        <%- current_project = @project && @project.id == project.id -%>
+        <li class="<%= current_project ? "current-project" : i % 2 == 0 ? "alt" : "" %>">
+          <span class="ui-icon <%= current_project ? 'ui-icon-triangle-1-e' : 'ui-icon-document' %>"></span>
           <a href="/projects/<%= project.id %>"><%= project.name %></a>
-          <%- if @project && @project.id == project.id -%>
+          <%- if current_project -%>
           <ul>
-            <li class="alt">
+            <li>
               <span class="ui-icon ui-icon-document"></span>
-              <a href="/projects/<%= @project.id %>/resources">Resources</a>
+              <a href="/projects/<%= project.id %>/resources">Resources</a>
             </li>
             <li>
               <span class="ui-icon ui-icon-document"></span>
-              <a href="/projects/<%= @project.id %>/scenarios">Scenarios</a>
+              <a href="/projects/<%= project.id %>/scenarios">Scenarios</a>
             </li>
           </ul>
           <%- end -%>
@@ -40,7 +41,7 @@
       <ul class="accordion-top">
       <%- connections.each_with_index do |connection, i| -%>
         <li<%= ' class="alt"' if i % 2 == 1 %>>
-          <span class="ui-icon ui-icon-document"></span>
+          <span class="ui-icon ui-icon-signal-diag"></span>
           <a href="/connections/<%= connection.id %>"><%= connection.name %></a>
         </li>
       <%- end -%>
@@ -61,7 +62,7 @@
       <ul class="accordion-top">
       <%- transformers.each_with_index do |transformer, i| -%>
         <li<%= ' class="alt"' if i % 2 == 1 %>>
-          <span class="ui-icon ui-icon-document"></span>
+          <span class="ui-icon ui-icon-carat-2-e-w"></span>
           <a href="/transformers"><%= transformer.name %></a>
         </li>
       <%- end -%>

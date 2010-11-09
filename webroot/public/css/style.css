@@ -23,25 +23,17 @@ body {
 }
 #sidebar .accordion h3 {
   margin-top: 3px;
-  text-shadow: 0px 1px 0px black;
+  font-family: verdana, arial, helvetica, sans-serif;
 }
-#sidebar .accordion h3.project {
-  border-top: 2px solid white;
+#sidebar .accordion h3.ui-state-active a {
+  text-shadow: 1px 1px 1px black;
 }
 #sidebar .accordion .ui-accordion-content {
-  background: #7e7b7e;
+  background: #8e8b8e;
   border-color: black;
   padding: 0 5px 5px 5px;
   color: white;
   overflow: hidden;
-}
-#sidebar .accordion .ui-accordion-content a,
-#sidebar .accordion .ui-accordion-content a:visited {
-  color: white;
-  text-decoration: none;
-}
-#sidebar .accordion .ui-accordion-content a:hover {
-  text-decoration: underline;
 }
 #sidebar .accordion ul {
   padding: 0;
@@ -52,17 +44,25 @@ body {
   margin-top: 0;
 }
 #sidebar .accordion ul li {
-  padding: 2px 2px 2px 18px;
+  padding: 3px 3px 3px 20px;
   margin: 0;
   -webkit-border-radius: 4px;
   -moz-border-radius: 4px;
 }
 #sidebar .accordion ul li.alt {
-  background: #6e6b6e;
+  background: #7e7b7e;
 }
 #sidebar .accordion ul li .ui-icon {
   float: left;
-  margin-left: -18px;
+  margin-left: -19px;
+}
+#sidebar .accordion ul li a,
+#sidebar .accordion ul li a:visited {
+  color: white;
+  text-decoration: none;
+}
+#sidebar .accordion ul li a:hover {
+  text-decoration: underline;
 }
 #sidebar .accordion ul.buttons {
   margin: 5px 0 2px 0;
@@ -79,6 +79,15 @@ body {
 }
 #sidebar .accordion ul.buttons li button .ui-button-text {
   padding: 2px 6px 2px 23px;
+}
+#sidebar .accordion ul li.current-project {
+  background: #cecbce;
+}
+#sidebar .accordion ul li.current-project ul li.alt {
+  background: #aeabae;
+}
+#sidebar .accordion ul li.current-project a {
+  color: black;
 }
 #about {
   position: absolute;
@@ -116,13 +125,25 @@ body {
 
 #breadcrumbs {
   position: relative;
-  color: #383538;
-  padding: 1em;
+  color: white;
+  margin: 1em 0;
+  background: url(../images/header.png) no-repeat;
+  height: 33px;
+  padding: 5px 0 0 15px;
 }
 #breadcrumbs .crumb {
   float: left;
-  font-size: 1.7em;
+  font-family: 'Trebuchet MS', 'Tahoma', sans-serif;
+  font-size: 1.4em;
+  font-weight: normal;
   margin-right: 0.5em;
+}
+#breadcrumbs .crumb a {
+  color: white;
+  text-decoration: none;
+}
+#breadcrumbs .crumb a:hover {
+  color: #ddd;
 }
 
 #notice {
@@ -190,17 +211,18 @@ body {
 
 h1, h2, h3 {
   font-weight: normal;
+  font-family: 'Trebuchet MS', 'Tahoma', sans-serif;
 }
 h1 {
   border-bottom: 2px solid black;
 }
 h2 {
-  font-size: 1.5em;
-  border-bottom: 1px solid black;
+  font-size: 1.4em;
+  border-bottom: 1px solid #aaa;
 }
 h3 {
   font-size: 1.3em;
-  border-bottom: 1px dashed black;
+  border-bottom: 1px dashed #bbb;
 }
 
 a {
@@ -215,7 +237,7 @@ a:visited {
 /*}*/
 
 .inner {
-  padding: 1em;
+  padding: 10px;
 }
 
 table.form td {

@@ -140,10 +140,13 @@ module Coupler
         runner = mock("runner", :run! => nil)
         Scenario::Runner.expects(:new).with(scenario).returns(runner)
 
-        Timecop.freeze(Time.now) do
-          scenario.run!
-          assert_equal Time.now, scenario.last_run_at
-        end
+        now = Time.now
+        Timecop.freeze(now) { scenario.run! }
+        assert_equal now, scenario.last_run_at
+        assert_equal 1, scenario.run_count
+        assert_equal 1, scenario.results_dataset.count
+
+        assert scenario.results_dataset[:run_number => 1]
       end
 
       def test_status_with_no_matcher
@@ -219,6 +222,11 @@ module Coupler
       end
 
       def test_deletes_local_database_after_destroy
+        pend
+      end
+
+      def test_freezes_models_on_run
+        flunk
       end
     end
   end

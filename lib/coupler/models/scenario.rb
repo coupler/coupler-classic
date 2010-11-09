@@ -48,10 +48,10 @@ module Coupler
 
         runner = Runner.new(self)
         runner.run!
-        result = Result.new(:scenario => self)
-        result.save
 
-        update(:last_run_at => Time.now)
+        update(:run_count => run_count + 1, :last_run_at => Time.now)
+        result = Result.new(:scenario => self, :run_number => run_count)
+        result.save
       end
 
       private

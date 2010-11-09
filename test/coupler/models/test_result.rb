@@ -75,6 +75,17 @@ module Coupler
         arr = FasterCSV.parse(result.to_csv)
         assert_equal expected, arr
       end
+
+      def test_groups_dataset
+        scenario = Factory(:scenario)
+        matcher = Factory(:matcher, :scenario => scenario)
+        scenario.run!
+        result = scenario.results_dataset.first
+        result.groups_dataset do |ds|
+          assert_equal :groups_1, ds.first_source_alias
+          assert_match /scenario_#{scenario.id}/, ds.db.uri
+        end
+      end
     end
   end
 end

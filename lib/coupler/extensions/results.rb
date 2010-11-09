@@ -5,7 +5,7 @@ module Coupler
         app.get '/projects/:project_id/scenarios/:scenario_id/results' do
           @scenario = @project.scenarios_dataset[:id => params[:scenario_id]]
           raise ScenarioNotFound  unless @scenario
-          @results = @scenario.results
+          @results = @scenario.results_dataset.order(:id.desc)
           erb 'results/index'.to_sym
         end
 

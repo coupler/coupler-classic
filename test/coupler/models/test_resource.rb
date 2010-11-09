@@ -226,7 +226,7 @@ module Coupler
 
       def test_source_schema
         resource = Factory.create(:resource)
-        expected = [[:id, {:allow_null=>false, :default=>nil, :primary_key=>true, :db_type=>"int(11)", :type=>:integer, :ruby_default=>nil}], [:first_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}], [:last_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}], [:age, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"int(11)", :type=>:integer, :ruby_default=>nil}]]
+        expected = [[:id, {:auto_increment=>true, :allow_null=>false, :default=>nil, :primary_key=>true, :db_type=>"int(11)", :type=>:integer, :ruby_default=>nil}], [:first_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}], [:last_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}], [:age, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"int(11)", :type=>:integer, :ruby_default=>nil}]]
         assert_equal expected, resource.source_schema
       end
 

@@ -85,7 +85,8 @@ module Coupler
             # Yes, this could be done during setup_pairs, but I think
             # this is more clean.  Also, there will only be very few pairs.
             groups_columns = [
-              {:name => :id, :type => Integer, :primary_key => true}
+              {:name => :id, :type => Integer, :primary_key => true},
+              {:name => :resource_id, :type => Integer}
             ]
             @group_value_fields = []
             @field_pairs.each_with_index do |(field_1, field_2), i|
@@ -154,7 +155,7 @@ module Coupler
                         # If `which` is not nil, that means we're in the first
                         # stage of a dual-linkage.  So, we should save groups
                         # that only have 1 record in them.
-                        group_id = create_group(prev_row, which)
+                        group_id = create_group(resource_id, prev_row, which)
                         @join_buffer.add([prev_row[primary_key], resource_id, group_id])
                       end
                       if result
@@ -176,7 +177,7 @@ module Coupler
                   end
                   if which && group_id.nil?
                     # See above comment about `which`
-                    group_id = create_group(prev_row, which)
+                    group_id = create_group(resource_id, prev_row, which)
                     @join_buffer.add([prev_row[primary_key], resource_id, group_id])
                   end
 
@@ -299,9 +300,9 @@ module Coupler
             values
           end
 
-          def create_group(row, which)
+          def create_group(resource_id, row, which)
             group_id = get_next_group_id
-            group_row = [group_id]
+            group_row = [group_id, resource_id]
             @group_value_fields.each do |fields|
               group_row.push(row[fields[which || 0]])
             end

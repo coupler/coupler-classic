@@ -18,6 +18,7 @@ module Coupler
         }
       end
 
+=begin
       def to_csv
         csv = FasterCSV.new("")
         hash = snapshot
@@ -41,6 +42,19 @@ module Coupler
         end
         csv.close
         csv.string
+      end
+=end
+
+      def groups_dataset
+        if block_given?
+          scenario.local_database do |db|
+            yield db[:"groups_#{run_number}"]
+          end
+          nil
+        else
+          db = scenario.local_database
+          db[:"groups_#{run_number}"]
+        end
       end
 
       private
