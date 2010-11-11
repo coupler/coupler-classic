@@ -1,21 +1,25 @@
 <%- @breadcrumbs = ["Projects"] -%>
-<%- add_javascript("jquery-ui.min.js") -%>
-<table class="list">
-  <tr>
-    <th>Name</th>
-    <th>Description</th>
-    <th></th>
-    <th></th>
-  </tr>
-  <% @projects.each_with_index do |project, i| %>
-  <tr<% " class='alt'" if i % 2 == 1 %>>
-    <td><a href="/projects/<%= project.id %>"><%= project.name %></a></td>
-    <td><%= project.description %></td>
-    <td><a href="/projects/<%= project.id %>/edit">Edit</a></td>
-    <td><a href="#" onclick="return deleteProject(<%= project.id %>, '<%= project.name %>');">Delete</a></td>
-  </tr>
-  <% end %>
-</table>
+<ul class="bubbles">
+  <%- @projects.each_with_index do |project, i| -%>
+    <li class="bubble ui-widget">
+      <div class="header ui-widget-header ui-corner-top" title="<%= h(project.name) %>"><a href="/projects/<%= project.id %>"><%= project.name %></a></div>
+      <div class="content ui-widget-content ui-corner-bottom">
+        <%- if project.description.present? -%>
+          <p><%= project.description %></p>
+        <%- end -%>
+        <p>
+          <a href="/projects/<%= project.id %>/resources">Resources</a>
+          <a href="/projects/<%= project.id %>/scenarios">Scenarios</a>
+        </p>
+        <div class="buttons">
+          <button class="edit-project" onclick="window.location.href = '/projects/<%= project.id %>/edit'">Edit</button>
+          <button class="delete-project" onclick="return deleteProject(<%= project.id %>, '<%= project.name %>');">Delete</button>
+        </div>
+      </div>
+    </li>
+  <%- end -%>
+</ul>
+<div class="clear"></div>
 <p>
   <a href="/projects/new">New Project</a>
 </p>
@@ -67,5 +71,7 @@
       },
       modal: true
     });
+    $('button.edit-project').button({icons: { primary: 'ui-icon-pencil' }});
+    $('button.delete-project').button({icons: { primary: 'ui-icon-trash' }});
   });
 </script>

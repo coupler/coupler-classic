@@ -225,7 +225,7 @@ h3 {
   border-bottom: 1px dashed #bbb;
 }
 
-a {
+a, .ui-widget-content a {
   color: #AE3B3A;
 }
 a:visited {
@@ -258,6 +258,10 @@ table.list th {
 }
 table.list td {
   padding: 0.5em;
+}
+table.list td .ui-icon {
+  position: relative;
+  top: 3px;
 }
 table.list img {
   vertical-align: middle;
@@ -342,4 +346,43 @@ span.sup { font-size: smaller; vertical-align: super; }
   float: left;
   padding-top: 4px;
   padding-left: 10px;
+}
+
+ul.bubbles {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+ul.bubbles li.bubble {
+  margin: 0 0 1em 1em;
+  float: left;
+  width: 160px;
+}
+ul.bubbles li.bubble .header {
+  padding: 2px 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+ul.bubbles li.bubble .header a {
+  text-decoration: none;
+  color: white;
+}
+ul.bubbles li.bubble .content {
+  height: 125px;
+  padding: 0.5em;
+  position: relative;
+}
+ul.bubbles li.bubble .content div.buttons {
+  margin: 5px 0 2px 0;
+  padding: 0;
+  position: absolute;
+  bottom: 0;
+}
+ul.bubbles li.bubble .content div.buttons button .ui-button-icon-primary {
+  left: 3px;
+  margin-left: 0;
+}
+ul.bubbles li.bubble .content div.buttons button .ui-button-text {
+  padding: 2px 6px 2px 23px;
 }
