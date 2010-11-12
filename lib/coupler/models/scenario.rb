@@ -14,6 +14,10 @@ module Coupler
       one_to_one :matcher
       one_to_many :results
 
+      def self.count_by_project
+        dataset.naked.group_and_count(:project_id).to_hash(:project_id, :count)
+      end
+
       def status
         if matcher.nil?
           "no_matcher"

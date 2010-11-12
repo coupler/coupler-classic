@@ -22,6 +22,10 @@ module Coupler
 
       attr_accessor :resource_type
 
+      def self.count_by_project
+        dataset.naked.group_and_count(:project_id).to_hash(:project_id, :count)
+      end
+
       def source_database(&block)
         if import
           project.local_database(&block)

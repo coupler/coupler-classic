@@ -1,16 +1,19 @@
 <%- @breadcrumbs = ["Projects"] -%>
-<ul class="bubbles">
+<ul class="projects">
   <%- @projects.each_with_index do |project, i| -%>
-    <li class="bubble ui-widget">
-      <div class="header ui-widget-header ui-corner-top" title="<%= h(project.name) %>"><a href="/projects/<%= project.id %>"><%= project.name %></a></div>
-      <div class="content ui-widget-content ui-corner-bottom">
-        <%- if project.description.present? -%>
-          <p><%= project.description %></p>
-        <%- end -%>
-        <p>
-          <a href="/projects/<%= project.id %>/resources">Resources</a>
-          <a href="/projects/<%= project.id %>/scenarios">Scenarios</a>
-        </p>
+    <li class="project ui-widget" style="z-index: <%= 100 - (i * 3) %>;">
+      <%- if project.description.present? -%>
+        <div class="tooltip ui-corner-right" style="z-index: <%= 98 - (i * 3) %>;">
+          <h3>Description</h3>
+          <div class="description"><%= h(project.description) %></div>
+        </div>
+      <%- end -%>
+      <div class="header ui-widget-header ui-corner-tl ui-corner-tr" style="z-index: <%= 99 - (i * 3) %>;"><a href="/projects/<%= project.id %>" title="<%= h(project.name) %>"><%= project.name %></a></div>
+      <div class="content ui-widget-content ui-corner-bl ui-corner-br" style="z-index: <%= 99 - (i * 3) %>;">
+        <ul class="links">
+          <li><span class="ui-icon ui-icon-document"></span><a href="/projects/<%= project.id %>/resources">Resources</a> (<%= @resource_counts[project.id] || 0 %>)</li>
+          <li><span class="ui-icon ui-icon-document"></span><a href="/projects/<%= project.id %>/scenarios">Scenarios</a> (<%= @scenario_counts[project.id] || 0 %>)</li>
+        </ul>
         <div class="buttons">
           <button class="edit-project" onclick="window.location.href = '/projects/<%= project.id %>/edit'">Edit</button>
           <button class="delete-project" onclick="return deleteProject(<%= project.id %>, '<%= project.name %>');">Delete</button>
@@ -42,6 +45,7 @@
     </div>
   </form>
 </div>
+<div id="tooltip" style="display: none;"></div>
 
 <script type="text/javascript">
   function deleteProject(id, name) {
@@ -73,5 +77,20 @@
     });
     $('button.edit-project').button({icons: { primary: 'ui-icon-pencil' }});
     $('button.delete-project').button({icons: { primary: 'ui-icon-trash' }});
+
+    $('li.project:has(.tooltip)').
+      mouseenter(function() {
+        var t = $(this);
+        t.find('.header').removeClass('ui-corner-tr');
+        t.find('.content').removeClass('ui-corner-br');
+        t.find('.tooltip').stop().animate({right: '-125px'});
+      }).
+      mouseleave(function() {
+        var t = $(this);
+        t.find('.tooltip').stop().animate({right: '0px'}, function() {
+          t.find('.header').addClass('ui-corner-tr');
+          t.find('.content').addClass('ui-corner-br');
+        });
+      });
   });
 </script>

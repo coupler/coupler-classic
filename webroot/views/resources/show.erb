@@ -1,5 +1,5 @@
 <%- @breadcrumbs = [@project, @resource] -%>
-<%- add_javascript("jquery.tooltip.min.js", "jquery-ui.min.js", 'jquery.dataTables.min.js') -%>
+<%- add_javascript('jquery.dataTables.min.js') -%>
 <%- add_stylesheet('dataTables.css') -%>
 <h2>Fields</h2>
 <table id="fields" class="dataTable" style="clear: both;">
@@ -67,7 +67,6 @@
   var intervalId;
   $(function() {
     $('#fields').dataTable({bJQueryUI: true, aaSorting: [], aoColumns: [null, null] });
-    $('.tooltip').tooltip({ delay: 0, track: true, showURL: false, showBody: " - " });
   <%- if @job && @job.status == 'running' -%>
     $('#progressbar').progressbar({value: <%= @job.percent_completed %>});
     setInterval(function() {

@@ -688,6 +688,15 @@ module Coupler
       def test_connection_limit_on_local_database
         pend
       end
+
+      def test_count_by_project
+        project_1 = Factory(:project)
+        project_2 = Factory(:project)
+        3.times { Factory(:resource, :project => project_1) }
+        2.times { Factory(:resource, :project => project_2) }
+        expected = { project_1.id => 3, project_2.id => 2 }
+        assert_equal expected, Resource.count_by_project
+      end
     end
   end
 end

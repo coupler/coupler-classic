@@ -15,6 +15,8 @@ module Coupler
 
         app.get "/projects" do
           @projects = Models::Project.order(:id)
+          @resource_counts = Models::Resource.count_by_project
+          @scenario_counts = Models::Scenario.count_by_project
           erb 'projects/index'.to_sym
         end
 
