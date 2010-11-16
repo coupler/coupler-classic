@@ -1,0 +1,12 @@
+Project: <%= @snapshot[:project][:name] %>
+Scenario: <%= @snapshot[:scenario][:name] %>
+<%- if @snapshot[:resource_2] -%>
+Resource 1: <%= @snapshot[:resource_1][:name] %>
+Resource 2: <%= @snapshot[:resource_2][:name] %>
+<%- else -%>
+Resource: <%= @snapshot[:resource_1][:name] %>
+<%- end -%>
+Host: <%= local_ip %>
+Time: <%= @result.created_at %>
+
+<%= @result.to_csv.chomp %>

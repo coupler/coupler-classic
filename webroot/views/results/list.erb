@@ -1,0 +1,20 @@
+<% if @results.empty? %>
+<p>There are currently no results for this scenario.</p>
+<% else %>
+<table class="list">
+  <thead>
+    <tr>
+      <th>Run at</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+  <% @results.each do |result| %>
+    <tr>
+      <td><%= result.created_at %></td>
+      <td><a href="/projects/<%=@project.id%>/scenarios/<%=@scenario.id%>/results/<%=result.id%>">Show</a></td>
+    </tr>
+  <% end %>
+  </tbody>
+</table>
+<% end %>

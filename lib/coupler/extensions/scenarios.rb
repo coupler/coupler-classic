@@ -28,6 +28,7 @@ module Coupler
           @scenario = @project.scenarios_dataset[:id => params[:id]]
           @resources = @scenario.resources
           @matcher = @scenario.matcher
+          @results = @scenario.results
           @running_jobs = @scenario.running_jobs
           @scheduled_jobs = @scenario.scheduled_jobs
           erb 'scenarios/show'.to_sym

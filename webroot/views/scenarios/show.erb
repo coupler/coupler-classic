@@ -40,11 +40,11 @@
       </p>
     </form>
   <%- end -%>
-
-  <% if @scenario.results_dataset.count > 0 %>
-  <p>
-    <a href="/projects/<%= @project.id %>/scenarios/<%= @scenario.id %>/results">View Results &raquo;</a>
-  </p>
-  <% end %>
 <% end %>
 </div>
+<% if @results.length > 0 %>
+  <h2>Results</h2>
+  <div class="section">
+    <%= erb(:"results/list", :layout => false) %>
+  </div>
+<% end %>

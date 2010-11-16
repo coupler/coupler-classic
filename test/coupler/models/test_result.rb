@@ -86,6 +86,42 @@ module Coupler
           assert_match /scenario_#{scenario.id}/, ds.db.uri
         end
       end
+
+      def test_groups_records_dataset
+        scenario = Factory(:scenario)
+        matcher = Factory(:matcher, :scenario => scenario)
+        scenario.run!
+        result = scenario.results_dataset.first
+        result.groups_records_dataset do |ds|
+          assert_equal :groups_records_1, ds.first_source_alias
+          assert_match /scenario_#{scenario.id}/, ds.db.uri
+        end
+      end
+
+      def test_summary_for_simple_self_linkage
+        project = Factory(:project)
+        resource = Factory(:resource, :project => project)
+        field = resource.fields_dataset[:name => 'first_name']
+        scenario = Factory(:scenario, :project => project, :resource_1 => resource)
+        matcher = Factory(:matcher, :scenario => scenario, :comparisons_attributes => [{
+          'lhs_type' => 'field', 'lhs_value' => field.id, 'lhs_which' => 1,
+          'rhs_type' => 'field', 'rhs_value' => field.id, 'rhs_which' => 2,
+          'operator' => 'equals'
+        }])
+        scenario.run!
+        result = scenario.results_dataset.first
+        summary = result.summary
+        assert_equal([["first_name", "first_name"]], summary[:fields])
+        scenario.local_database do |db|
+          counts = db[:groups_records_1].group_and_count(:group_id).having(:count > 1).order(:group_id).all
+          assert_equal counts.length, summary[:groups].length
+          summary[:groups].each_with_index do |group, i|
+            assert_equal counts[i][:group_id], group[:id]
+            assert_equal counts[i][:count], group[:matches].length
+          end
+          assert_equal counts.inject(0) { |sum, h| sum + h[:count] }, summary[:total_matches]
+        end
+      end
     end
   end
 end

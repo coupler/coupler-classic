@@ -13,6 +13,14 @@ module Coupler
           @scenario = @project.scenarios_dataset[:id => params[:scenario_id]]
           raise ScenarioNotFound  unless @scenario
           @result = @scenario.results_dataset[:id => params[:id]]
+          @summary = @result.summary
+          erb(:"results/show")
+        end
+
+        app.get '/projects/:project_id/scenarios/:scenario_id/results/:id.csv' do
+          @scenario = @project.scenarios_dataset[:id => params[:scenario_id]]
+          raise ScenarioNotFound  unless @scenario
+          @result = @scenario.results_dataset[:id => params[:id]]
           raise ResultNotFound    unless @result
           @snapshot = @result.snapshot
 

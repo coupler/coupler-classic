@@ -1,12 +1,47 @@
-Project: <%= @snapshot[:project][:name] %>
-Scenario: <%= @snapshot[:scenario][:name] %>
-<%- if @snapshot[:resource_2] -%>
-Resource 1: <%= @snapshot[:resource_1][:name] %>
-Resource 2: <%= @snapshot[:resource_2][:name] %>
-<%- else -%>
-Resource: <%= @snapshot[:resource_1][:name] %>
-<%- end -%>
-Host: <%= local_ip %>
-Time: <%= @result.created_at %>
-
-<%= @result.to_csv.chomp %>
+<%- @breadcrumbs = [@project, @scenario, @result] -%>
+<h2>Summary</h2>
+<table class="summary">
+  <thead>
+    <tr>
+      <%- @summary[:fields].each_with_index do |fields, i| -%>
+        <th>
+          Pair <%= i + 1 %><br/>
+          <%= fields.join(" / ") %>
+        </th>
+      <%- end -%>
+      <th>Matches</th>
+    </tr>
+  </thead>
+  <tbody>
+    <%- @summary[:groups].each do |group| -%>
+      <tr>
+        <%- @summary[:fields].count.times do |i| -%>
+          <td><%= group[:"pair_#{i}"] %></td>
+        <%- end -%>
+        <td>
+          <div style="position: relative;">
+            <%= group[:count] %>
+            <div class="matches" style="display: none; position: absolute; padding: 1em; top: 0; left: 20px; background-color: black; color: white;">
+              <ul>
+                <%- group[:matches].each do |record_id| -%>
+                  <li><%= record_id %></li>
+                <%- end -%>
+              </ul>
+            </div>
+          </div>
+        </td>
+      </tr>
+    <%- end -%>
+  </tbody>
+</table>
+<script type="text/javascript">
+  $(function() {
+    $('table.summary tbody tr').
+      mouseenter(function() {
+        $(this).find('div.matches').show();
+      }).
+      mouseleave(function() {
+        $(this).find('div.matches').hide();
+      });
+  });
+</script>

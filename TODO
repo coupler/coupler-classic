@@ -1,10 +1,8 @@
 Major features/bugs:
-- Make the exact matcher threaded!
 - Job management: canceling, etc.
-- JRuby/Java multi-processor use
-- Add validation to scenario running to check resource status, connection, etc
+- Chain matchers
+- Use fixtures for some tests instead of running scenarios
 
 Fancy features for the future:
 - Do authorization on projects
 - Allow user to enter resource password whenever needed; don't store it
-- Allow score_sets to be used as resources

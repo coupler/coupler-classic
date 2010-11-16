@@ -54,20 +54,25 @@ module Coupler
         url = ""
         %{<div id="breadcrumbs">} +
           @breadcrumbs.inject([]) do |arr, obj|
-            strings = case obj
-                      when String
-                        [obj]
-                      when nil
-                        []
-                      else
-                        name = obj.class.to_s.split("::")[-1]
-                        if obj.new?
-                          ["New #{name}"]
-                        else
-                          url += "/#{name.downcase}s/#{obj.id}"
-                          ["#{name}s", %{<a href="#{url}">#{obj.name}</a>}]
-                        end
-                      end
+            strings =
+              case obj
+              when String
+                [obj]
+              when nil
+                []
+              else
+                class_name = obj.class.to_s.split("::")[-1]
+                if obj.new?
+                  ["New #{class_name}"]
+                elsif
+                  url += "/#{class_name.downcase}s/#{obj.id}"
+                  if obj.respond_to?(:name)
+                    ["#{class_name}s", %{<a href="#{url}">#{obj.name}</a>}]
+                  else
+                    [%{<a href="#{url}">#{class_name} ##{obj.id}</a>}]
+                  end
+                end
+              end
             arr.push(*strings.collect { |x| %{<div class="crumb">#{x}</div>} })
           end.join(%{<div class="crumb">/</div>}) +
           %{</div><div class="clear"></div>}
@@ -75,7 +80,7 @@ module Coupler
     end
 
     def humanize(string)
-      string.gsub(/_+/, " ").capitalize
+      string.to_s.gsub(/_+/, " ").capitalize
     end
 
     def timeago(time, klass = nil, tag = "div")

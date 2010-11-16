@@ -57,6 +57,38 @@ module Coupler
         end
       end
 
+      def groups_records_dataset
+        if block_given?
+          scenario.local_database do |db|
+            yield db[:"groups_records_#{run_number}"]
+          end
+          nil
+        else
+          db = scenario.local_database
+          db[:"groups_records_#{run_number}"]
+        end
+      end
+
+      def summary
+        summary = {}
+        summary[:fields] = scenario.matcher.comparisons.inject([]) do |arr, comparison|
+          if !comparison.blocking?
+            arr << comparison.fields.collect(&:name)
+          end
+          arr
+        end
+        scenario.local_database do |db|
+          records_ds = db[:"groups_records_#{run_number}"]
+          counts_ds = records_ds.group_and_count(:group_id).having(:count > 1).order(:group_id)
+          summary[:groups] = db[:"groups_#{run_number}".as(:t1)].select(:t1.*, :t2__count).join(counts_ds, {:group_id => :id}, :table_alias => :t2).collect do |row|
+            row[:matches] = records_ds.filter(:group_id => row[:id]).select_map(:record_id)
+            row
+          end
+          summary[:total_matches] = counts_ds.sum(:count)
+        end
+        summary
+      end
+
       private
         def before_save
           super
