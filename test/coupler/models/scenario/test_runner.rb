@@ -28,7 +28,7 @@ module Coupler
                 [
                   i < 10500 ? "1234567%02d"  % (i / 350) : "9876%05d" % i,
                   i < 10500 ? "2000-01-%02d" % (i / 525) : nil,
-                  i < 1000 ? i / 125 : nil,
+                  i < 1000 ? ((x = i / 125) == 2 ? 123 : x) : nil,
                   i < 1000 ? i % 10 : nil,
                   i % 20 + 25,
                   i % 50 + 125,
@@ -154,25 +154,21 @@ module Coupler
           scenario.local_database do |db|
             assert db.tables.include?(:groups_records_1)
             ds = db[:groups_records_1]
-            assert_equal 2000, ds.count
+            # Breakdown of groups_records_1
+            # - Values that should match each other: 0, 1, 3, 4, 5, 6, 7
+            # - For each value, there are 125 records that should match in foo
+            #   Total: 875
+            # - For each value, there are 100 records that should match in bar
+            #   Total: 700
+            # * Subtotal: 1575
+            # - There are 88 records where foo == bar, so each of these will
+            #   have a duplicate record in the resulting table.
+            # * Expected Total: 1575 - 88 = 1487
+            assert_equal 1487, ds.count
 
-            counts = ds.group_and_count(:group_id).all
-            assert_equal 18, counts.length
-            counts = counts.inject({}) { |h, r| h[r[:count]] ||= 0; h[r[:count]] += 1; h }
-            assert_equal 10, counts[100]
-            assert_equal 8, counts[125]
-            assert ds.group_and_count(:record_id, :resource_id).all? { |r| r[:count] == 2 }
-
-            assert db.tables.include?(:groups_groups_1)
-            ds = db[:groups_groups_1]
-            assert_equal 8, ds.count
-            ds = db[:groups_groups_1.as(:t1)].
-              select(:t2__pair_0.as(:x), :t3__pair_0.as(:y)).
-              join(:groups_1, {:id => :group_1_id}, :table_alias => :t2).
-              join(:groups_1, {:id => :t1__group_2_id}, :table_alias => :t3)
-            ds.each do |row|
-              assert_equal row[:x], row[:y]
-            end
+            assert db.tables.include?(:groups_1)
+            ds = db[:groups_1.as(:t1)]
+            assert_equal 7, ds.count
           end
         end
 

@@ -55,10 +55,53 @@ module Coupler
 
             if @type != 'self-linkage'
               # Phase 2!
-              @join_buffer = ImportBuffer.new([:group_1_id, :group_2_id], scenario_db[@secondary_groups_table_name])
+              secondary_groups_ds = scenario_db[@secondary_groups_table_name].order(:group_1_id, :group_2_id)
+              @join_buffer = ImportBuffer.new([:group_1_id, :group_2_id], secondary_groups_ds)
               @pairs = @phase_two_pairs
               phase_two(@groups_dataset, :id)
               @join_buffer.flush
+
+              # Update groups and groups_records
+              tw = ThreadsWait.new
+              count = secondary_groups_ds.count
+              offset = 0
+              last_group_id = @group_number
+              while offset < count
+                dataset = secondary_groups_ds.limit(10, offset)
+                offset += 10
+                dataset.each do |row|
+                  thread = Thread.new(row[:group_1_id], row[:group_2_id]) do |group_1_id, group_2_id|
+                    new_group_id = get_next_group_id
+                    @join_dataset.filter(:group_id => [group_1_id, group_2_id]).update(:group_id => new_group_id)
+                    @groups_dataset.filter(:id => group_1_id).update(:id => new_group_id, :resource_id => nil)
+                    @groups_dataset.filter(:id => group_2_id).delete
+                  end
+                  thread.abort_on_exception = true
+                  tw.join_nowait(thread)
+                end
+                tw.all_waits
+              end
+
+              # Clean up groups and records that don't match
+              @groups_dataset.filter(:id <= last_group_id).delete
+              @join_dataset.filter(:group_id <= last_group_id).delete
+
+              # Delete duplicate records in groups_records.
+              # This happens in cross-linkages when a record matches itself.
+              if @type == 'cross-linkage'
+                # See http://dev.mysql.com/doc/refman/5.0/en/delete.html#c6518
+                scenario_db.run(<<-EOF)
+                  ALTER IGNORE TABLE #{@join_table_name}
+                  ADD UNIQUE INDEX drop_duplicates_index (record_id, resource_id, group_id)
+                EOF
+                scenario_db.run(<<-EOF)
+                  ALTER IGNORE TABLE #{@join_table_name}
+                  DROP INDEX drop_duplicates_index
+                EOF
+              end
+
+              # Don't need the secondary table anymore
+              scenario_db.drop_table(@secondary_groups_table_name)
             end
           end
         end
@@ -225,7 +268,6 @@ module Coupler
               dataset = dataset.order_more(*fields.uniq)
             end
             dataset = dataset.order_more(primary_key)
-            p dataset
 
             local_tw = ThreadsWait.new
             threads = []
