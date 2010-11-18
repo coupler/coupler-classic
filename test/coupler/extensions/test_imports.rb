@@ -16,13 +16,13 @@ module Coupler
 
         post "/projects/#{@project.id}/imports", :import => { :data => fixture_file_upload("people.csv") }
         assert last_response.redirect?
-        assert_equal "/projects/#{@project[:id]}/imports/123/edit", last_response['location']
+        assert_equal "http://example.org/projects/#{@project[:id]}/imports/123/edit", last_response['location']
       end
 
       def test_create_with_non_existant_project
         post "/projects/8675309/imports"
         assert last_response.redirect?
-        assert_equal "/projects", last_response['location']
+        assert_equal "http://example.org/projects", last_response['location']
         follow_redirect!
         assert_match /The project you were looking for doesn't exist/, last_response.body
       end
@@ -36,7 +36,7 @@ module Coupler
       def test_edit_with_non_existant_import
         get "/projects/#{@project.id}/imports/8675309/edit"
         assert last_response.redirect?
-        assert_equal "/projects/#{@project.id}", last_response['location']
+        assert_equal "http://example.org/projects/#{@project.id}", last_response['location']
         follow_redirect!
         assert_match /The import you were looking for doesn't exist/, last_response.body
       end
@@ -51,7 +51,7 @@ module Coupler
 
         put "/projects/#{@project[:id]}/imports/123", params
         assert last_response.redirect?
-        assert_equal "/projects/#{@project.id}/resources/456", last_response['location']
+        assert_equal "http://example.org/projects/#{@project.id}/resources/456", last_response['location']
       end
 
       def test_failed_update

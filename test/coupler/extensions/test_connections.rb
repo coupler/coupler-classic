@@ -28,7 +28,7 @@ module Coupler
         assert connection
 
         assert last_response.redirect?, "Wasn't redirected"
-        assert_equal "/connections", last_response['location']
+        assert_equal "http://example.org/connections", last_response['location']
       end
 
       def test_successfully_creating_connection_with_return_to
@@ -36,7 +36,7 @@ module Coupler
         post "/connections", { 'connection' => attribs }, { 'rack.session' => { :return_to => '/foo' } }
 
         assert last_response.redirect?, "Wasn't redirected"
-        assert_equal "/foo", last_response['location']
+        assert_equal "http://example.org/foo", last_response['location']
       end
 
       def test_successfully_creating_connection_with_first_use
@@ -44,7 +44,7 @@ module Coupler
         post "/connections", { 'connection' => attribs }, { 'rack.session' => { :first_use => true } }
 
         assert last_response.redirect?, "Wasn't redirected"
-        assert_equal "/projects/new", last_response['location']
+        assert_equal "http://example.org/projects/new", last_response['location']
       end
 
       def test_failing_to_create_connection
@@ -66,7 +66,7 @@ module Coupler
         delete "/connections/#{connection.id}"
         assert_nil Models::Connection[connection.id]
         assert last_response.redirect?
-        assert_equal "/connections", last_response['location']
+        assert_equal "http://example.org/connections", last_response['location']
       end
     end
   end

@@ -21,7 +21,7 @@ module Coupler
       def test_index_with_non_existant_project
         get "/projects/8675309/scenarios/#{@scenario.id}/results"
         assert last_response.redirect?
-        assert_equal "/projects", last_response['location']
+        assert_equal "http://example.org/projects", last_response['location']
         follow_redirect!
         assert_match /The project you were looking for doesn't exist/, last_response.body
       end
@@ -29,7 +29,7 @@ module Coupler
       def test_index_with_non_existant_scenario
         get "/projects/#{@project.id}/scenarios/8675309/results"
         assert last_response.redirect?
-        assert_equal "/projects/#{@project.id}/scenarios", last_response['location']
+        assert_equal "http://example.org/projects/#{@project.id}/scenarios", last_response['location']
         follow_redirect!
         assert_match /The scenario you were looking for doesn't exist/, last_response.body
       end
@@ -63,7 +63,7 @@ module Coupler
       def test_show_with_non_existant_result
         get "/projects/#{@project.id}/scenarios/#{@scenario.id}/results/8675309"
         assert last_response.redirect?
-        assert_equal "/projects/#{@project.id}/scenarios/#{@scenario.id}/results", last_response['location']
+        assert_equal "http://example.org/projects/#{@project.id}/scenarios/#{@scenario.id}/results", last_response['location']
         follow_redirect!
         assert_match /The result you were looking for doesn't exist/, last_response.body
       end

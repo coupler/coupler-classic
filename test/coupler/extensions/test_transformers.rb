@@ -18,7 +18,7 @@ module Coupler
         post '/transformers', 'transformer' => Factory.attributes_for(:transformer)
         assert_equal count + 1, Models::Transformer.count
         assert last_response.redirect?
-        assert_equal "/transformers", last_response['location']
+        assert_equal "http://example.org/transformers", last_response['location']
       end
 
       def test_failed_create
@@ -38,7 +38,7 @@ module Coupler
         xformer = Factory(:transformer)
         put "/transformers/#{xformer.id}", :transformer => { 'code' => 'value' }
         assert last_response.redirect?, last_response.inspect
-        assert_equal "/transformers", last_response['location']
+        assert_equal "http://example.org/transformers", last_response['location']
       end
 
       def test_failed_update
@@ -57,7 +57,7 @@ module Coupler
         delete "/transformers/#{xformer.id}"
         assert_equal 0, Models::Transformer.filter(:id => xformer.id).count
         assert last_response.redirect?, last_response.inspect
-        assert_equal "/transformers", last_response['location']
+        assert_equal "http://example.org/transformers", last_response['location']
       end
 
       def test_show

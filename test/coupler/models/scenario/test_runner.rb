@@ -221,7 +221,6 @@ module Coupler
 
         def test_dual_linkage_with_one_comparison
           scenario = Factory(:scenario, :resource_1 => @resource_1, :resource_2 => @resource_2, :project => @project)
-          #puts "Scenario ID: #{scenario.id}"
           field_1 = @resource_1.fields_dataset[:name => 'ssn']
           field_2 = @resource_2.fields_dataset[:name => 'SocialSecurityNumber']
           matcher = Factory(:matcher, {
@@ -238,25 +237,17 @@ module Coupler
           scenario.local_database do |db|
             assert db.tables.include?(:groups_records_1)
             ds = db[:groups_records_1]
-            assert_equal 32000, ds.count
+            assert_equal 22000, ds.count
 
             counts = ds.group_and_count(:group_id).all
-            assert_equal 11060, counts.length
+            assert_equal 530, counts.length
             counts = counts.inject({}) { |h, r| h[r[:count]] ||= 0; h[r[:count]] += 1; h }
-            assert_equal 60, counts[350]
-            assert_equal 11000, counts[1]
+            assert_equal 30, counts[700]
+            assert_equal 500, counts[2]
             assert ds.group_and_count(:record_id, :resource_id).all? { |r| r[:count] == 1 }
 
-            assert db.tables.include?(:groups_groups_1)
-            ds = db[:groups_groups_1]
+            ds = db[:groups_1]
             assert_equal 530, ds.count
-            ds = db[:groups_groups_1.as(:t1)].
-              select(:t2__pair_0.as(:x), :t3__pair_0.as(:y)).
-              join(:groups_1, {:id => :group_1_id}, :table_alias => :t2).
-              join(:groups_1, {:id => :t1__group_2_id}, :table_alias => :t3)
-            ds.each do |row|
-              assert_equal row[:x], row[:y]
-            end
           end
         end
       end

@@ -17,7 +17,7 @@ module Coupler
       def test_index_of_non_existant_project
         get "/projects/8675309/scenarios"
         assert last_response.redirect?
-        assert_equal "/projects", last_response['location']
+        assert_equal "http://example.org/projects", last_response['location']
         follow_redirect!
         assert_match /The project you were looking for doesn't exist/, last_response.body
       end

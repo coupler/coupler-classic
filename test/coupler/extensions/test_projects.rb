@@ -45,7 +45,7 @@ module Coupler
         some_project = Factory(:project)
         get "/projects/8675309"
         assert last_response.redirect?
-        assert_equal "/projects", last_response['location']
+        assert_equal "http://example.org/projects", last_response['location']
         follow_redirect!
         assert_match /The project you were looking for doesn't exist/, last_response.body
       end
@@ -60,7 +60,7 @@ module Coupler
         project = Factory(:project, :name => "Blah blah")
         put "/projects/#{project.id}", :project => {:name => "Hee haw"}
         assert last_response.redirect?
-        assert_equal "/projects", last_response['location']
+        assert_equal "http://example.org/projects", last_response['location']
       end
 
       def test_delete
@@ -68,7 +68,7 @@ module Coupler
         delete "/projects/#{project.id}"
         assert_nil Models::Project[:id => project.id]
         assert last_response.redirect?
-        assert_equal "/projects", last_response['location']
+        assert_equal "http://example.org/projects", last_response['location']
       end
 
       def test_delete_with_versions
@@ -77,7 +77,7 @@ module Coupler
         assert_nil Models::Project[:id => project.id]
         assert_nil Database.instance[:projects_versions][:current_id => project.id]
         assert last_response.redirect?
-        assert_equal "/projects", last_response['location']
+        assert_equal "http://example.org/projects", last_response['location']
       end
     end
   end

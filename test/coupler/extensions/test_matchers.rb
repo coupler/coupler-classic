@@ -20,7 +20,7 @@ module Coupler
       def test_new_with_non_existant_project
         get "/projects/8675309/scenarios/#{@scenario.id}/matchers/new"
         assert last_response.redirect?
-        assert_equal "/projects", last_response['location']
+        assert_equal "http://example.org/projects", last_response['location']
         follow_redirect!
         assert_match /The project you were looking for doesn't exist/, last_response.body
       end
@@ -28,7 +28,7 @@ module Coupler
       def test_new_with_non_existant_scenario
         get "/projects/#{@project.id}/scenarios/8675309/matchers/new"
         assert last_response.redirect?
-        assert_equal "/projects/#{@project.id}/scenarios", last_response['location']
+        assert_equal "http://example.org/projects/#{@project.id}/scenarios", last_response['location']
         follow_redirect!
         assert_match /The scenario you were looking for doesn't exist/, last_response.body
       end
@@ -45,7 +45,7 @@ module Coupler
         }
         post("/projects/#{@project.id}/scenarios/#{@scenario.id}/matchers", { 'matcher' => attribs })
         assert last_response.redirect?, "Wasn't redirected"
-        assert_equal "/projects/#{@project.id}/scenarios/#{@scenario.id}", last_response['location']
+        assert_equal "http://example.org/projects/#{@project.id}/scenarios/#{@scenario.id}", last_response['location']
 
         assert @scenario.matcher
       end
@@ -64,7 +64,7 @@ module Coupler
       def test_edit_with_non_existant_matcher
         get "/projects/#{@project.id}/scenarios/#{@scenario.id}/matchers/8675309/edit"
         assert last_response.redirect?
-        assert_equal "/projects/#{@project.id}/scenarios/#{@scenario.id}", last_response['location']
+        assert_equal "http://example.org/projects/#{@project.id}/scenarios/#{@scenario.id}", last_response['location']
         follow_redirect!
         assert_match /The matcher you were looking for doesn't exist/, last_response.body
       end
@@ -90,7 +90,7 @@ module Coupler
         put "/projects/#{@project.id}/scenarios/#{@scenario.id}/matchers/#{matcher.id}", :matcher => attribs
 
         assert last_response.redirect?, "Wasn't redirected"
-        assert_equal "/projects/#{@project.id}/scenarios/#{@scenario.id}", last_response['location']
+        assert_equal "http://example.org/projects/#{@project.id}/scenarios/#{@scenario.id}", last_response['location']
       end
 
       def test_delete
@@ -99,7 +99,7 @@ module Coupler
         assert_equal 0, Models::Matcher.filter(:id => matcher.id).count
 
         assert last_response.redirect?, "Wasn't redirected"
-        assert_equal "/projects/#{@project.id}/scenarios/#{@scenario.id}", last_response['location']
+        assert_equal "http://example.org/projects/#{@project.id}/scenarios/#{@scenario.id}", last_response['location']
       end
     end
   end
