@@ -73,7 +73,7 @@ module Coupler
                   thread = Thread.new(row[:group_1_id], row[:group_2_id]) do |group_1_id, group_2_id|
                     new_group_id = get_next_group_id
                     @join_dataset.filter(:group_id => [group_1_id, group_2_id]).update(:group_id => new_group_id)
-                    @groups_dataset.filter(:id => group_1_id).update(:id => new_group_id, :resource_id => nil)
+                    @groups_dataset.filter(:id => group_1_id).update(:id => new_group_id)
                     @groups_dataset.filter(:id => group_2_id).delete
                   end
                   thread.abort_on_exception = true
@@ -103,6 +103,12 @@ module Coupler
               # Don't need the secondary table anymore
               scenario_db.drop_table(@secondary_groups_table_name)
             end
+
+            # Calculate some summary stats
+            @join_dataset.group_and_count(:group_id, :resource_id).each do |count_row|
+              @groups_dataset.filter(:id => count_row[:group_id]).
+                update(:"resource_#{count_row[:resource_id]}_count" => count_row[:count])
+            end
           end
         end
 
@@ -128,8 +134,7 @@ module Coupler
             # Yes, this could be done during setup_pairs, but I think
             # this is more clean.  Also, there will only be very few pairs.
             groups_columns = [
-              {:name => :id, :type => Integer, :primary_key => true},
-              {:name => :resource_id, :type => Integer}
+              {:name => :id, :type => Integer, :primary_key => true}
             ]
             @group_value_fields = []
             @field_pairs.each_with_index do |(field_1, field_2), i|
@@ -144,6 +149,11 @@ module Coupler
             end
             @groups_column_names = groups_columns.collect { |c| c[:name] }
             @groups_table_name = :"groups_#{@run_number}"
+
+            # Add extra columns to the groups table for summary stats
+            @resources.collect(&:id).uniq.each do |resource_id|
+              groups_columns << {:name => :"resource_#{resource_id}_count", :type => Integer}
+            end
 
             key_types = @resources.collect { |r| r.primary_key_type }.uniq
             record_id_type = key_types.length == 1 ? key_types[0] : String
@@ -198,7 +208,7 @@ module Coupler
                         # If `which` is not nil, that means we're in the first
                         # stage of a dual-linkage.  So, we should save groups
                         # that only have 1 record in them.
-                        group_id = create_group(resource_id, prev_row, which)
+                        group_id = create_group(prev_row, which)
                         @join_buffer.add([prev_row[primary_key], resource_id, group_id])
                       end
                       if result
@@ -220,7 +230,7 @@ module Coupler
                   end
                   if which && group_id.nil?
                     # See above comment about `which`
-                    group_id = create_group(resource_id, prev_row, which)
+                    group_id = create_group(prev_row, which)
                     @join_buffer.add([prev_row[primary_key], resource_id, group_id])
                   end
 
@@ -342,9 +352,9 @@ module Coupler
             values
           end
 
-          def create_group(resource_id, row, which)
+          def create_group(row, which)
             group_id = get_next_group_id
-            group_row = [group_id, resource_id]
+            group_row = [group_id]
             @group_value_fields.each do |fields|
               group_row.push(row[fields[which || 0]])
             end

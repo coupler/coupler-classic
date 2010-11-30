@@ -153,7 +153,7 @@ module Coupler
           groups = {}
           scenario.local_database do |db|
             assert db.tables.include?(:groups_records_1)
-            ds = db[:groups_records_1]
+            join_ds = db[:groups_records_1]
             # Breakdown of groups_records_1
             # - Values that should match each other: 0, 1, 3, 4, 5, 6, 7
             # - For each value, there are 125 records that should match in foo
@@ -164,11 +164,17 @@ module Coupler
             # - There are 88 records where foo == bar, so each of these will
             #   have a duplicate record in the resulting table.
             # * Expected Total: 1575 - 88 = 1487
-            assert_equal 1487, ds.count
+            assert_equal 1487, join_ds.count
 
             assert db.tables.include?(:groups_1)
-            ds = db[:groups_1.as(:t1)]
-            assert_equal 7, ds.count
+            group_ds = db[:groups_1]
+            assert_equal 7, group_ds.count
+            group_ds.each do |group_row|
+              counts = join_ds.filter(:group_id => group_row[:id]).group_and_count(:resource_id).to_hash(:resource_id, :count)
+              assert_equal counts[@resource_1.id], group_row[:"resource_#{@resource_1.id}_count"]
+            end
+
+            assert_equal 0, join_ds.group_and_count(:group_id).having(:count => 1).count
           end
         end
 

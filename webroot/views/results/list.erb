@@ -4,6 +4,7 @@
 <table class="list">
   <thead>
     <tr>
+      <th>#</th>
       <th>Run at</th>
       <th></th>
     </tr>
@@ -11,6 +12,7 @@
   <tbody>
   <% @results.each do |result| %>
     <tr>
+      <td><%= result.run_number %></td>
       <td><%= result.created_at %></td>
       <td><a href="/projects/<%=@project.id%>/scenarios/<%=@scenario.id%>/results/<%=result.id%>">Show</a></td>
     </tr>

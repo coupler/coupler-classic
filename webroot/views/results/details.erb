@@ -1,0 +1,21 @@
+<h2>Details for Group <%= @group[:id] %></h2>
+<div class="section">
+  <table class="records dataTable">
+    <thead>
+      <tr>
+        <%- (columns = @records_dataset.columns).each do |column| -%>
+          <th><%= column %></th>
+        <%- end -%>
+      </tr>
+    </thead>
+    <tbody>
+      <%- @records_dataset.each do |record| -%>
+        <tr>
+          <%- columns.each do |column| -%>
+            <td><%= record[column] %></td>
+          <%- end -%>
+        </tr>
+      <%- end -%>
+    </tbody>
+  </table>
+</div>

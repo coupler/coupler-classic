@@ -113,14 +113,58 @@ module Coupler
         summary = result.summary
         assert_equal([["first_name", "first_name"]], summary[:fields])
         scenario.local_database do |db|
-          counts = db[:groups_records_1].group_and_count(:group_id).having(:count > 1).order(:group_id).all
+          counts = db[:groups_records_1].group_and_count(:group_id, :resource_id).order(:group_id).all
           assert_equal counts.length, summary[:groups].length
           summary[:groups].each_with_index do |group, i|
             assert_equal counts[i][:group_id], group[:id]
-            assert_equal counts[i][:count], group[:matches].length
+            assert_equal counts[i][:count], group[:matches][resource.id].length
+            assert group[:matches][resource.id].length > 1
           end
-          assert_equal counts.inject(0) { |sum, h| sum + h[:count] }, summary[:total_matches]
+          assert_equal db[:groups_records_1].group_and_count(:resource_id).all, summary[:total_matches]
         end
+      end
+
+      def test_summary_for_cross_linkage
+        project = Factory(:project)
+        resource = Factory(:resource, :project => project)
+        field_1 = resource.fields_dataset[:name => 'first_name']
+        field_2 = resource.fields_dataset[:name => 'last_name']
+        scenario = Factory(:scenario, :project => project, :resource_1 => resource)
+        matcher = Factory(:matcher, :scenario => scenario, :comparisons_attributes => [{
+          'lhs_type' => 'field', 'lhs_value' => field_1.id, 'lhs_which' => 1,
+          'rhs_type' => 'field', 'rhs_value' => field_2.id, 'rhs_which' => 2,
+          'operator' => 'equals'
+        }])
+        scenario.run!
+        result = scenario.results_dataset.first
+        summary = result.summary
+        assert_equal([["first_name", "last_name"]], summary[:fields])
+        scenario.local_database do |db|
+          counts = db[:groups_records_1].group_and_count(:group_id, :resource_id).order(:group_id).all
+          assert_equal counts.length, summary[:groups].length
+          summary[:groups].each_with_index do |group, i|
+            assert_equal counts[i][:group_id], group[:id]
+            assert_equal counts[i][:count], group[:matches][resource.id].length
+            assert group[:matches][resource.id].length > 1
+          end
+          assert_equal db[:groups_records_1].group_and_count(:resource_id).all, summary[:total_matches]
+        end
+      end
+
+      def test_groups_table_name
+        scenario = Factory(:scenario)
+        matcher = Factory(:matcher, :scenario => scenario)
+        scenario.run!
+        result = scenario.results_dataset.first
+        assert_equal :groups_1, result.groups_table_name
+      end
+
+      def test_groups_records_table_name
+        scenario = Factory(:scenario)
+        matcher = Factory(:matcher, :scenario => scenario)
+        scenario.run!
+        result = scenario.results_dataset.first
+        assert_equal :groups_records_1, result.groups_records_table_name
       end
     end
   end

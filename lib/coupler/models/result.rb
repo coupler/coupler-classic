@@ -45,27 +45,35 @@ module Coupler
       end
 =end
 
+      def groups_table_name
+        :"groups_#{run_number}"
+      end
+
       def groups_dataset
         if block_given?
           scenario.local_database do |db|
-            yield db[:"groups_#{run_number}"]
+            yield db[groups_table_name]
           end
           nil
         else
           db = scenario.local_database
-          db[:"groups_#{run_number}"]
+          db[groups_table_name]
         end
+      end
+
+      def groups_records_table_name
+        :"groups_records_#{run_number}"
       end
 
       def groups_records_dataset
         if block_given?
           scenario.local_database do |db|
-            yield db[:"groups_records_#{run_number}"]
+            yield db[groups_records_table_name]
           end
           nil
         else
           db = scenario.local_database
-          db[:"groups_records_#{run_number}"]
+          db[groups_records_table_name]
         end
       end
 
@@ -79,12 +87,15 @@ module Coupler
         end
         scenario.local_database do |db|
           records_ds = db[:"groups_records_#{run_number}"]
-          counts_ds = records_ds.group_and_count(:group_id).having(:count > 1).order(:group_id)
-          summary[:groups] = db[:"groups_#{run_number}".as(:t1)].select(:t1.*, :t2__count).join(counts_ds, {:group_id => :id}, :table_alias => :t2).collect do |row|
-            row[:matches] = records_ds.filter(:group_id => row[:id]).select_map(:record_id)
-            row
+          summary[:groups] = db[:"groups_#{run_number}"].collect do |group_row|
+            group_row[:matches] = {}
+            records_ds.select(:record_id, :resource_id).filter(:group_id => group_row[:id]).each do |record_row|
+              arr = group_row[:matches][record_row[:resource_id]] ||= []
+              arr.push(record_row[:record_id])
+            end
+            group_row
           end
-          summary[:total_matches] = counts_ds.sum(:count)
+          summary[:total_matches] = records_ds.group_and_count(:resource_id).all
         end
         summary
       end

@@ -1,47 +1,46 @@
+<%- add_javascript('jquery.dataTables.min.js') -%>
+<%- add_stylesheet('dataTables.css') -%>
 <%- @breadcrumbs = [@project, @scenario, @result] -%>
-<h2>Summary</h2>
-<table class="summary">
-  <thead>
-    <tr>
-      <%- @summary[:fields].each_with_index do |fields, i| -%>
-        <th>
-          Pair <%= i + 1 %><br/>
-          <%= fields.join(" / ") %>
-        </th>
-      <%- end -%>
-      <th>Matches</th>
-    </tr>
-  </thead>
-  <tbody>
-    <%- @summary[:groups].each do |group| -%>
+<h2>Groups</h2>
+<div class="section">
+  <p>
+    There were <strong><%= groups_dataset.count %></strong> groups of records
+    found.  Click on a group row to see more details.
+  </p>
+  <table class="summary dataTable">
+    <thead>
       <tr>
-        <%- @summary[:fields].count.times do |i| -%>
-          <td><%= group[:"pair_#{i}"] %></td>
+        <%- (columns = groups_dataset.columns).each do |column| -%>
+          <th><%= column %></th>
         <%- end -%>
-        <td>
-          <div style="position: relative;">
-            <%= group[:count] %>
-            <div class="matches" style="display: none; position: absolute; padding: 1em; top: 0; left: 20px; background-color: black; color: white;">
-              <ul>
-                <%- group[:matches].each do |record_id| -%>
-                  <li><%= record_id %></li>
-                <%- end -%>
-              </ul>
-            </div>
-          </div>
-        </td>
       </tr>
-    <%- end -%>
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      <%- groups_dataset.order(*columns.reject{|c| c == :id }).each do |group| -%>
+        <tr id="group-<%= group[:id] %>" class="group">
+          <%- columns.each do |column| -%>
+            <td><%= group[column] %></td>
+          <%- end -%>
+        </tr>
+      <%- end -%>
+    </tbody>
+  </table>
+</div>
+<div id="group-details" style="display: none;"></div>
+
 <script type="text/javascript">
   $(function() {
-    $('table.summary tbody tr').
-      mouseenter(function() {
-        $(this).find('div.matches').show();
-      }).
-      mouseleave(function() {
-        $(this).find('div.matches').hide();
+    $("table.summary tbody").click(function(e) {
+      $(oTable.fnSettings().aoData).each(function() {
+        $(this.nTr).removeClass('row_selected');
       });
+      var tr = $(e.target.parentNode);
+      tr.addClass('row_selected');
+      var groupId = tr.attr('id').replace(/^group-/, "");
+      $('#group-details').load(window.location.href + "/details/" + groupId, function() {
+        $(this).show().find('table.dataTable').dataTable({bJQueryUI: true});
+      });
+    });
+    var oTable = $('table.summary').dataTable({bJQueryUI: true});
   });
 </script>

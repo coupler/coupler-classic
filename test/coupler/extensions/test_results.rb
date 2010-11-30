@@ -39,6 +39,12 @@ module Coupler
         assert last_response.ok?
       end
 
+      def test_details
+        pend "Need decent results fixtures to test this properly"
+        get "/projects/#{@project.id}/scenarios/#{@scenario.id}/results/#{@result.id}/details/123"
+        assert last_response.ok?
+      end
+
 =begin
       def test_show_sends_csv
         pend

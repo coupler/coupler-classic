@@ -28,7 +28,7 @@ module Coupler
         count = Models::Job.filter(:status => 'running').count
         if count == 0
           job = Models::Job.filter(:status => 'scheduled').order(:created_at).first
-          Thread.new(job) { |j| j.execute } if job
+          Thread.new(job) { |j| puts "RUNNING: #{j.inspect}"; j.execute } if job
         end
       end
     end
