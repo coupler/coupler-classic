@@ -26,7 +26,7 @@ module Coupler
             @groups_dataset = scenario_db[@groups_table_name]
             @groups_buffer = ImportBuffer.new(@groups_column_names, @groups_dataset)
             @join_dataset = scenario_db[@join_table_name]
-            @join_buffer = ImportBuffer.new([:record_id, :resource_id, :group_id], @join_dataset)
+            @join_buffer = ImportBuffer.new([:record_id, :resource_id, :which, :group_id], @join_dataset)
 
             # Group records for each dataset.  This step is the same for both
             # self-linkage and dual-linkage.  However, this is the only step
@@ -86,28 +86,17 @@ module Coupler
               @groups_dataset.filter(:id <= last_group_id).delete
               @join_dataset.filter(:group_id <= last_group_id).delete
 
-              # Delete duplicate records in groups_records.
-              # This happens in cross-linkages when a record matches itself.
-              if @type == 'cross-linkage'
-                # See http://dev.mysql.com/doc/refman/5.0/en/delete.html#c6518
-                scenario_db.run(<<-EOF)
-                  ALTER IGNORE TABLE #{@join_table_name}
-                  ADD UNIQUE INDEX drop_duplicates_index (record_id, resource_id, group_id)
-                EOF
-                scenario_db.run(<<-EOF)
-                  ALTER IGNORE TABLE #{@join_table_name}
-                  DROP INDEX drop_duplicates_index
-                EOF
-              end
-
               # Don't need the secondary table anymore
               scenario_db.drop_table(@secondary_groups_table_name)
             end
 
             # Calculate some summary stats
-            @join_dataset.group_and_count(:group_id, :resource_id).each do |count_row|
-              @groups_dataset.filter(:id => count_row[:group_id]).
-                update(:"resource_#{count_row[:resource_id]}_count" => count_row[:count])
+            counts_ds = @join_dataset.group_and_count(:group_id, :resource_id, :which)
+            use_which = @type == "cross-linkage"
+            counts_ds.each do |count_row|
+              group_id, resource_id, which, count = count_row.values_at(:group_id, :resource_id, :which, :count)
+              col_name = "resource_#{resource_id}" + (use_which ? "_#{which}_count" : "_count")
+              @groups_dataset.filter(:id => group_id).update(col_name.to_sym => count)
             end
           end
         end
@@ -151,8 +140,14 @@ module Coupler
             @groups_table_name = :"groups_#{@run_number}"
 
             # Add extra columns to the groups table for summary stats
-            @resources.collect(&:id).uniq.each do |resource_id|
-              groups_columns << {:name => :"resource_#{resource_id}_count", :type => Integer}
+            if @type == 'cross-linkage'
+              resource_id = @resources[0].id
+              groups_columns << {:name => :"resource_#{resource_id}_0_count", :type => Integer}
+              groups_columns << {:name => :"resource_#{resource_id}_1_count", :type => Integer}
+            else
+              @resources.collect(&:id).each do |resource_id|
+                groups_columns << {:name => :"resource_#{resource_id}_count", :type => Integer}
+              end
             end
 
             key_types = @resources.collect { |r| r.primary_key_type }.uniq
@@ -166,6 +161,7 @@ module Coupler
               scenario_db.create_table!(@join_table_name) do
                 column :record_id, record_id_type
                 Integer :resource_id
+                Integer :which
                 Integer :group_id, :index => true
               end
               if @type != 'self-linkage'
@@ -209,10 +205,10 @@ module Coupler
                         # stage of a dual-linkage.  So, we should save groups
                         # that only have 1 record in them.
                         group_id = create_group(prev_row, which)
-                        @join_buffer.add([prev_row[primary_key], resource_id, group_id])
+                        @join_buffer.add([prev_row[primary_key], resource_id, which, group_id])
                       end
                       if result
-                        @join_buffer.add([row[primary_key], resource_id, group_id])
+                        @join_buffer.add([row[primary_key], resource_id, which, group_id])
                       else
                         group_id = nil
                       end
@@ -231,7 +227,7 @@ module Coupler
                   if which && group_id.nil?
                     # See above comment about `which`
                     group_id = create_group(prev_row, which)
-                    @join_buffer.add([prev_row[primary_key], resource_id, group_id])
+                    @join_buffer.add([prev_row[primary_key], resource_id, which, group_id])
                   end
 
                   # This stores the last record of this segment in order to

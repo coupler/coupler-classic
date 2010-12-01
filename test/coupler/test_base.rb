@@ -16,7 +16,7 @@ module Coupler
       project = Factory(:project)
       get "/"
       assert last_response.redirect?
-      assert_equal "http://example.com/projects", last_response['location']
+      assert_equal "http://example.org/projects", last_response['location']
     end
   end
 end

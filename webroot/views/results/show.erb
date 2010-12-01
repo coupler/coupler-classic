@@ -11,12 +11,18 @@
     <thead>
       <tr>
         <%- (columns = groups_dataset.columns).each do |column| -%>
-          <th><%= column %></th>
+          <%- if column.to_s =~ /pair_(\d+)/ -%>
+            <th><%= "Pair #%d" % ($1.to_i + 1) %></th>
+          <%- elsif column.to_s =~ /resource_(\d+)_count/ -%>
+            <th><%= "Rows from #{Coupler::Models::Resource[:id => $1].name}" %></th>
+          <%- else -%>
+            <th><%= column %></th>
+          <%- end -%>
         <%- end -%>
       </tr>
     </thead>
     <tbody>
-      <%- groups_dataset.order(*columns.reject{|c| c == :id }).each do |group| -%>
+      <%- groups_dataset.each do |group| -%>
         <tr id="group-<%= group[:id] %>" class="group">
           <%- columns.each do |column| -%>
             <td><%= group[column] %></td>

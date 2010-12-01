@@ -411,3 +411,7 @@ ul.projects li.project .content ul li .ui-icon {
   float: left;
   margin: 3px 5px 0 0;
 }
+
+table.summary tr {
+  cursor: pointer;
+}
