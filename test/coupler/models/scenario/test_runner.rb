@@ -4,12 +4,8 @@ module Coupler
   module Models
     class Scenario
       class TestRunner < Test::Unit::TestCase
-        @@datasets_created = false
-
-        def setup
-          super
-          # set up test datasets
-          if !@@datasets_created
+        class << self
+          def startup
             Sequel.connect(Config.connection_string('ruby_runner_test', :create_database => true)) do |db|
               db.create_table!(:resource_1) do
                 primary_key :id
@@ -48,8 +44,12 @@ module Coupler
               end
               db[:resource_2].import([:SocialSecurityNumber], rows)
             end
-            @@datasets_created = true
           end
+        end
+
+        def setup
+          super
+          # set up test datasets
           @connection = Factory(:connection)
           @project = Factory(:project)
           @resource_1 = Factory(:resource, :database_name => "ruby_runner_test", :table_name => "resource_1", :connection => @connection, :project => @project)
@@ -157,14 +157,11 @@ module Coupler
             # Breakdown of groups_records_1
             # - Values that should match each other: 0, 1, 3, 4, 5, 6, 7
             # - For each value, there are 125 records that should match in foo
-            #   Total: 875
+            #   Subtotal: 875
             # - For each value, there are 100 records that should match in bar
-            #   Total: 700
-            # * Subtotal: 1575
-            # - There are 88 records where foo == bar, so each of these will
-            #   have a duplicate record in the resulting table.
-            # * Expected Total: 1575 - 88 = 1487
-            assert_equal 1487, join_ds.count
+            #   Subtotal: 700
+            # * Expected Total: 1575
+            assert_equal 1575, join_ds.count
 
             assert db.tables.include?(:groups_1)
             group_ds = db[:groups_1]
