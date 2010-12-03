@@ -58,15 +58,21 @@ module Coupler
         result.save
       end
 
-      private
-        def set_linkage_type
-          self.linkage_type =
-            if resource_1
-              resource_2 ? "dual-linkage" : "self-linkage"
-            else
-              "N/A"
-            end
+      def set_linkage_type
+        if resource_1
+          if resource_2
+            self.linkage_type = "dual-linkage"
+          elsif matcher && matcher.cross_match?
+            self.linkage_type = "cross-linkage"
+          else
+            self.linkage_type = "self-linkage"
+          end
+        else
+          self.linkage_type = "N/A"
         end
+      end
+
+      private
 
         def local_connection_string
           Config.connection_string(:"scenario_#{id}", {
@@ -99,10 +105,12 @@ module Coupler
           set_linkage_type
         end
 
-        def before_update
-          super
-          set_linkage_type
-        end
+        # There is currently no plan to let a user change resources
+        # after a scenario has been created.
+        #def before_update
+          #super
+          #set_linkage_type
+        #end
     end
   end
 end

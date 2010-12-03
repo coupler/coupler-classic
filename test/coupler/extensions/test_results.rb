@@ -3,12 +3,50 @@ require File.dirname(__FILE__) + '/../../helper'
 module Coupler
   module Extensions
     class TestResults < Test::Unit::TestCase
+      class << self
+        def startup
+          ### Test Resource 1 ###
+          Sequel.connect(Config.connection_string('test_resource_1', :create_database => true)) do |db|
+            db.create_table!(:records) do
+              primary_key :id
+              String :uno_col
+              String :dos_col
+            end
+            db[:records].import \
+              [:id, :uno_col, :dos_col],
+              [
+                # Group 1
+                [18, "foo", nil], [16, "foo", nil], [17, "foo", nil],
+                [15, nil, "foo"], [13, nil, "foo"], [10, nil, "foo"], [19, nil, "foo"],
+                # Group 2
+                [25, "bar", nil], [23, "bar", nil], [20, "bar", nil], [29, "bar", nil],
+                [28, nil, "bar"], [26, nil, "bar"], [27, nil, "bar"],
+                # Group 3
+                [38, "baz", nil],
+                [35, nil, "baz"], [33, nil, "baz"], [30, nil, "baz"], [39, nil, "baz"],
+                # Group 4
+                [45, "quux", nil], [43, "quux", nil], [40, "quux", nil], [49, "quux", nil],
+                [48, nil, "quux"],
+                # Group 5
+                [55, "ditto", "ditto"], [53, "ditto", "ditto"]
+              ]
+          end
+        end
+      end
+
       def setup
         super
         @project = Factory(:project)
-        @resource = Factory(:resource, :project => @project)
+        @resource = Factory(:resource, :database_name => 'test_resource_1', :table_name => 'records', :project => @project)
         @scenario = Factory(:scenario, :project => @project, :resource_1 => @resource)
-        @matcher = Factory(:matcher, :scenario => @scenario)
+        @matcher = Factory(:matcher, {
+          :scenario => @scenario,
+          :comparisons_attributes => [{
+            'lhs_type' => 'field', 'raw_lhs_value' => @resource.fields_dataset[:name => 'uno_col'].id, 'lhs_which' => 1,
+            'rhs_type' => 'field', 'raw_rhs_value' => @resource.fields_dataset[:name => 'dos_col'].id, 'rhs_which' => 2,
+            'operator' => 'equals'
+          }]
+        })
         @scenario.run!
         @result = @scenario.results_dataset.first
       end
@@ -40,8 +78,9 @@ module Coupler
       end
 
       def test_details
-        pend "Need decent results fixtures to test this properly"
-        get "/projects/#{@project.id}/scenarios/#{@scenario.id}/results/#{@result.id}/details/123"
+        group_id = nil
+        @result.groups_dataset { |ds| group_id = ds.get(:id) }
+        get "/projects/#{@project.id}/scenarios/#{@scenario.id}/results/#{@result.id}/details/#{group_id}"
         assert last_response.ok?
       end
 

@@ -415,3 +415,13 @@ ul.projects li.project .content ul li .ui-icon {
 table.summary tr {
   cursor: pointer;
 }
+
+.sup {
+  font-size: 75%;
+  vertical-align: super;
+  display: inline;
+}
+
+#result-tabs {
+  font-size: 1em;
+}

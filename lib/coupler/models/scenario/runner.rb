@@ -7,12 +7,11 @@ module Coupler
         def initialize(parent)
           @parent = parent
           @matcher = parent.matcher
-          if @matcher.cross_match?
+          @type = parent.linkage_type
+          if @type == 'cross-linkage'
             @resources = [parent.resource_1, parent.resource_1]
-            @type = 'cross-linkage'
           else
             @resources = parent.resources
-            @type = parent.linkage_type
           end
           @run_number = @parent.run_count + 1
           @mutex = Mutex.new
@@ -43,7 +42,6 @@ module Coupler
               databases_to_close << dataset.db
               primary_key = resource.primary_key_sym
               which = @type == 'self-linkage' ? nil : i
-
               resource_thread = phase_one_thread(dataset, primary_key, resource.id, which)
               tw.join_nowait(resource_thread)
             end
@@ -91,12 +89,10 @@ module Coupler
             end
 
             # Calculate some summary stats
-            counts_ds = @join_dataset.group_and_count(:group_id, :resource_id, :which)
-            use_which = @type == "cross-linkage"
-            counts_ds.each do |count_row|
-              group_id, resource_id, which, count = count_row.values_at(:group_id, :resource_id, :which, :count)
-              col_name = "resource_#{resource_id}" + (use_which ? "_#{which}_count" : "_count")
-              @groups_dataset.filter(:id => group_id).update(col_name.to_sym => count)
+            resource_ids = @resources.collect(&:id)
+            @join_dataset.group_and_count(:group_id, :resource_id, :which).each do |row|
+              col = row[:which] ? :"resource_#{row[:which]+1}_count" : :"resource_1_count"
+              @groups_dataset.filter(:id => row[:group_id]).update(col => row[:count])
             end
           end
         end
@@ -140,14 +136,8 @@ module Coupler
             @groups_table_name = :"groups_#{@run_number}"
 
             # Add extra columns to the groups table for summary stats
-            if @type == 'cross-linkage'
-              resource_id = @resources[0].id
-              groups_columns << {:name => :"resource_#{resource_id}_0_count", :type => Integer}
-              groups_columns << {:name => :"resource_#{resource_id}_1_count", :type => Integer}
-            else
-              @resources.collect(&:id).each do |resource_id|
-                groups_columns << {:name => :"resource_#{resource_id}_count", :type => Integer}
-              end
+            @resources.length.times do |i|
+              groups_columns << {:name => :"resource_#{i+1}_count", :type => Integer}
             end
 
             key_types = @resources.collect { |r| r.primary_key_type }.uniq
@@ -163,6 +153,7 @@ module Coupler
                 Integer :resource_id
                 Integer :which
                 Integer :group_id, :index => true
+                index [:group_id, :resource_id, :which, :record_id]   # speedy filtering when showing results
               end
               if @type != 'self-linkage'
                 # Need another groups table
@@ -202,8 +193,8 @@ module Coupler
                       result = compare_rows(prev_row, row, which)
                       if (result || which) && group_id.nil?
                         # If `which` is not nil, that means we're in the first
-                        # stage of a dual-linkage.  So, we should save groups
-                        # that only have 1 record in them.
+                        # stage of a dual or cross linkage.  So, we should save
+                        # groups that only have 1 record in them.
                         group_id = create_group(prev_row, which)
                         @join_buffer.add([prev_row[primary_key], resource_id, which, group_id])
                       end

@@ -12,36 +12,35 @@ module Coupler
       TYPES = %w{field integer string}
 
       many_to_one :matcher
-      plugin :serialization, :marshal, :lhs_value, :rhs_value
+      plugin :serialization, :marshal, :raw_lhs_value, :raw_rhs_value
 
-      %w{lhs rhs}.each do |name|
-        class_eval(<<-END, __FILE__, __LINE__)
-          alias :raw_#{name}_value :#{name}_value
-          def #{name}_value
-            case #{name}_type
-            when "field"
-              Field[:id => raw_#{name}_value]
-            else
-              raw_#{name}_value
-            end
-          end
-
-          # FIXME: this should be a view helper, probably
-          def #{name}_label
-            case #{name}_type
-            when "field"
-              result = #{name}_value.name
-              resource_name = #{name}_value.resource.name
-              if #{name}_which
-                resource_name << %{<span class="sup">\#{#{name}_which}</span>}
-              end
-              result << " (\#{resource_name})"
-            else
-              raw_#{name}_value.inspect
-            end
-          end
-        END
+      def lhs_rhs_value(name)
+        case self[:"#{name}_type"]
+        when "field"
+          Field[:id => send("raw_#{name}_value")]
+        else
+          send("raw_#{name}_value")
+        end
       end
+      def lhs_value; lhs_rhs_value("lhs"); end
+      def rhs_value; lhs_rhs_value("rhs"); end
+
+      def lhs_rhs_label(name)
+        case self[:"#{name}_type"]
+        when "field"
+          field = lhs_rhs_value(name)
+          result = field.name
+          resource_name = field.resource.name
+          if self[:"#{name}_which"]
+            resource_name << %{<span class="sup">#{self[:"#{name}_which"]}</span>}
+          end
+          result << " (#{resource_name})"
+        else
+          lhs_rhs_value(name).inspect
+        end
+      end
+      def lhs_label; lhs_rhs_label("lhs"); end
+      def rhs_label; lhs_rhs_label("rhs"); end
 
       def fields
         result = []
@@ -141,13 +140,7 @@ module Coupler
 
         def validate
           super
-          %w{lhs rhs}.each do |name|
-            attr = :"#{name}_value"
-            value = send("raw_#{name}_value")
-            if value.nil? || value == ''
-              errors.add(attr, "is required")
-            end
-          end
+          validates_presence [:raw_lhs_value, :raw_rhs_value]
           validates_includes TYPES, [:lhs_type, :rhs_type]
           validates_includes OPERATORS, :operator
           validates_includes [1, 2], :lhs_which   if lhs_type == 'field'
@@ -164,8 +157,8 @@ module Coupler
         end
 
         def before_save
-          self.lhs_value = coerce_value(lhs_type, raw_lhs_value)
-          self.rhs_value = coerce_value(rhs_type, raw_rhs_value)
+          self.raw_lhs_value = coerce_value(lhs_type, raw_lhs_value)
+          self.raw_rhs_value = coerce_value(rhs_type, raw_rhs_value)
           super
         end
     end

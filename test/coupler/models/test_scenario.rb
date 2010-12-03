@@ -131,8 +131,8 @@ module Coupler
         scenario = Factory(:scenario, :name => "Scenario 1", :project => project, :resource_1 => resource)
         matcher = Factory(:matcher, {
           :comparisons_attributes => [
-            {:lhs_type => 'field', :lhs_value => last_name.id, :rhs_type => 'field', :rhs_value => last_name.id, :operator => 'equals'},
-            {:lhs_type => 'field', :lhs_value => first_name.id, :rhs_type => 'field', :rhs_value => first_name.id, :operator => 'equals'},
+            {:lhs_type => 'field', :raw_lhs_value => last_name.id, :rhs_type => 'field', :raw_rhs_value => last_name.id, :operator => 'equals'},
+            {:lhs_type => 'field', :raw_lhs_value => first_name.id, :rhs_type => 'field', :raw_rhs_value => first_name.id, :operator => 'equals'},
           ],
           :scenario => scenario
         })
@@ -146,7 +146,8 @@ module Coupler
         assert_equal 1, scenario.run_count
         assert_equal 1, scenario.results_dataset.count
 
-        assert scenario.results_dataset[:run_number => 1]
+        result = scenario.results_dataset[:run_number => 1]
+        assert result
       end
 
       def test_status_with_no_matcher
@@ -189,6 +190,24 @@ module Coupler
         resource_2 = Factory(:resource, :project => project)
         scenario = Factory(:scenario, :project => project, :resource_1 => resource_1, :resource_2 => resource_2)
         assert_equal "dual-linkage", scenario.linkage_type
+      end
+
+      def test_creation_of_cross_match_sets_linkage_type
+        project = Factory(:project)
+        resource = Factory(:resource, :project => project)
+        field_1 = resource.fields_dataset[:name => 'first_name']
+        field_2 = resource.fields_dataset[:name => 'last_name']
+        scenario = Factory(:scenario, :project => project, :resource_1 => resource)
+        matcher = Factory(:matcher, {
+          :scenario => scenario,
+          :comparisons_attributes => [{
+            :lhs_type => 'field', :raw_lhs_value => field_1.id, :lhs_which => 1,
+            :rhs_type => 'field', :raw_rhs_value => field_2.id, :rhs_which => 2,
+            :operator => 'equals'
+          }]
+        })
+        scenario.reload
+        assert_equal "cross-linkage", scenario.linkage_type
       end
 
       def test_running_jobs

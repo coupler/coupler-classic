@@ -72,6 +72,17 @@ module Coupler
             erb 'resources/edit'.to_sym
           end
         end
+
+        app.get "/projects/:project_id/resources/:id/record/:record_id" do
+          @resource = @project.resources_dataset[:id => params[:id]]
+          raise ResourceNotFound  unless @resource
+
+          @record = nil
+          @resource.final_dataset do |ds|
+            @record = ds.filter(@resource.primary_key_sym => params[:record_id]).first
+          end
+          @record.to_json
+        end
       end
     end
   end

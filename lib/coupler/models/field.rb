@@ -29,7 +29,7 @@ module Coupler
           filter({:project_id => resource.project_id} & ({:resource_1_id => resource_id} | {:resource_2_id => resource_id})).
           join(Matcher, :scenario_id => :id).
           join(Comparison, :matcher_id => :id).
-          filter({:lhs_type => 'field', :lhs_value => marshalled_id} | {:rhs_type => 'field', :rhs_value => marshalled_id})
+          filter({:lhs_type => 'field', :raw_lhs_value => marshalled_id} | {:rhs_type => 'field', :raw_rhs_value => marshalled_id})
       end
 
       def name_sym

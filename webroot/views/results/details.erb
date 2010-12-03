@@ -1,21 +1,22 @@
-<h2>Details for Group <%= @group[:id] %></h2>
+<h2>Group #<%= @group[:id] %></h2>
 <div class="section">
-  <table class="records dataTable">
-    <thead>
-      <tr>
-        <%- (columns = @records_dataset.columns).each do |column| -%>
-          <th><%= column %></th>
+  <%- if @resources.length > 1 -%>
+    <div class="result-fields">
+      <%- @resources.each do |resource| -%>
+        <%- resource.final_dataset do |ds| -%>
+          <ul>
+            <%- ds.columns.each do |column| -%>
+              <li><%= column %></li>
+            <%- end -%>
+          </ul>
         <%- end -%>
-      </tr>
-    </thead>
-    <tbody>
-      <%- @records_dataset.each do |record| -%>
-        <tr>
-          <%- columns.each do |column| -%>
-            <td><%= record[column] %></td>
-          <%- end -%>
-        </tr>
       <%- end -%>
-    </tbody>
-  </table>
+    </div>
+  <%- end -%>
+  <div id="result-group-left" class="result-group">
+  </div>
+  <div id="result-group-right" class="result-group">
+  </div>
 </div>
+<script type="text/javascript">
+</script>

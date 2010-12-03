@@ -40,8 +40,8 @@ Factory.define :matcher, :class => Coupler::Models::Matcher do |m|
   m.comparisons_attributes do |record|
     resources = record.scenario.resources
     [{
-      'lhs_type' => 'field', 'lhs_value' => resources[0].fields_dataset.order('id DESC').last.id, 'lhs_which' => 1,
-      'rhs_type' => 'field', 'rhs_value' => resources[-1].fields_dataset.order('id DESC').last.id, 'rhs_which' => 2,
+      'lhs_type' => 'field', 'raw_lhs_value' => resources[0].fields_dataset.order('id DESC').last.id, 'lhs_which' => 1,
+      'rhs_type' => 'field', 'raw_rhs_value' => resources[-1].fields_dataset.order('id DESC').last.id, 'rhs_which' => 2,
       'operator' => 'equals'
     }]
   end
@@ -82,9 +82,9 @@ end
 Factory.define :comparison, :class => Coupler::Models::Comparison do |c|
   c.association :matcher
   c.lhs_type "integer"
-  c.lhs_value 1
+  c.raw_lhs_value 1
   c.rhs_type "integer"
-  c.rhs_value 1
+  c.raw_rhs_value 1
   c.operator "equals"
 end
 

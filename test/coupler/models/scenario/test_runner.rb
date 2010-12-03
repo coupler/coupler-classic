@@ -61,8 +61,8 @@ module Coupler
           field = @resource_1.fields_dataset[:name => 'ssn']
           matcher = Factory(:matcher, {
             :scenario => scenario, :comparisons_attributes => [{
-              'lhs_type' => 'field', 'lhs_value' => field.id, 'lhs_which' => 1,
-              'rhs_type' => 'field', 'rhs_value' => field.id, 'rhs_which' => 2,
+              'lhs_type' => 'field', 'raw_lhs_value' => field.id, 'lhs_which' => 1,
+              'rhs_type' => 'field', 'raw_rhs_value' => field.id, 'rhs_which' => 2,
               'operator' => 'equals'
             }]
           })
@@ -97,13 +97,13 @@ module Coupler
           matcher = Factory(:matcher, {
             :scenario => scenario, :comparisons_attributes => [
               {
-                'lhs_type' => 'field', 'lhs_value' => field_1.id, 'lhs_which' => 1,
-                'rhs_type' => 'field', 'rhs_value' => field_1.id, 'rhs_which' => 2,
+                'lhs_type' => 'field', 'raw_lhs_value' => field_1.id, 'lhs_which' => 1,
+                'rhs_type' => 'field', 'raw_rhs_value' => field_1.id, 'rhs_which' => 2,
                 'operator' => 'equals'
               },
               {
-                'lhs_type' => 'field', 'lhs_value' => field_2.id, 'lhs_which' => 1,
-                'rhs_type' => 'field', 'rhs_value' => field_2.id, 'rhs_which' => 2,
+                'lhs_type' => 'field', 'raw_lhs_value' => field_2.id, 'lhs_which' => 1,
+                'rhs_type' => 'field', 'raw_rhs_value' => field_2.id, 'rhs_which' => 2,
                 'operator' => 'equals'
               },
             ]
@@ -141,8 +141,8 @@ module Coupler
           matcher = Factory(:matcher, {
             :scenario => scenario, :comparisons_attributes => [
               {
-                'lhs_type' => 'field', 'lhs_value' => field_1.id, 'lhs_which' => 1,
-                'rhs_type' => 'field', 'rhs_value' => field_2.id, 'rhs_which' => 2,
+                'lhs_type' => 'field', 'raw_lhs_value' => field_1.id, 'lhs_which' => 1,
+                'rhs_type' => 'field', 'raw_rhs_value' => field_2.id, 'rhs_which' => 2,
                 'operator' => 'equals'
               },
             ]
@@ -167,8 +167,8 @@ module Coupler
             group_ds = db[:groups_1]
             assert_equal 7, group_ds.count
             group_ds.each do |group_row|
-              counts = join_ds.filter(:group_id => group_row[:id]).group_and_count(:resource_id).to_hash(:resource_id, :count)
-              assert_equal counts[@resource_1.id], group_row[:"resource_#{@resource_1.id}_count"]
+              assert_equal 125, group_row[:"resource_1_count"], "Row counts didn't match"
+              assert_equal 100, group_row[:"resource_2_count"], "Row counts didn't match"
             end
 
             assert_equal 0, join_ds.group_and_count(:group_id).having(:count => 1).count
@@ -182,18 +182,18 @@ module Coupler
           matcher = Factory(:matcher, {
             :scenario => scenario, :comparisons_attributes => [
               {
-                'lhs_type' => 'field', 'lhs_value' => field_1.id, 'lhs_which' => 1,
-                'rhs_type' => 'field', 'rhs_value' => field_1.id, 'rhs_which' => 2,
+                'lhs_type' => 'field', 'raw_lhs_value' => field_1.id, 'lhs_which' => 1,
+                'rhs_type' => 'field', 'raw_rhs_value' => field_1.id, 'rhs_which' => 2,
                 'operator' => 'equals'
               },
               {
-                'lhs_type' => 'field', 'lhs_value' => field_1.id, 'lhs_which' => 1,
-                'rhs_type' => 'integer', 'rhs_value' => 30,
+                'lhs_type' => 'field', 'raw_lhs_value' => field_1.id, 'lhs_which' => 1,
+                'rhs_type' => 'integer', 'raw_rhs_value' => 30,
                 'operator' => 'greater_than'
               },
               {
-                'lhs_type' => 'field', 'lhs_value' => field_2.id, 'lhs_which' => 1,
-                'rhs_type' => 'integer', 'rhs_value' => 150,
+                'lhs_type' => 'field', 'raw_lhs_value' => field_2.id, 'lhs_which' => 1,
+                'rhs_type' => 'integer', 'raw_rhs_value' => 150,
                 'operator' => 'greater_than'
               },
             ]
@@ -228,8 +228,8 @@ module Coupler
           field_2 = @resource_2.fields_dataset[:name => 'SocialSecurityNumber']
           matcher = Factory(:matcher, {
             :scenario => scenario, :comparisons_attributes => [{
-              'lhs_type' => 'field', 'lhs_value' => field_1.id, 'lhs_which' => 1,
-              'rhs_type' => 'field', 'rhs_value' => field_2.id, 'rhs_which' => 2,
+              'lhs_type' => 'field', 'raw_lhs_value' => field_1.id, 'lhs_which' => 1,
+              'rhs_type' => 'field', 'raw_rhs_value' => field_2.id, 'rhs_which' => 2,
               'operator' => 'equals'
             }]
           })

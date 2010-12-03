@@ -28,21 +28,21 @@ module Coupler
 
       def test_serializes_lhs_and_rhs_values
         comparison = Factory(:comparison, {
-          :lhs_type => "integer", :lhs_value => 123,
-          :rhs_type => "integer", :rhs_value => 123
+          :lhs_type => "integer", :raw_lhs_value => 123,
+          :rhs_type => "integer", :raw_rhs_value => 123
         })
         obj = Comparison[:id => comparison.id]
-        assert_equal 123, obj.lhs_value
-        assert_equal 123, obj.rhs_value
+        assert_equal 123, obj.raw_lhs_value
+        assert_equal 123, obj.raw_rhs_value
       end
 
       def test_requires_types_and_values
         comparison = Factory.build(:comparison, {
-          :lhs_type => nil, :lhs_value => nil,
-          :rhs_type => nil, :rhs_value => nil
+          :lhs_type => nil, :raw_lhs_value => nil,
+          :rhs_type => nil, :raw_rhs_value => nil
         })
         assert !comparison.valid?
-        [:lhs_type, :rhs_type, :lhs_value, :rhs_value].each do |attr|
+        [:lhs_type, :rhs_type, :raw_lhs_value, :raw_rhs_value].each do |attr|
           assert_not_nil comparison.errors.on(attr)
         end
       end
@@ -57,7 +57,7 @@ module Coupler
       def test_allows_valid_types
         comparison = Factory.build(:comparison, {
           :lhs_type => nil, :rhs_type => nil,
-          :lhs_value => "123", :rhs_value => "123"
+          :raw_lhs_value => "123", :raw_rhs_value => "123"
         })
         %w{field integer string}.each do |type|
           comparison.lhs_type = comparison.rhs_type = type
@@ -81,13 +81,13 @@ module Coupler
 
       def test_requires_valid_lhs_which
         field = @resource.fields_dataset[:name => 'first_name']
-        comparison = Factory.build(:comparison, :lhs_value => field, :lhs_type => 'field', :lhs_which => 123)
+        comparison = Factory.build(:comparison, :raw_lhs_value => field.id, :lhs_type => 'field', :lhs_which => 123)
         assert !comparison.valid?
       end
 
       def test_requires_valid_rhs_which
         field = @resource.fields_dataset[:name => 'first_name']
-        comparison = Factory.build(:comparison, :rhs_value => field, :rhs_type => 'field', :rhs_which => 123)
+        comparison = Factory.build(:comparison, :raw_rhs_value => field.id, :rhs_type => 'field', :rhs_which => 123)
         assert !comparison.valid?
       end
 
@@ -95,8 +95,8 @@ module Coupler
         field_1 = @resource.fields_dataset[:name => 'first_name']
         field_2 = @resource.fields_dataset[:name => 'last_name']
         comparison = Factory(:comparison, {
-          :lhs_type => "field", :lhs_value => field_1.id,
-          :rhs_type => "field", :rhs_value => field_2.id
+          :lhs_type => "field", :raw_lhs_value => field_1.id,
+          :rhs_type => "field", :raw_rhs_value => field_2.id
         })
         obj = Comparison[:id => comparison.id]
         assert_equal field_1, obj.lhs_value
@@ -105,19 +105,19 @@ module Coupler
 
       def test_values_are_coerced_to_integer_when_type_is_integer
         comparison = Factory(:comparison, {
-          :lhs_type => "integer", :lhs_value => "123",
-          :rhs_type => "integer", :rhs_value => "123"
+          :lhs_type => "integer", :raw_lhs_value => "123",
+          :rhs_type => "integer", :raw_rhs_value => "123"
         })
         obj = Comparison[:id => comparison.id]
-        assert_equal 123, obj.lhs_value
-        assert_equal 123, obj.rhs_value
+        assert_equal 123, obj.raw_lhs_value
+        assert_equal 123, obj.raw_rhs_value
       end
 
       def test_fields_returns_lhs_field
         field = @resource.fields[0]
         comparison = Factory(:comparison, {
-          :lhs_type => "field", :lhs_value => field.id,
-          :rhs_type => "integer", :rhs_value => 123
+          :lhs_type => "field", :raw_lhs_value => field.id,
+          :rhs_type => "integer", :raw_rhs_value => 123
         })
         assert_equal [field], comparison.fields
       end
@@ -125,8 +125,8 @@ module Coupler
       def test_fields_returns_rhs_field
         field = @resource.fields[0]
         comparison = Factory(:comparison, {
-          :lhs_type => "integer", :lhs_value => 123,
-          :rhs_type => "field", :rhs_value => field.id,
+          :lhs_type => "integer", :raw_lhs_value => 123,
+          :rhs_type => "field", :raw_rhs_value => field.id,
         })
         assert_equal [field], comparison.fields
       end
@@ -135,16 +135,16 @@ module Coupler
         field_1 = @resource.fields_dataset[:name => 'first_name']
         field_2 = @resource.fields_dataset[:name => 'last_name']
         comparison = Factory(:comparison, {
-          :lhs_type => "field", :lhs_value => field_1.id,
-          :rhs_type => "field", :rhs_value => field_2.id,
+          :lhs_type => "field", :raw_lhs_value => field_1.id,
+          :rhs_type => "field", :raw_rhs_value => field_2.id,
         })
         assert_equal [field_1, field_2], comparison.fields
       end
 
       def test_fields_returns_empty_array
         comparison = Factory(:comparison, {
-          :lhs_type => "integer", :lhs_value => 123,
-          :rhs_type => "integer", :rhs_value => 123,
+          :lhs_type => "integer", :raw_lhs_value => 123,
+          :rhs_type => "integer", :raw_rhs_value => 123,
         })
         assert_equal [], comparison.fields
       end
@@ -164,7 +164,7 @@ module Coupler
         # A mite silly, this is.
         define_method(:"test_#{name}_label") do
           field = @resource.fields[0]
-          comparison = Comparison.new(:"#{name}_type" => 'field', :"#{name}_value" => field.id)
+          comparison = Comparison.new(:"#{name}_type" => 'field', :"raw_#{name}_value" => field.id)
           assert_equal "#{field.name} (#{@resource.name})", comparison.send("#{name}_label")
 
           comparison.send("#{name}_which=", 1)
@@ -174,11 +174,11 @@ module Coupler
           assert_equal %{#{field.name} (#{@resource.name}<span class="sup">2</span>)}, comparison.send("#{name}_label")
 
           comparison.send("#{name}_type=", 'integer')
-          comparison.send("#{name}_value=", 123)
+          comparison.send("raw_#{name}_value=", 123)
           assert_equal "123", comparison.send("#{name}_label")
 
           comparison.send("#{name}_type=", 'string')
-          comparison.send("#{name}_value=", 'foo')
+          comparison.send("raw_#{name}_value=", 'foo')
           assert_equal %{"foo"}, comparison.send("#{name}_label")
         end
       end
@@ -186,8 +186,8 @@ module Coupler
       def test_apply_field_equality
         field = @resource.fields_dataset[:name => 'first_name']
         comparison = Factory(:comparison, {
-          :lhs_type => 'field', :lhs_value => field.id, :lhs_which => 1,
-          :rhs_type => 'field', :rhs_value => field.id, :rhs_which => 2,
+          :lhs_type => 'field', :raw_lhs_value => field.id, :lhs_which => 1,
+          :rhs_type => 'field', :raw_rhs_value => field.id, :rhs_which => 2,
           :operator => 'equals'
         })
         dataset = mock('dataset', :opts => {})
@@ -199,8 +199,8 @@ module Coupler
       def test_apply_field_equality_to_one_side_only
         field = @resource.fields_dataset[:name => 'first_name']
         comparison = Factory(:comparison, {
-          :lhs_type => 'field', :lhs_value => field.id, :lhs_which => 1,
-          :rhs_type => 'field', :rhs_value => field.id, :rhs_which => 2,
+          :lhs_type => 'field', :raw_lhs_value => field.id, :lhs_which => 1,
+          :rhs_type => 'field', :raw_rhs_value => field.id, :rhs_which => 2,
           :operator => 'equals'
         })
         dataset_1 = mock('dataset', :opts => {})
@@ -218,8 +218,8 @@ module Coupler
         field_1 = @resource.fields_dataset[:name => 'first_name']
         field_2 = @resource.fields_dataset[:name => 'last_name']
         comparison = Factory(:comparison, {
-          :lhs_type => 'field', :lhs_value => field_1.id, :lhs_which => 1,
-          :rhs_type => 'field', :rhs_value => field_2.id, :rhs_which => 2,
+          :lhs_type => 'field', :raw_lhs_value => field_1.id, :lhs_which => 1,
+          :rhs_type => 'field', :raw_rhs_value => field_2.id, :rhs_which => 2,
           :operator => 'equals'
         })
         dataset = mock('dataset', :opts => {})
@@ -232,8 +232,8 @@ module Coupler
         field_1 = @resource.fields_dataset[:name => 'first_name']
         field_2 = @resource.fields_dataset[:name => 'last_name']
         comparison = Factory(:comparison, {
-          :lhs_type => 'field', :lhs_value => field_1.id, :lhs_which => 1,
-          :rhs_type => 'field', :rhs_value => field_2.id, :rhs_which => 2,
+          :lhs_type => 'field', :raw_lhs_value => field_1.id, :lhs_which => 1,
+          :rhs_type => 'field', :raw_rhs_value => field_2.id, :rhs_which => 2,
           :operator => 'equals'
         })
         dataset_1 = mock('dataset', :opts => {})
@@ -251,8 +251,8 @@ module Coupler
       def test_apply_field_inequality_to_single_dataset
         field = @resource.fields_dataset[:name => 'first_name']
         comparison = Factory(:comparison, {
-          :lhs_type => 'field', :lhs_value => field.id, :lhs_which => 1,
-          :rhs_type => 'field', :rhs_value => field.id, :rhs_which => 2,
+          :lhs_type => 'field', :raw_lhs_value => field.id, :lhs_which => 1,
+          :rhs_type => 'field', :raw_rhs_value => field.id, :rhs_which => 2,
           :operator => 'does_not_equal'
         })
         dataset = mock('dataset', :opts => {})
@@ -264,8 +264,8 @@ module Coupler
       def test_apply_field_inequality_to_dual_datasets
         field = @resource.fields_dataset[:name => 'first_name']
         comparison = Factory(:comparison, {
-          :lhs_type => 'field', :lhs_value => field.id, :lhs_which => 1,
-          :rhs_type => 'field', :rhs_value => field.id, :rhs_which => 2,
+          :lhs_type => 'field', :raw_lhs_value => field.id, :lhs_which => 1,
+          :rhs_type => 'field', :raw_rhs_value => field.id, :rhs_which => 2,
           :operator => 'does_not_equal'
         })
         dataset_1 = mock('dataset_1', :opts => {})
@@ -283,13 +283,13 @@ module Coupler
         field_1 = @resource.fields_dataset[:name => 'first_name']
         field_2 = @resource.fields_dataset[:name => 'last_name']
         comparison_1 = Factory(:comparison, {
-          :lhs_type => 'field', :lhs_value => field_1.id, :lhs_which => 1,
-          :rhs_type => 'field', :rhs_value => field_2.id, :rhs_which => 1,
+          :lhs_type => 'field', :raw_lhs_value => field_1.id, :lhs_which => 1,
+          :rhs_type => 'field', :raw_rhs_value => field_2.id, :rhs_which => 1,
           :operator => 'equals'
         })
         comparison_2 = Factory(:comparison, {
-          :lhs_type => 'field', :lhs_value => field_2.id, :lhs_which => 2,
-          :rhs_type => 'field', :rhs_value => field_1.id, :rhs_which => 2,
+          :lhs_type => 'field', :raw_lhs_value => field_2.id, :lhs_which => 2,
+          :rhs_type => 'field', :raw_rhs_value => field_1.id, :rhs_which => 2,
           :operator => 'equals'
         })
         dataset = mock('dataset')
@@ -305,13 +305,13 @@ module Coupler
         field_1 = @resource.fields_dataset[:name => 'first_name']
         field_2 = @resource.fields_dataset[:name => 'last_name']
         comparison_1 = Factory(:comparison, {
-          :lhs_type => 'field', :lhs_value => field_1.id, :lhs_which => 1,
-          :rhs_type => 'field', :rhs_value => field_2.id, :rhs_which => 1,
+          :lhs_type => 'field', :raw_lhs_value => field_1.id, :lhs_which => 1,
+          :rhs_type => 'field', :raw_rhs_value => field_2.id, :rhs_which => 1,
           :operator => 'equals'
         })
         comparison_2 = Factory(:comparison, {
-          :lhs_type => 'field', :lhs_value => field_2.id, :lhs_which => 2,
-          :rhs_type => 'field', :rhs_value => field_1.id, :rhs_which => 2,
+          :lhs_type => 'field', :raw_lhs_value => field_2.id, :lhs_which => 2,
+          :rhs_type => 'field', :raw_rhs_value => field_1.id, :rhs_which => 2,
           :operator => 'equals'
         })
         dataset_1 = mock('dataset')
@@ -333,8 +333,8 @@ module Coupler
         field_1 = @resource.fields_dataset[:name => 'first_name']
         field_2 = @resource.fields_dataset[:name => 'last_name']
         comparison = Factory(:comparison, {
-          :lhs_type => 'field', :lhs_value => field_1.id, :lhs_which => 1,
-          :rhs_type => 'field', :rhs_value => field_2.id, :rhs_which => 2,
+          :lhs_type => 'field', :raw_lhs_value => field_1.id, :lhs_which => 1,
+          :rhs_type => 'field', :raw_rhs_value => field_2.id, :rhs_which => 2,
           :operator => 'greater_than'
         })
         dataset = mock('dataset', :opts => {})
@@ -348,8 +348,8 @@ module Coupler
         field_1 = @resource.fields_dataset[:name => 'first_name']
         field_2 = @resource.fields_dataset[:name => 'last_name']
         comparison = Factory(:comparison, {
-          :lhs_type => 'field', :lhs_value => field_1.id, :lhs_which => 1,
-          :rhs_type => 'field', :rhs_value => field_2.id, :rhs_which => 2,
+          :lhs_type => 'field', :raw_lhs_value => field_1.id, :lhs_which => 1,
+          :rhs_type => 'field', :raw_rhs_value => field_2.id, :rhs_which => 2,
           :operator => 'equals'
         })
         dataset = mock('dataset', :opts => { :order => [:first_name], :select => [:foo, :first_name] })
@@ -362,13 +362,13 @@ module Coupler
         field_1 = @resource.fields_dataset[:name => 'first_name']
         field_2 = @resource.fields_dataset[:name => 'last_name']
         comparison_1 = Factory(:comparison, {
-          :lhs_type => 'field', :lhs_value => field_1.id, :lhs_which => 1,
-          :rhs_type => 'integer', :rhs_value => 123,
+          :lhs_type => 'field', :raw_lhs_value => field_1.id, :lhs_which => 1,
+          :rhs_type => 'integer', :raw_rhs_value => 123,
           :operator => 'equals'
         })
         comparison_2 = Factory(:comparison, {
-          :lhs_type => 'field', :lhs_value => field_2.id, :lhs_which => 2,
-          :rhs_type => 'integer', :rhs_value => 123,
+          :lhs_type => 'field', :raw_lhs_value => field_2.id, :lhs_which => 2,
+          :rhs_type => 'integer', :raw_rhs_value => 123,
           :operator => 'equals'
         })
         dataset = mock('dataset')
@@ -382,13 +382,13 @@ module Coupler
         field_1 = @resource.fields_dataset[:name => 'first_name']
         field_2 = @resource.fields_dataset[:name => 'last_name']
         comparison_1 = Factory(:comparison, {
-          :lhs_type => 'field', :lhs_value => field_1.id, :lhs_which => 1,
-          :rhs_type => 'integer', :rhs_value => 123,
+          :lhs_type => 'field', :raw_lhs_value => field_1.id, :lhs_which => 1,
+          :rhs_type => 'integer', :raw_rhs_value => 123,
           :operator => 'equals'
         })
         comparison_2 = Factory(:comparison, {
-          :lhs_type => 'field', :lhs_value => field_2.id, :lhs_which => 2,
-          :rhs_type => 'integer', :rhs_value => 123,
+          :lhs_type => 'field', :raw_lhs_value => field_2.id, :lhs_which => 2,
+          :rhs_type => 'integer', :raw_rhs_value => 123,
           :operator => 'equals'
         })
         dataset_1 = mock('dataset 1')
@@ -408,8 +408,8 @@ module Coupler
       def test_apply_non_field_equals_field
         field = @resource.fields_dataset[:name => 'first_name']
         comparison = Factory(:comparison, {
-          :lhs_type => 'integer', :lhs_value => 123,
-          :rhs_type => 'field', :rhs_value => field.id, :rhs_which => 1,
+          :lhs_type => 'integer', :raw_lhs_value => 123,
+          :rhs_type => 'field', :raw_rhs_value => field.id, :rhs_which => 1,
           :operator => 'equals'
         })
         dataset = mock('dataset')
@@ -420,8 +420,8 @@ module Coupler
       def test_apply_field_does_not_equal_non_field
         field = @resource.fields_dataset[:name => 'first_name']
         comparison = Factory(:comparison, {
-          :lhs_type => 'field', :lhs_value => field.id,
-          :rhs_type => 'integer', :rhs_value => 123,
+          :lhs_type => 'field', :raw_lhs_value => field.id,
+          :rhs_type => 'integer', :raw_rhs_value => 123,
           :operator => 'does_not_equal'
         })
         dataset = mock('dataset')
@@ -432,8 +432,8 @@ module Coupler
       def test_apply_non_field_does_not_equal_field
         field = @resource.fields_dataset[:name => 'first_name']
         comparison = Factory(:comparison, {
-          :lhs_type => 'integer', :lhs_value => 123,
-          :rhs_type => 'field', :rhs_value => field.id,
+          :lhs_type => 'integer', :raw_lhs_value => 123,
+          :rhs_type => 'field', :raw_rhs_value => field.id,
           :operator => 'does_not_equal'
         })
         dataset = mock('dataset')
@@ -444,8 +444,8 @@ module Coupler
       def test_apply_field_greater_than_non_field
         field = @resource.fields_dataset[:name => 'first_name']
         comparison = Factory(:comparison, {
-          :lhs_type => 'field', :lhs_value => field.id,
-          :rhs_type => 'integer', :rhs_value => 123,
+          :lhs_type => 'field', :raw_lhs_value => field.id,
+          :rhs_type => 'integer', :raw_rhs_value => 123,
           :operator => 'greater_than'
         })
         dataset = mock('dataset')
@@ -456,8 +456,8 @@ module Coupler
       def test_apply_non_field_greater_than_field
         field = @resource.fields_dataset[:name => 'first_name']
         comparison = Factory(:comparison, {
-          :lhs_type => 'integer', :lhs_value => 123,
-          :rhs_type => 'field', :rhs_value => field.id,
+          :lhs_type => 'integer', :raw_lhs_value => 123,
+          :rhs_type => 'field', :raw_rhs_value => field.id,
           :operator => 'greater_than'
         })
         dataset = mock('dataset')
@@ -468,8 +468,8 @@ module Coupler
       def test_apply_field_less_than_non_field
         field = @resource.fields_dataset[:name => 'first_name']
         comparison = Factory(:comparison, {
-          :lhs_type => 'field', :lhs_value => field.id,
-          :rhs_type => 'integer', :rhs_value => 123,
+          :lhs_type => 'field', :raw_lhs_value => field.id,
+          :rhs_type => 'integer', :raw_rhs_value => 123,
           :operator => 'less_than'
         })
         dataset = mock('dataset')
@@ -480,8 +480,8 @@ module Coupler
       def test_apply_non_field_less_than_field
         field = @resource.fields_dataset[:name => 'first_name']
         comparison = Factory(:comparison, {
-          :lhs_type => 'integer', :lhs_value => 123,
-          :rhs_type => 'field', :rhs_value => field.id,
+          :lhs_type => 'integer', :raw_lhs_value => 123,
+          :rhs_type => 'field', :raw_rhs_value => field.id,
           :operator => 'less_than'
         })
         dataset = mock('dataset')
@@ -491,8 +491,8 @@ module Coupler
 
       def test_apply_non_field_equal_non_field
         comparison = Factory(:comparison, {
-          :lhs_type => 'integer', :lhs_value => 123,
-          :rhs_type => 'integer', :rhs_value => 123,
+          :lhs_type => 'integer', :raw_lhs_value => 123,
+          :rhs_type => 'integer', :raw_rhs_value => 123,
           :operator => 'equals'
         })
         dataset = mock('dataset')
@@ -502,8 +502,8 @@ module Coupler
 
       def test_apply_non_field_equal_non_field_regardless_of_side
         comparison = Factory(:comparison, {
-          :lhs_type => 'integer', :lhs_value => 123,
-          :rhs_type => 'integer', :rhs_value => 123,
+          :lhs_type => 'integer', :raw_lhs_value => 123,
+          :rhs_type => 'integer', :raw_rhs_value => 123,
           :operator => 'equals'
         })
         dataset_1 = mock('dataset 1')
@@ -518,8 +518,8 @@ module Coupler
       def test_blocking?
         field = @resource.fields_dataset[:name => 'first_name']
         comparison = Factory(:comparison, {
-          :lhs_type => 'field', :lhs_value => field.id, :lhs_which => 1,
-          :rhs_type => 'field', :rhs_value => field.id, :rhs_which => 2,
+          :lhs_type => 'field', :raw_lhs_value => field.id, :lhs_which => 1,
+          :rhs_type => 'field', :raw_rhs_value => field.id, :rhs_which => 2,
           :operator => 'equals'
         })
         assert !comparison.blocking?
@@ -529,8 +529,8 @@ module Coupler
         field_1 = @resource.fields_dataset[:name => 'first_name']
         field_2 = @resource.fields_dataset[:name => 'last_name']
         comparison = Factory(:comparison, {
-          :lhs_type => 'field', :lhs_value => field_1.id, :lhs_which => 1,
-          :rhs_type => 'field', :rhs_value => field_2.id, :rhs_which => 2,
+          :lhs_type => 'field', :raw_lhs_value => field_1.id, :lhs_which => 1,
+          :rhs_type => 'field', :raw_rhs_value => field_2.id, :rhs_which => 2,
           :operator => 'equals'
         })
         assert comparison.cross_match?
@@ -540,8 +540,8 @@ module Coupler
         field_1 = @resource.fields_dataset[:name => 'first_name']
         field_2 = @resource.fields_dataset[:name => 'age']
         comparison = Factory.build(:comparison, {
-          :lhs_type => 'field', :lhs_value => field_1.id, :lhs_which => 1,
-          :rhs_type => 'field', :rhs_value => field_2.id, :rhs_which => 2,
+          :lhs_type => 'field', :raw_lhs_value => field_1.id, :lhs_which => 1,
+          :rhs_type => 'field', :raw_rhs_value => field_2.id, :rhs_which => 2,
           :operator => 'equals'
         })
         assert !comparison.valid?, "Comparison should have been invalid"
@@ -550,8 +550,8 @@ module Coupler
       def test_does_not_allow_non_equality_comparisons_for_fields
         field = @resource.fields_dataset[:name => 'first_name']
         comparison = Factory.build(:comparison, {
-          :lhs_type => 'field', :lhs_value => field.id, :lhs_which => 1,
-          :rhs_type => 'field', :rhs_value => field.id, :rhs_which => 2,
+          :lhs_type => 'field', :raw_lhs_value => field.id, :lhs_which => 1,
+          :rhs_type => 'field', :raw_rhs_value => field.id, :rhs_which => 2,
           :operator => 'greater_than'
         })
         assert !comparison.valid?, "Comparison should have been invalid"

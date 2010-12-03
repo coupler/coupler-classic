@@ -25,8 +25,8 @@ module Coupler
           :scenario => scenario,
           :comparisons_attributes => {
             '1' => {
-              'lhs_type' => 'field', 'lhs_value' => fields[1].id.to_s,
-              'rhs_type' => 'field', 'rhs_value' => fields[2].id.to_s,
+              'lhs_type' => 'field', 'raw_lhs_value' => fields[1].id.to_s,
+              'rhs_type' => 'field', 'raw_rhs_value' => fields[2].id.to_s,
               'operator' => 'equals'
             }
           }
@@ -38,8 +38,8 @@ module Coupler
         matcher = Factory.build(:matcher, {
           :comparisons_attributes => {
             '1' => {
-              'lhs_type' => 'integer', 'lhs_value' => 1,
-              'rhs_type' => 'integer', 'rhs_value' => 1,
+              'lhs_type' => 'integer', 'raw_lhs_value' => 1,
+              'rhs_type' => 'integer', 'raw_rhs_value' => 1,
               'operator' => 'foo'
             }
           }
@@ -56,13 +56,13 @@ module Coupler
           :scenario => scenario,
           :comparisons_attributes => {
             '1' => {
-              'lhs_type' => 'field', 'lhs_value' => fields[1].id.to_s,
-              'rhs_type' => 'field', 'rhs_value' => fields[2].id.to_s,
+              'lhs_type' => 'field', 'raw_lhs_value' => fields[1].id.to_s,
+              'rhs_type' => 'field', 'raw_rhs_value' => fields[2].id.to_s,
               'operator' => 'equals'
             },
             '2' => {
-              'lhs_type' => 'integer', 'lhs_value' => 1,
-              'rhs_type' => 'integer', 'rhs_value' => 1,
+              'lhs_type' => 'integer', 'raw_lhs_value' => 1,
+              'rhs_type' => 'integer', 'raw_rhs_value' => 1,
               'operator' => 'equals'
             }
           }
@@ -81,8 +81,8 @@ module Coupler
         matcher = Factory.build(:matcher, {
           :comparisons_attributes => {
             '1' => {
-              'lhs_type' => 'integer', 'lhs_value' => 1,
-              'rhs_type' => 'integer', 'rhs_value' => 1,
+              'lhs_type' => 'integer', 'raw_lhs_value' => 1,
+              'rhs_type' => 'integer', 'raw_rhs_value' => 1,
               'operator' => 'equals'
             }
           }
@@ -97,8 +97,8 @@ module Coupler
           :scenario => scenario,
           :comparisons_attributes => {
             '1' => {
-              'lhs_type' => 'field', 'lhs_value' => resource.fields_dataset[:name => 'first_name'].id,
-              'rhs_type' => 'field', 'rhs_value' => resource.fields_dataset[:name => 'last_name'].id,
+              'lhs_type' => 'field', 'raw_lhs_value' => resource.fields_dataset[:name => 'first_name'].id,
+              'rhs_type' => 'field', 'raw_rhs_value' => resource.fields_dataset[:name => 'last_name'].id,
               'operator' => 'equals'
             }
           }

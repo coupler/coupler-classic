@@ -104,8 +104,8 @@ module Coupler
         field = resource.fields_dataset[:name => 'first_name']
         scenario = Factory(:scenario, :project => project, :resource_1 => resource)
         matcher = Factory(:matcher, :scenario => scenario, :comparisons_attributes => [{
-          'lhs_type' => 'field', 'lhs_value' => field.id, 'lhs_which' => 1,
-          'rhs_type' => 'field', 'rhs_value' => field.id, 'rhs_which' => 2,
+          'lhs_type' => 'field', 'raw_lhs_value' => field.id, 'lhs_which' => 1,
+          'rhs_type' => 'field', 'raw_rhs_value' => field.id, 'rhs_which' => 2,
           'operator' => 'equals'
         }])
         scenario.run!
@@ -131,8 +131,8 @@ module Coupler
         field_2 = resource.fields_dataset[:name => 'last_name']
         scenario = Factory(:scenario, :project => project, :resource_1 => resource)
         matcher = Factory(:matcher, :scenario => scenario, :comparisons_attributes => [{
-          'lhs_type' => 'field', 'lhs_value' => field_1.id, 'lhs_which' => 1,
-          'rhs_type' => 'field', 'rhs_value' => field_2.id, 'rhs_which' => 2,
+          'lhs_type' => 'field', 'raw_lhs_value' => field_1.id, 'lhs_which' => 1,
+          'rhs_type' => 'field', 'raw_rhs_value' => field_2.id, 'rhs_which' => 2,
           'operator' => 'equals'
         }])
         scenario.run!

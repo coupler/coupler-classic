@@ -125,6 +125,12 @@ module Coupler
       def test_delete
         pend
       end
+
+      def test_record
+        resource = Factory(:resource, :project => @project)
+        get "/projects/#{@project.id}/resources/#{resource.id}/record/1"
+        assert last_response.ok?
+      end
     end
   end
 end

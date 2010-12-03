@@ -93,11 +93,11 @@ module Coupler
         scenario = Factory(:scenario, :resource_1 => resource, :project => project)
         matcher = Factory(:matcher,
           :comparisons_attributes => [
-            {:lhs_type => 'field', :lhs_value => first_name.id, :lhs_which => 1, :rhs_type => 'field', :rhs_value => first_name.id, :rhs_which => 2, :operator => 'equals'},
+            {:lhs_type => 'field', :raw_lhs_value => first_name.id, :lhs_which => 1, :rhs_type => 'field', :raw_rhs_value => first_name.id, :rhs_which => 2, :operator => 'equals'},
           ],
           :scenario => scenario)
         ds = first_name.scenarios_dataset
-        assert_equal scenario, ds.first
+        assert_equal scenario.id, ds.get(:id)
       end
     end
   end

@@ -12,16 +12,16 @@ module Coupler
 
         def stub_fields_comparison(field_1, field_2 = field_1, lhs_which = 1, rhs_which = 2, operator = 'equals', &block)
           stub('comparison', {
-            :lhs_type => 'field', :lhs_value => field_1, :lhs_which => lhs_which,
-            :rhs_type => 'field', :rhs_value => field_2, :rhs_which => rhs_which,
+            :lhs_type => 'field', :raw_lhs_value => field_1, :lhs_which => lhs_which,
+            :rhs_type => 'field', :raw_rhs_value => field_2, :rhs_which => rhs_which,
             :operator => operator, :fields => [field_1, field_2]
           }, &block)
         end
 
         def stub_static_comparison(field, rhs_type, rhs_value, operator, lhs_which = 1, &block)
           stub('comparison', {
-            :lhs_type => 'field', :lhs_value => field, :lhs_which => lhs_which,
-            :rhs_type => rhs_type, :rhs_value => rhs_value,
+            :lhs_type => 'field', :raw_lhs_value => field, :lhs_which => lhs_which,
+            :rhs_type => rhs_type, :raw_rhs_value => rhs_value,
             :operator => operator
           }, &block)
         end

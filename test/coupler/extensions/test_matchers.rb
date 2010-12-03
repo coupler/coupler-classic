@@ -37,8 +37,8 @@ module Coupler
         attribs = {
           'comparisons_attributes' => {
             '0' => {
-              'lhs_type' => 'field', 'lhs_value' => @first_name.id.to_s,
-              'rhs_type' => 'field', 'rhs_value' => @last_name.id.to_s,
+              'lhs_type' => 'field', 'raw_lhs_value' => @first_name.id.to_s,
+              'rhs_type' => 'field', 'raw_rhs_value' => @last_name.id.to_s,
               'operator' => 'equals'
             }
           }
@@ -54,8 +54,8 @@ module Coupler
         matcher = Factory(:matcher, :scenario => @scenario)
         comparison = Factory(:comparison, {
           :matcher => matcher, :operator => 'equals',
-          :lhs_type => 'field', :lhs_value => @first_name.id,
-          :rhs_type => 'field', :rhs_value => @last_name.id
+          :lhs_type => 'field', :raw_lhs_value => @first_name.id,
+          :rhs_type => 'field', :raw_rhs_value => @last_name.id
         })
         get "/projects/#{@project.id}/scenarios/#{@scenario.id}/matchers/#{matcher.id}/edit"
         assert last_response.ok?
@@ -73,16 +73,16 @@ module Coupler
         matcher = Factory(:matcher, :scenario => @scenario)
         comparison = Factory(:comparison, {
           :matcher => matcher, :operator => 'equals',
-          :lhs_type => 'field', :lhs_value => @first_name.id,
-          :rhs_type => 'field', :rhs_value => @last_name.id
+          :lhs_type => 'field', :raw_lhs_value => @first_name.id,
+          :rhs_type => 'field', :raw_rhs_value => @last_name.id
         })
 
         attribs = {
           'comparisons_attributes' => {
             '0' => { 'id' => comparison.id, '_delete' => true },
             '1' => {
-              'lhs_type' => 'field', 'lhs_value' => @last_name.id.to_s,
-              'rhs_type' => 'field', 'rhs_value' => @first_name.id.to_s,
+              'lhs_type' => 'field', 'raw_lhs_value' => @last_name.id.to_s,
+              'rhs_type' => 'field', 'raw_rhs_value' => @first_name.id.to_s,
               'operator' => 'equals'
             }
           }

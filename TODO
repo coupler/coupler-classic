@@ -1,7 +1,9 @@
 Major features/bugs:
+- Better migrations based on commit hashes
+  - Use classes in a previous state
+  - Run migrations before upgrading code, or vice versa
 - Job management: canceling, etc.
 - Chain matchers
-- Use fixtures for some tests instead of running scenarios
 
 Fancy features for the future:
 - Do authorization on projects

@@ -22,6 +22,13 @@ module Coupler
             errors.add(:base, "At least one field-to-field comparison is required.")
           end
         end
+
+        def after_save
+          super
+          s = scenario
+          s.set_linkage_type
+          s.save
+        end
     end
   end
 end

@@ -1,7 +1,7 @@
 require 'java'
 require 'pp'
 require 'rubygems'
-gem "test-unit", "2.1.1"
+gem "test-unit", "2.1.2"
 require 'test/unit'
 require 'mocha'
 require 'rack/test'
@@ -9,7 +9,7 @@ require 'rack/flash'
 require 'rack/flash/test'
 require 'nokogiri'
 require 'timecop'
-#require 'ruby-debug'
+require 'ruby-debug'
 
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))

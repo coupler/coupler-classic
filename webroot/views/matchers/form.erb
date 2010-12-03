@@ -35,11 +35,10 @@
     <div id='comparison-<%= i %>' style='display: none;'>
       <% if !comparison.new? %><input type='hidden' name='matcher[comparisons_attributes][<%= i %>][id]' value='<%= comparison.id %>' /><% end %>
       <input type='hidden' name='matcher[comparisons_attributes][<%= i %>][lhs_type]' value='<%= comparison.lhs_type %>' />
-      <input type='hidden' name='matcher[comparisons_attributes][<%= i %>][lhs_value]' value='<%= comparison.raw_lhs_value %>' />
+      <input type='hidden' name='matcher[comparisons_attributes][<%= i %>][raw_lhs_value]' value='<%= comparison.raw_lhs_value %>' />
       <input type='hidden' name='matcher[comparisons_attributes][<%= i %>][lhs_which]' value='<%= comparison.lhs_which %>' />
-      <input type='hidden' name='matcher[comparisons_attributes][<%= i %>][lhs_value]' value='<%= comparison.raw_lhs_value %>' />
       <input type='hidden' name='matcher[comparisons_attributes][<%= i %>][rhs_type]' value='<%= comparison.rhs_type %>' />
-      <input type='hidden' name='matcher[comparisons_attributes][<%= i %>][rhs_value]' value='<%= comparison.raw_rhs_value %>' />
+      <input type='hidden' name='matcher[comparisons_attributes][<%= i %>][raw_rhs_value]' value='<%= comparison.raw_rhs_value %>' />
       <input type='hidden' name='matcher[comparisons_attributes][<%= i %>][rhs_which]' value='<%= comparison.rhs_which %>' />
       <input type='hidden' name='matcher[comparisons_attributes][<%= i %>][operator]' value='<%= comparison.operator %>' />
     </div>
@@ -196,10 +195,10 @@
             .appendTo($('#comparisons table tbody'));
           $("<div id='comparison-"+totalComparisons+"' style='display: none;'></div>")
             .append("<input type='hidden' name='matcher[comparisons_attributes]["+totalComparisons+"][lhs_type]' value='"+types[0]+"' />")
-            .append("<input type='hidden' name='matcher[comparisons_attributes]["+totalComparisons+"][lhs_value]' value='"+values[0]+"' />")
+            .append("<input type='hidden' name='matcher[comparisons_attributes]["+totalComparisons+"][raw_lhs_value]' value='"+values[0]+"' />")
             .append("<input type='hidden' name='matcher[comparisons_attributes]["+totalComparisons+"][lhs_which]' value='"+whichs[0]+"' />")
             .append("<input type='hidden' name='matcher[comparisons_attributes]["+totalComparisons+"][rhs_type]' value='"+types[1]+"' />")
-            .append("<input type='hidden' name='matcher[comparisons_attributes]["+totalComparisons+"][rhs_value]' value='"+values[1]+"' />")
+            .append("<input type='hidden' name='matcher[comparisons_attributes]["+totalComparisons+"][raw_rhs_value]' value='"+values[1]+"' />")
             .append("<input type='hidden' name='matcher[comparisons_attributes]["+totalComparisons+"][rhs_which]' value='"+whichs[1]+"' />")
             .append("<input type='hidden' name='matcher[comparisons_attributes]["+totalComparisons+"][operator]' value='"+operator+"' />")
             .appendTo($('#comparisons'));

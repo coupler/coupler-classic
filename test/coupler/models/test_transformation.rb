@@ -200,6 +200,7 @@ module Coupler
         project = Factory(:project)
         resource = Factory(:resource, :project => project)
         source_field = resource.fields_dataset[:name => "first_name"]
+        p source_field
         transformation = Factory(:transformation, {
           :resource => resource,
           :source_field => source_field,
@@ -209,7 +210,7 @@ module Coupler
         scenario = Factory(:scenario, :project => project, :resource_1 => resource)
         matcher = Factory(:matcher, {
           :comparisons_attributes => [
-            {:lhs_type => 'field', :lhs_value => source_field.id, :rhs_type => 'field', :rhs_value => result_field.id, :operator => 'equals'},
+            {:lhs_type => 'field', :raw_lhs_value => source_field.id, :rhs_type => 'field', :raw_rhs_value => result_field.id, :operator => 'equals'},
           ],
           :scenario => scenario
         })
