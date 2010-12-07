@@ -3,19 +3,13 @@
 <div id="result-group-1" class="result-group result-group-right">&nbsp;</div>
 <div class="clear"></div>
 <script type="text/javascript">
-  function getRecord(side, index, which) {
-    var data = {index: index};
-    if (typeof(which) == "number") {
-      data['which'] = which;
-    }
-    $('#result-group-'+side).load("<%= @result.id %>/details/<%= @group[:id] %>/record", data, groupFetched);
-  }
+  var detailsUrl = "<%= @result.id %>/details/<%= @group[:id] %>/record";
   var useWhich = <%= @scenario.linkage_type != 'self-linkage' %>;
   $(function() {
     $('#result-tabs').bind("tabsshow", function(e, ui) {
       contentWidth = $('#group-details').width();
     });
-    getRecord(0, 0, useWhich ? 0 : null);
-    getRecord(1, useWhich ? 0 : 1, useWhich ? 1 : null);
+    getRecord($('#result-group-0'), 0, useWhich ? 0 : null);
+    getRecord($('#result-group-1'), useWhich ? 0 : 1, useWhich ? 1 : null);
   });
 </script>

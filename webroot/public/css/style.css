@@ -443,6 +443,7 @@ table.summary tr {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  position: relative;
 }
 .result-group .column-value {
   float: left;
@@ -451,6 +452,7 @@ table.summary tr {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  position: relative;
 }
 .result-group .column-header {
   background: #888;
@@ -458,7 +460,7 @@ table.summary tr {
   text-align: center;
   position: relative;
 }
-.result-group .column-header .handle {
+.result-group .resize-handle {
   position: absolute;
   font-size: 0.1px;
   z-index: 99999;
@@ -481,4 +483,22 @@ table.summary tr {
   -moz-border-radius-topright: 4px;
   -webkit-border-top-right-radius: 4px;
   border-top-right-radius: 4px;
+}
+.result-group .record-navigation {
+  border-top: 1px solid #333;
+  padding: 5px;
+  position: relative;
+}
+.result-group .record-navigation .previous-record {
+  position: absolute;
+  right: 25px;
+  top: 7px;
+}
+.result-group .record-navigation .next-record {
+  position: absolute;
+  right: 5px;
+  top: 7px;
+}
+.result-group-left .record-navigation {
+  border-right: 2px solid #333;
 }

@@ -50,17 +50,25 @@ module Coupler
           @scenario = @project.scenarios_dataset[:id => params[:scenario_id]]
           raise ScenarioNotFound  unless @scenario
           @result = @scenario.results_dataset[:id => params[:id]]
+          @index = params[:index].to_i
+          @which = params[:which] ? params[:which].to_i : nil
 
+          # FIXME: this could be in a model method or stored in the resources table
+          @num_columns = @scenario.resources.collect { |r| r.selected_fields_dataset.count }.max
+
+          # Get total for group
+          # FIXME: Result method instead yo
+          @result.groups_dataset do |ds|
+            @total = ds.filter(:id => params[:group_id]).get(:"resource_#{@which ? @which + 1 : 1}_count")
+          end
+
+          # FIXME: Result method instead yo
           record_id = nil
           @result.groups_records_dataset do |ds|
-            record_id = ds.filter(:group_id => params[:group_id], :which => params[:which]).
-              limit(1, params[:index].to_i).first[:record_id]
+            record_id = ds.filter(:group_id => params[:group_id], :which => @which).
+              limit(1, @index).first[:record_id]
           end
-          resource =
-            case params[:which]
-            when nil, '', '0' then @scenario.resource_1
-            when '1' then @scenario.resource_2
-            end
+          resource = @which == 1 ? @scenario.resource_2 : @scenario.resource_1
           resource.final_dataset do |ds|
             @columns = ds.columns
             @record = ds.select(*@columns).filter(resource.primary_key_sym => record_id).first
