@@ -1,5 +1,5 @@
 <% @breadcrumbs = [@project, @resource, @transformation] %>
-<% add_javascript('jquery-ui.min.js', 'jquery-ui.combobox.js', 'jquery.dataTables.min.js', 'transformations.js') %>
+<% add_javascript('jquery-ui.combobox.js', 'jquery.dataTables.min.js', 'transformations.js') %>
 <% add_stylesheet('dataTables.css') %>
 <%= error_messages_for @transformation %>
 <form method="post" action="/projects/<%= @project.id %>/resources/<%= @resource.id %>/transformations">

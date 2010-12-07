@@ -77,6 +77,7 @@ module Coupler
         end
       end
 
+      # This isn't really being used.
       def summary
         summary = {}
         summary[:fields] = scenario.matcher.comparisons.inject([]) do |arr, comparison|
@@ -89,13 +90,13 @@ module Coupler
           records_ds = db[:"groups_records_#{run_number}"]
           summary[:groups] = db[:"groups_#{run_number}"].collect do |group_row|
             group_row[:matches] = {}
-            records_ds.select(:record_id, :resource_id).filter(:group_id => group_row[:id]).each do |record_row|
-              arr = group_row[:matches][record_row[:resource_id]] ||= []
+            records_ds.select(:record_id, :which).filter(:group_id => group_row[:id]).each do |record_row|
+              arr = group_row[:matches][record_row[:which]] ||= []
               arr.push(record_row[:record_id])
             end
             group_row
           end
-          summary[:total_matches] = records_ds.group_and_count(:resource_id).all
+          summary[:total_matches] = records_ds.group_and_count(:which).all
         end
         summary
       end

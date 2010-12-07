@@ -85,7 +85,6 @@ module Coupler
               else
                 groups[row[:group_id]] = row[:record_id].to_i
               end
-              assert_equal @resource_1.id, row[:resource_id]
             end
           end
         end
@@ -129,7 +128,6 @@ module Coupler
               else
                 groups[row[:group_id]] = row[:record_id].to_i
               end
-              assert_equal @resource_1.id, row[:resource_id]
             end
           end
         end
@@ -217,7 +215,6 @@ module Coupler
               else
                 groups[row[:group_id]] = row[:record_id].to_i
               end
-              assert_equal @resource_1.id, row[:resource_id]
             end
           end
         end
@@ -247,7 +244,7 @@ module Coupler
             counts = counts.inject({}) { |h, r| h[r[:count]] ||= 0; h[r[:count]] += 1; h }
             assert_equal 30, counts[700]
             assert_equal 500, counts[2]
-            assert ds.group_and_count(:record_id, :resource_id).all? { |r| r[:count] == 1 }
+            assert ds.group_and_count(:record_id, :which).all? { |r| r[:count] == 1 }
 
             ds = db[:groups_1]
             assert_equal 530, ds.count

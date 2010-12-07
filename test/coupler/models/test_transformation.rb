@@ -200,7 +200,6 @@ module Coupler
         project = Factory(:project)
         resource = Factory(:resource, :project => project)
         source_field = resource.fields_dataset[:name => "first_name"]
-        p source_field
         transformation = Factory(:transformation, {
           :resource => resource,
           :source_field => source_field,

@@ -37,26 +37,35 @@ module Coupler
         app.get '/projects/:project_id/scenarios/:scenario_id/results/:id/details/:group_id' do
           @scenario = @project.scenarios_dataset[:id => params[:scenario_id]]
           raise ScenarioNotFound  unless @scenario
-          @resources = @scenario.resources
           @result = @scenario.results_dataset[:id => params[:id]]
 
-          html = nil
           @scenario.local_database do |scenario_db|
             groups_ds = scenario_db[@result.groups_table_name]
             @group = groups_ds.filter(:id => params[:group_id]).first
-
-            group_records_ds = scenario_db[@result.groups_records_table_name].filter(:group_id => params[:group_id])
-            if @scenario.linkage_type == 'self-linkage'
-              @records_datasets = [group_records_ds]
-            else
-              @records_datasets = [
-                group_records_ds.filter(:which => 0),
-                group_records_ds.filter(:which => 1)
-              ]
-            end
-            html = erb(:"results/details", :layout => false)
           end
-          html
+          erb(:"results/details", :layout => false)
+        end
+
+        app.post '/projects/:project_id/scenarios/:scenario_id/results/:id/details/:group_id/record' do
+          @scenario = @project.scenarios_dataset[:id => params[:scenario_id]]
+          raise ScenarioNotFound  unless @scenario
+          @result = @scenario.results_dataset[:id => params[:id]]
+
+          record_id = nil
+          @result.groups_records_dataset do |ds|
+            record_id = ds.filter(:group_id => params[:group_id], :which => params[:which]).
+              limit(1, params[:index].to_i).first[:record_id]
+          end
+          resource =
+            case params[:which]
+            when nil, '', '0' then @scenario.resource_1
+            when '1' then @scenario.resource_2
+            end
+          resource.final_dataset do |ds|
+            @columns = ds.columns
+            @record = ds.select(*@columns).filter(resource.primary_key_sym => record_id).first
+          end
+          erb(:"results/record", :layout => false)
         end
 
 =begin

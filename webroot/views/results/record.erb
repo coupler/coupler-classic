@@ -1,0 +1,12 @@
+<div class="column-name column-header">
+  Field
+  <div class="handle"></div>
+</div>
+<div class="column-value column-header">
+  Value
+  <div class="handle"></div>
+</div>
+<%- @columns.each_with_index do |column, i| -%>
+  <div class="column-name row-<%= i % 2 %>"><%= column %></div>
+  <div class="column-value row-<%= i % 2 %>"><%= @record[column] %></div>
+<%- end -%>

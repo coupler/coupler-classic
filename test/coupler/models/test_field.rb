@@ -97,7 +97,7 @@ module Coupler
           ],
           :scenario => scenario)
         ds = first_name.scenarios_dataset
-        assert_equal scenario.id, ds.get(:id)
+        assert_equal scenario.id, ds.get(:scenarios__id)
       end
     end
   end

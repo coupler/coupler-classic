@@ -30,16 +30,16 @@ module Coupler
     end
 
     def flush(lock = true)
-      if @query
-        begin
-          @mutex.lock   if lock
+      begin
+        @mutex.lock   if lock
+        if @query
           @dataset.db.run(@query.chomp(","))
           @progress.call(@pending) if @progress
           @pending = 0
           @query = nil
-        ensure
-          @mutex.unlock if lock
         end
+      ensure
+        @mutex.unlock if lock
       end
     end
 

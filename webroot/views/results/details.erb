@@ -1,22 +1,21 @@
 <h2>Group #<%= @group[:id] %></h2>
-<div class="section">
-  <%- if @resources.length > 1 -%>
-    <div class="result-fields">
-      <%- @resources.each do |resource| -%>
-        <%- resource.final_dataset do |ds| -%>
-          <ul>
-            <%- ds.columns.each do |column| -%>
-              <li><%= column %></li>
-            <%- end -%>
-          </ul>
-        <%- end -%>
-      <%- end -%>
-    </div>
-  <%- end -%>
-  <div id="result-group-left" class="result-group">
-  </div>
-  <div id="result-group-right" class="result-group">
-  </div>
-</div>
+<div id="result-group-0" class="result-group result-group-left">&nbsp;</div>
+<div id="result-group-1" class="result-group result-group-right">&nbsp;</div>
+<div class="clear"></div>
 <script type="text/javascript">
+  function getRecord(side, index, which) {
+    var data = {index: index};
+    if (typeof(which) == "number") {
+      data['which'] = which;
+    }
+    $('#result-group-'+side).load("<%= @result.id %>/details/<%= @group[:id] %>/record", data, groupFetched);
+  }
+  var useWhich = <%= @scenario.linkage_type != 'self-linkage' %>;
+  $(function() {
+    $('#result-tabs').bind("tabsshow", function(e, ui) {
+      contentWidth = $('#group-details').width();
+    });
+    getRecord(0, 0, useWhich ? 0 : null);
+    getRecord(1, useWhich ? 0 : 1, useWhich ? 1 : null);
+  });
 </script>

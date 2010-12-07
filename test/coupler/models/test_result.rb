@@ -113,14 +113,14 @@ module Coupler
         summary = result.summary
         assert_equal([["first_name", "first_name"]], summary[:fields])
         scenario.local_database do |db|
-          counts = db[:groups_records_1].group_and_count(:group_id, :resource_id).order(:group_id).all
+          counts = db[:groups_records_1].group_and_count(:group_id, :which).order(:group_id).all
           assert_equal counts.length, summary[:groups].length
           summary[:groups].each_with_index do |group, i|
             assert_equal counts[i][:group_id], group[:id]
-            assert_equal counts[i][:count], group[:matches][resource.id].length
-            assert group[:matches][resource.id].length > 1
+            assert_equal counts[i][:count], group[:matches][nil].length
+            assert group[:matches][nil].length > 1
           end
-          assert_equal db[:groups_records_1].group_and_count(:resource_id).all, summary[:total_matches]
+          assert_equal db[:groups_records_1].group_and_count(:which).all, summary[:total_matches]
         end
       end
 
@@ -140,14 +140,14 @@ module Coupler
         summary = result.summary
         assert_equal([["first_name", "last_name"]], summary[:fields])
         scenario.local_database do |db|
-          counts = db[:groups_records_1].group_and_count(:group_id, :resource_id).order(:group_id).all
+          counts = db[:groups_records_1].group_and_count(:group_id, :which).order(:group_id).all
           assert_equal counts.length, summary[:groups].length
           summary[:groups].each_with_index do |group, i|
             assert_equal counts[i][:group_id], group[:id]
             assert_equal counts[i][:count], group[:matches][resource.id].length
             assert group[:matches][resource.id].length > 1
           end
-          assert_equal db[:groups_records_1].group_and_count(:resource_id).all, summary[:total_matches]
+          assert_equal db[:groups_records_1].group_and_count(:which).all, summary[:total_matches]
         end
       end
 

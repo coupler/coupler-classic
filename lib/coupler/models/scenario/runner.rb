@@ -25,7 +25,7 @@ module Coupler
             @groups_dataset = scenario_db[@groups_table_name]
             @groups_buffer = ImportBuffer.new(@groups_column_names, @groups_dataset)
             @join_dataset = scenario_db[@join_table_name]
-            @join_buffer = ImportBuffer.new([:record_id, :resource_id, :which, :group_id], @join_dataset)
+            @join_buffer = ImportBuffer.new([:record_id, :which, :group_id], @join_dataset)
 
             # Group records for each dataset.  This step is the same for both
             # self-linkage and dual-linkage.  However, this is the only step
@@ -42,7 +42,7 @@ module Coupler
               databases_to_close << dataset.db
               primary_key = resource.primary_key_sym
               which = @type == 'self-linkage' ? nil : i
-              resource_thread = phase_one_thread(dataset, primary_key, resource.id, which)
+              resource_thread = phase_one_thread(dataset, primary_key, which)
               tw.join_nowait(resource_thread)
             end
             tw.all_waits
@@ -89,8 +89,7 @@ module Coupler
             end
 
             # Calculate some summary stats
-            resource_ids = @resources.collect(&:id)
-            @join_dataset.group_and_count(:group_id, :resource_id, :which).each do |row|
+            @join_dataset.group_and_count(:group_id, :which).each do |row|
               col = row[:which] ? :"resource_#{row[:which]+1}_count" : :"resource_1_count"
               @groups_dataset.filter(:id => row[:group_id]).update(col => row[:count])
             end
@@ -150,10 +149,9 @@ module Coupler
               end
               scenario_db.create_table!(@join_table_name) do
                 column :record_id, record_id_type
-                Integer :resource_id
                 Integer :which
                 Integer :group_id, :index => true
-                index [:group_id, :resource_id, :which, :record_id]   # speedy filtering when showing results
+                index [:group_id, :which, :record_id]   # speedy filtering when showing results
               end
               if @type != 'self-linkage'
                 # Need another groups table
@@ -166,7 +164,7 @@ module Coupler
             end
           end
 
-          def phase_one_thread(dataset, primary_key, resource_id, which)
+          def phase_one_thread(dataset, primary_key, which)
             thread = Thread.new do
               # Apply filters and what not from comparisons
               dataset = dataset.select(primary_key)
@@ -196,10 +194,10 @@ module Coupler
                         # stage of a dual or cross linkage.  So, we should save
                         # groups that only have 1 record in them.
                         group_id = create_group(prev_row, which)
-                        @join_buffer.add([prev_row[primary_key], resource_id, which, group_id])
+                        @join_buffer.add([prev_row[primary_key], which, group_id])
                       end
                       if result
-                        @join_buffer.add([row[primary_key], resource_id, which, group_id])
+                        @join_buffer.add([row[primary_key], which, group_id])
                       else
                         group_id = nil
                       end
@@ -218,7 +216,7 @@ module Coupler
                   if which && group_id.nil?
                     # See above comment about `which`
                     group_id = create_group(prev_row, which)
-                    @join_buffer.add([prev_row[primary_key], resource_id, which, group_id])
+                    @join_buffer.add([prev_row[primary_key], which, group_id])
                   end
 
                   # This stores the last record of this segment in order to
