@@ -30,39 +30,27 @@ module Coupler
         assert_kind_of FasterCSV::Row, preview[0]
       end
 
-      def test_fields
+      def test_discovers_field_names_and_types
         import = Models::Import.new(:data => {
           :tempfile => fixture_file("people.csv"), :filename => "huge.csv"
         })
-        expected = [
-          ["id", { :type => :integer, :primary_key => true }],
-          ["first_name", { :type => :string }],
-          ["last_name", { :type => :string }],
-          ["age", { :type => :integer }]
-        ]
+        expected_types = %w{integer string string integer}
+        expected_names = %w{id first_name last_name age}
         import.save
-        assert_equal expected, import.fields
+        assert_equal expected_names, import.field_names
+        assert_equal expected_types, import.field_types
+        assert_equal "id", import.primary_key_name
       end
 
-      def test_field_types=
-        import = Models::Import.create(:data => {
-          :tempfile => fixture_file("people.csv"), :filename => "huge.csv"
-        })
-        expected = [
-          ["id", { :type => :integer, :primary_key => true }],
-          ["first_name", { :type => :string }],
-          ["last_name", { :type => :string }],
-          ["age", { :type => :string }]
-        ]
-        import.field_types = { 'age' => { 'type' => 'string' } }
-        assert_equal expected, import.fields
-      end
-
-      def test_primary_key=
-        import = Models::Import.create(:data => { :tempfile => fixture_file("people.csv"), :filename => "huge.csv" })
-        import.primary_key = "first_name"
-        assert !import.fields.assoc("id")[1][:primary_key]
-        assert import.fields.assoc("first_name")[1][:primary_key]
+      def test_discover_for_csv_with_no_headers
+        tempfile = Tempfile.new('coupler-import')
+        tempfile.write("foo,bar,1,2,3\njunk,blah,4,5,6")
+        tempfile.close
+        import = Factory(:import, :data => file_upload(tempfile.path))
+        expected_types = %w{string string integer integer integer}
+        assert_equal expected_types, import.field_types
+        assert_nil import.field_names
+        assert_nil import.primary_key_name
       end
 
       def test_import!
@@ -82,6 +70,51 @@ module Coupler
           ds = db[name]
           assert_equal 50, ds.count
         end
+      end
+
+      def test_requires_field_names_on_update
+        import = Factory(:import, :data => fixture_file_upload('no-headers.csv'))
+        assert_nil import.field_names
+        import.name = "foo"
+        assert !import.valid?
+      end
+
+      def test_requires_primary_key_name_on_update
+        import = Factory(:import, :data => fixture_file_upload('no-headers.csv'))
+        import.field_names = %w{id first_name last_name age}
+        assert !import.valid?
+      end
+
+      def test_requires_valid_primary_key_name
+        import = Factory(:import, :data => fixture_file_upload('no-headers.csv'))
+        import.field_names = %w{id first_name last_name age}
+        import.primary_key_name = "foo"
+        assert !import.valid?
+      end
+
+      def test_flags_non_unique_primary_keys
+        tempfile = Tempfile.new('coupler-import')
+        tempfile.write("id,foo,bar\n1,abc,def\n2,ghi,jkl\n2,mno,pqr")
+        tempfile.close
+
+        project = Factory(:project)
+        import = Factory(:import, :data => file_upload(tempfile.path), :project => project)
+        import.import!
+
+        project.local_database do |db|
+          ds = db[:"import_#{import.id}"]
+          assert ds.filter(:id => 2).select_map(:dup_key).all?
+        end
+      end
+
+      def test_requires_unique_field_names
+        tempfile = Tempfile.new('coupler-import')
+        tempfile.write("id,foo,foo\n1,abc,def\n2,ghi,jkl\n3,mno,pqr")
+        tempfile.close
+
+        import = Factory(:import, :data => file_upload(tempfile.path))
+        import.name = "foo"
+        assert !import.valid?
       end
     end
   end

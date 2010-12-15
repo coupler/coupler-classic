@@ -54,7 +54,7 @@ module Coupler
         assert_equal "http://example.org/projects/#{@project.id}/resources/456", last_response['location']
       end
 
-      def test_failed_update
+      def test_update_with_failed_resource_save
         params = { 'import' => { 'field_types' => { 'age' => { 'type' => 'string' } } } }
         import = Factory(:import, :project => @project)
         resource = mock("resource", :valid? => false)

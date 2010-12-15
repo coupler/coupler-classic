@@ -45,7 +45,11 @@ class Test::Unit::TestCase
 end
 
 def fixture_file_upload(name, mime_type = "text/plain")
-  Rack::Test::UploadedFile.new(File.dirname(__FILE__) + "/fixtures/#{name}", mime_type)
+  file_upload(File.dirname(__FILE__) + "/fixtures/#{name}", mime_type)
+end
+
+def file_upload(file, mime_type = "text/plain")
+  Rack::Test::UploadedFile.new(file, mime_type)
 end
 
 def fixture_file(name)
