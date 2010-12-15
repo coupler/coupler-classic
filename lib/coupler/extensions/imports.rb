@@ -23,13 +23,17 @@ module Coupler
           @import = Models::Import[:id => params[:id], :project_id => @project.id]
           raise ImportNotFound    unless @import
           @import.set(params[:import])
-          @import.save
 
-          @resource = Models::Resource.new(:import => @import)
-          if @resource.valid?
-            @resource.save
-            redirect "/projects/#{@project.id}/resources/#{@resource.id}"
+          if @import.save
+            @resource = Models::Resource.new(:import => @import)
+            if @resource.valid?
+              @resource.save
+              redirect "/projects/#{@project.id}/resources/#{@resource.id}"
+            else
+              erb :'imports/edit'
+            end
           else
+            @resource = Models::Resource.new
             erb :'imports/edit'
           end
         end

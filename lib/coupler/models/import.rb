@@ -20,9 +20,16 @@ module Coupler
       def preview
         if @preview.nil?
           @preview = []
-          FasterCSV.foreach(data.current_path, :headers => true) do |row|
-            break if @preview.length == 50
-            @preview << row
+          FasterCSV.open(data.current_path) do |csv|
+            csv.shift   if self.has_headers
+            50.times do |i|
+              row = csv.shift
+              if row
+                @preview << row
+              else
+                break
+              end
+            end
           end
         end
         @preview
@@ -98,7 +105,9 @@ module Coupler
             if headers.any? { |h| h !~ /[A-Za-z_$]/ }
               row = headers
               headers = nil
+              self.has_headers = false
             else
+              self.has_headers = true
               headers.each_with_index do |name, i|
                 if name =~ /^id$/i
                   self.primary_key_name = name

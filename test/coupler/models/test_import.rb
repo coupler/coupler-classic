@@ -22,12 +22,13 @@ module Coupler
         assert_equal "People", import.name
       end
 
-      def test_preview
+      def test_preview_with_headers
         import = Models::Import.new(:data => fixture_file("people.csv"))
         preview = import.preview
         assert_kind_of Array, preview
         assert_equal 50, preview.length
-        assert_kind_of FasterCSV::Row, preview[0]
+        assert_kind_of Array, preview[0]
+        assert_not_equal %w{id first_name last_name, age}, preview[0]
       end
 
       def test_discovers_field_names_and_types
@@ -40,6 +41,7 @@ module Coupler
         assert_equal expected_names, import.field_names
         assert_equal expected_types, import.field_types
         assert_equal "id", import.primary_key_name
+        assert import.has_headers
       end
 
       def test_discover_for_csv_with_no_headers
@@ -51,6 +53,7 @@ module Coupler
         assert_equal expected_types, import.field_types
         assert_nil import.field_names
         assert_nil import.primary_key_name
+        assert !import.has_headers
       end
 
       def test_import!

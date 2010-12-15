@@ -33,6 +33,12 @@ module Coupler
         assert last_response.ok?
       end
 
+      def test_edit_with_no_headers
+        import = Models::Import.create(:data => fixture_file_upload("no-headers.csv"), :project => @project)
+        get "/projects/#{@project.id}/imports/#{import.id}/edit"
+        assert last_response.ok?
+      end
+
       def test_edit_with_non_existant_import
         get "/projects/#{@project.id}/imports/8675309/edit"
         assert last_response.redirect?
@@ -42,7 +48,7 @@ module Coupler
       end
 
       def test_update
-        params = { 'import' => { 'fields' => { 'age' => { 'type' => 'string' } } } }
+        params = { 'import' => { 'field_names' => %w{id first_name last_name age}, 'field_types' => %w{integer string string integer}, 'primary_key_name' => 'id' } }
         import = mock("import", :save => true)
         import.expects(:set).with(params['import'])
         Models::Import.expects(:[]).with(:id => '123', :project_id => @project.id).returns(import)
@@ -55,13 +61,21 @@ module Coupler
       end
 
       def test_update_with_failed_resource_save
-        params = { 'import' => { 'field_types' => { 'age' => { 'type' => 'string' } } } }
+        params = { 'import' => { 'field_names' => %w{id first_name last_name age}, 'field_types' => %w{integer string string integer}, 'primary_key_name' => 'id' } }
         import = Factory(:import, :project => @project)
         resource = mock("resource", :valid? => false)
         resource.expects(:errors).at_least_once.returns({:foo => ["bar"]})
         Models::Resource.expects(:new).with do |hash|
           assert_equal import.id, hash[:import].id; true
         end.returns(resource)
+
+        put "/projects/#{@project[:id]}/imports/#{import.id}", params
+        assert last_response.ok?
+      end
+
+      def test_update_with_no_field_names
+        params = { 'import' => { 'field_types' => %w{integer string string integer}, } }
+        import = Factory(:import, :name => 'foo', :data => fixture_file_upload('no-headers.csv'), :project => @project)
 
         put "/projects/#{@project[:id]}/imports/#{import.id}", params
         assert last_response.ok?
