@@ -1,0 +1,32 @@
+<%- if @import.has_duplicate_keys -%>
+  <h2>Duplicate Keys</h2>
+  <div class="section">
+    <p>There were some records in your dataset with duplicate keys.</p>
+
+    <!-- FIXME --!>
+    <form>
+      <%- @project.local_database do |db| -%>
+        <%- ds = db[:"import_#{@import.id}"].filter(:dup_key => true).order(@import.primary_key_name.to_sym) -%>
+        <%- columns = ds.columns.reject { |c| c == :dup_key } -%>
+        <table class="list">
+          <thead>
+            <tr>
+              <%- columns.each do |column| -%>
+                <th><%= column %></th>
+              <%- end -%>
+            </tr>
+          </thead>
+          <tbody>
+            <%- ds.each do |row| -%>
+              <tr>
+                <%- columns.each do |column| -%>
+                  <td><%= row[column] %></td>
+                <%- end -%>
+              </tr>
+            <%- end -%>
+          </tbody>
+        </table>
+      <%- end -%>
+    </form>
+  </div>
+<%- end -%>

@@ -59,7 +59,6 @@ module Coupler
 
           ds = db[table_name]
           key_frequencies = Hash.new { |h, k| h[k] = 0 }
-          duplicate_keys_found = false
           rows = []
           total = 0
           primary_key_index = field_names.index(primary_key_name)
@@ -69,7 +68,7 @@ module Coupler
 
             key = row[primary_key_index]
             key_frequencies[key] += 1
-            duplicate_keys_found = true if key_frequencies[key] > 1
+            self.has_duplicate_keys = true if key_frequencies[key] > 1
 
             rows << row
             if rows.length == 1000
@@ -80,7 +79,7 @@ module Coupler
           ds.import(column_names, rows)   unless rows.empty?
 
           primary_key_sym = primary_key_name.to_sym
-          if duplicate_keys_found
+          if has_duplicate_keys
             # flag duplicate primary keys
             db.alter_table(table_name) { add_column(:dup_key, TrueClass) }
             key_frequencies.each_pair do |key, count|
@@ -92,6 +91,8 @@ module Coupler
             db.alter_table(table_name) { add_primary_key([primary_key_sym]) }
           end
         end
+        update(:occurred_at => Time.now)
+        !has_duplicate_keys
       end
 
       private

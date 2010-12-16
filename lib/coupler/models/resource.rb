@@ -265,9 +265,6 @@ module Coupler
             # NOTE: I'm doing this instead of using before_create because
             # serialization happens in before_save, which gets called before
             # the before_create hook
-            if import
-              import.import!
-            end
             source_database do |db|
               schema = db.schema(self.table_name)
               info = schema.detect { |x| x[1][:primary_key] }

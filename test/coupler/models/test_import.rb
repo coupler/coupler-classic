@@ -59,7 +59,11 @@ module Coupler
       def test_import!
         project = Factory(:project)
         import = Models::Import.create(:data => fixture_file_upload("people.csv"), :project => project)
-        import.import!
+        now = Time.now
+        Timecop.freeze(now) do
+          assert import.import!
+          assert_equal now, import.occurred_at
+        end
 
         project.local_database do |db|
           name = :"import_#{import.id}"
@@ -95,14 +99,20 @@ module Coupler
         assert !import.valid?
       end
 
-      def test_flags_non_unique_primary_keys
+      def test_flags_duplicate_primary_keys
         tempfile = Tempfile.new('coupler-import')
         tempfile.write("id,foo,bar\n1,abc,def\n2,ghi,jkl\n2,mno,pqr")
         tempfile.close
 
         project = Factory(:project)
         import = Factory(:import, :data => file_upload(tempfile.path), :project => project)
-        import.import!
+
+        now = Time.now
+        Timecop.freeze(now) do
+          assert !import.import!
+          assert import.has_duplicate_keys
+          assert_equal now, import.occurred_at
+        end
 
         project.local_database do |db|
           ds = db[:"import_#{import.id}"]

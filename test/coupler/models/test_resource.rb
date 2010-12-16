@@ -611,12 +611,15 @@ module Coupler
       def test_creating_resource_via_import
         project = Factory(:project)
         import = Factory(:import, :project => project)
+        import.import!
         resource = Resource.create(:import => import, :project => project)
         assert resource.valid?
         assert_equal "People", resource.name
         assert_equal project, resource.project
         assert_equal "import_#{import.id}", resource.table_name
         assert_equal "project_#{project.id}", resource.database_name
+        assert_equal "id", resource.primary_key_name
+        assert_equal "integer", resource.primary_key_type
       end
 
       def test_preview_inplace_transformation

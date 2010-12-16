@@ -4,84 +4,8 @@
 <%= error_messages_for @import %>
 <%= error_messages_for @resource %>
 
-<form action="/projects/<%= @project.id %>/imports/<%= @import.id %>" method="post">
-  <div style="display: none;"><input type="hidden" name="_method" value="put" /></div>
-  <p>
-    <label for="name"><strong>Name:</strong></label>
-    <input id="name" type="text" name="import[name]" value="<%= @import.name %>" />
-  </p>
-
-  <h3>Fields</h3>
-  <div class="section">
-    <p>
-      Change the field types below if they are incorrect, then click the <strong>Begin Importing</strong> button.
-    </p>
-    <table class="list">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Key</th>
-        </tr>
-      </thead>
-      <tbody>
-      <%- @import.field_types.each_with_index do |field_type, i| -%>
-        <%- field_name = @import.field_names ? @import.field_names[i] : nil -%>
-        <tr<%= " class='alt'" if i % 2 == 1 %>>
-          <td><input id="field-name-<%= i %>" class="field-name" name="import[field_names][]" value="<%= field_name %>" /></td>
-          <td>
-            <select id="field-type-<%= i %>" name="import[field_types][]">
-            <%- %w{string integer datetime boolean float enum}.each do |type| -%>
-              <option<%= ' selected="selected"' if type == field_type %>><%= type %></option>
-            <%- end -%>
-            </select>
-          </td>
-          <td>
-            <input id="field-key-<%= i %>" type="radio" name="import[primary_key_name]" value="<%= field_name %>" <%= 'checked="checked"' if field_name && field_name == @import.primary_key_name %> />
-          </td>
-        </tr>
-      <%- end -%>
-      </tbody>
-    </table>
-  </div>
-
-  <h3>Data Preview</h3>
-  <div class="section">
-    <table id="data-preview" class="dataTable">
-      <thead>
-        <tr>
-        <%- if @import.field_names -%>
-          <%- @import.field_names.each do |name| -%>
-            <th><%= name %></th>
-          <%- end -%>
-        <%- else -%>
-          <%- @import.field_types.each_index do |i| -%>
-            <th>Field <%= i+1 %></th>
-          <%- end -%>
-        <%- end -%>
-        </tr>
-      </thead>
-      <tbody>
-      <%- @import.preview.each_with_index do |row, i| -%>
-        <tr>
-        <%- row.each do |value| -%>
-          <td><%=h value %></td>
-        <%- end -%>
-      <%- end -%>
-      </tbody>
-    </table>
-  </div>
-  <p>
-    <input type="submit" value="Begin Importing" />
-  </p>
-</form>
-
-<script type="text/javascript">
-  $(function() {
-    $('#data-preview').dataTable({ bJQueryUI: true, aLengthMenu: [10, 25, 50] });
-    $('.field-name').change(function() {
-      var obj = $(this);
-      $('#'+obj.attr('id').replace('name', 'key')).val(obj.val());
-    });
-  });
-</script>
+<%- if @import.occurred_at -%>
+  <%= erb(:'imports/fix', :layout => false) %>
+<%- else -%>
+  <%= erb(:'imports/form', :layout => false) %>
+<%- end -%>
