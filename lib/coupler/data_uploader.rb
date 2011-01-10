@@ -10,7 +10,7 @@ module Coupler
 
     def filename
       if @filename
-        @stored_filename ||= Digest::SHA1.hexdigest([@filename,
+        @stored_filename ||= @filename.sub(/\..+?$/, "") + '-' + Digest::SHA1.hexdigest([@filename,
           Time.now.utc, rand].join) + File.extname(@filename)
       else
         super

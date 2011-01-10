@@ -2,20 +2,17 @@ module Coupler
   module Extensions
     module Imports
       def self.registered(app)
-        app.post "/projects/:project_id/imports" do
-          @import = Models::Import.new(params[:import].merge(:project => @project))
-          if @import.valid?
-            @import.save
-            redirect "/projects/#{@project.id}/imports/#{@import.id}/edit"
-          else
-            # FIXME ;)
-          end
+        app.post "/projects/:project_id/imports/upload" do
+          uploader = DataUploader.new
+          uploader.store!(params[:data])
+          @import = Models::Import.new(:file_name => uploader.store_path, :project => @project)
+          erb :'imports/new'
         end
 
         app.get "/projects/:project_id/imports/:id/edit" do
           @import = Models::Import[:id => params[:id], :project_id => @project.id]
           raise ImportNotFound    unless @import
-          @resource = Models::Resource.new
+          @resource = Models::Resource.new(:import => @import)
           erb :'imports/edit'
         end
 
@@ -23,18 +20,9 @@ module Coupler
           @import = Models::Import[:id => params[:id], :project_id => @project.id]
           raise ImportNotFound    unless @import
           @import.set(params[:import])
-
-          if !@import.save
-            @resource = Models::Resource.new
-            return erb(:'imports/edit')
-          end
-
           @resource = Models::Resource.new(:import => @import)
-          if !@resource.valid?
-            return erb(:'imports/edit')
-          end
 
-          if !@import.import!
+          if !@import.save || !@resource.valid? || !@import.import!
             return erb(:'imports/edit')
           end
 

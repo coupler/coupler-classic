@@ -44,8 +44,12 @@ class Test::Unit::TestCase
   end
 end
 
+def fixture_path(name)
+  File.join(File.dirname(__FILE__), "fixtures", name)
+end
+
 def fixture_file_upload(name, mime_type = "text/plain")
-  file_upload(File.dirname(__FILE__) + "/fixtures/#{name}", mime_type)
+  file_upload(fixture_path(name), mime_type)
 end
 
 def file_upload(file, mime_type = "text/plain")
@@ -53,7 +57,7 @@ def file_upload(file, mime_type = "text/plain")
 end
 
 def fixture_file(name)
-  File.open(File.dirname(__FILE__) + "/fixtures/#{name}")
+  File.open(fixture_path(name))
 end
 
 module VerboseConnectionMessages

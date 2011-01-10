@@ -12,32 +12,24 @@ module Coupler
         assert_respond_to Models::Import.new, :project
       end
 
-      def test_file_upload
-        import = Models::Import.new(:data => fixture_file("people.csv"))
-        assert_respond_to import.data, :current_path
-      end
-
       def test_gets_name_from_csv_file
-        import = Models::Import.create(:data => fixture_file("people.csv"))
+        import = Factory.build(:import, :file_name => fixture_path("people.csv"))
         assert_equal "People", import.name
       end
 
       def test_preview_with_headers
-        import = Models::Import.new(:data => fixture_file("people.csv"))
+        import = Factory.build(:import, :file_name => fixture_path("people.csv"))
         preview = import.preview
         assert_kind_of Array, preview
         assert_equal 50, preview.length
         assert_kind_of Array, preview[0]
-        assert_not_equal %w{id first_name last_name, age}, preview[0]
+        assert_not_equal %w{id first_name last_name age}, preview[0]
       end
 
       def test_discovers_field_names_and_types
-        import = Models::Import.new(:data => {
-          :tempfile => fixture_file("people.csv"), :filename => "huge.csv"
-        })
+        import = Factory.build(:import, :file_name => fixture_path("people.csv"))
         expected_types = %w{integer string string integer}
         expected_names = %w{id first_name last_name age}
-        import.save
         assert_equal expected_names, import.field_names
         assert_equal expected_types, import.field_types
         assert_equal "id", import.primary_key_name
@@ -48,7 +40,7 @@ module Coupler
         tempfile = Tempfile.new('coupler-import')
         tempfile.write("foo,bar,1,2,3\njunk,blah,4,5,6")
         tempfile.close
-        import = Factory(:import, :data => file_upload(tempfile.path))
+        import = Factory.build(:import, :file_name => tempfile.path)
         expected_types = %w{string string integer integer integer}
         assert_equal expected_types, import.field_types
         assert_nil import.field_names
@@ -58,7 +50,7 @@ module Coupler
 
       def test_import!
         project = Factory(:project)
-        import = Models::Import.create(:data => fixture_file_upload("people.csv"), :project => project)
+        import = Factory(:import, :file_name => fixture_path("people.csv"), :project => project)
         now = Time.now
         Timecop.freeze(now) do
           assert import.import!
@@ -79,21 +71,20 @@ module Coupler
         end
       end
 
-      def test_requires_field_names_on_update
-        import = Factory(:import, :data => fixture_file_upload('no-headers.csv'))
+      def test_requires_field_names
+        import = Factory.build(:import, :file_name => fixture_path('no-headers.csv'))
         assert_nil import.field_names
-        import.name = "foo"
         assert !import.valid?
       end
 
-      def test_requires_primary_key_name_on_update
-        import = Factory(:import, :data => fixture_file_upload('no-headers.csv'))
+      def test_requires_primary_key_name
+        import = Factory.build(:import, :file_name => fixture_path('no-headers.csv'))
         import.field_names = %w{id first_name last_name age}
         assert !import.valid?
       end
 
       def test_requires_valid_primary_key_name
-        import = Factory(:import, :data => fixture_file_upload('no-headers.csv'))
+        import = Factory.build(:import, :file_name => fixture_path('no-headers.csv'))
         import.field_names = %w{id first_name last_name age}
         import.primary_key_name = "foo"
         assert !import.valid?
@@ -105,18 +96,18 @@ module Coupler
         tempfile.close
 
         project = Factory(:project)
-        import = Factory(:import, :data => file_upload(tempfile.path), :project => project)
+        import = Factory(:import, :file_name => tempfile.path, :project => project)
 
-        now = Time.now
+        now = Time.at(Time.now.to_i)  # dumb usecs
         Timecop.freeze(now) do
           assert !import.import!
           assert import.has_duplicate_keys
-          assert_equal now, import.occurred_at
+          assert_equal now, import.occurred_at, "now: %d-%d; occurred_at: %d-%d" % [now.to_i, now.usec, import.occurred_at.to_i, import.occurred_at.usec]
         end
 
         project.local_database do |db|
           ds = db[:"import_#{import.id}"]
-          assert ds.filter(:id => 2).select_map(:dup_key).all?
+          assert ds.filter(:id => 2).select_map(:dup_key_count).all?
         end
       end
 
@@ -125,9 +116,28 @@ module Coupler
         tempfile.write("id,foo,foo\n1,abc,def\n2,ghi,jkl\n3,mno,pqr")
         tempfile.close
 
-        import = Factory(:import, :data => file_upload(tempfile.path))
-        import.name = "foo"
+        import = Factory.build(:import, :file_name => tempfile.path)
         assert !import.valid?
+      end
+
+      def test_requires_unused_resource_name
+        project = Factory(:project)
+        resource = Factory(:resource, :name => "Foo", :project => project)
+        import = Factory.build(:import, :file_name => fixture_path('people.csv'), :name => "Foo", :project => project)
+        assert !import.valid?
+      end
+
+      def test_dataset
+        project = Factory(:project)
+        import = Factory(:import, :project => project)
+        import.import!
+        project.local_database do |db|
+          import.dataset do |ds|
+            expected = db[:"import_#{import.id}"]
+            assert_equal expected.first_source, ds.first_source
+            assert_equal db.uri, ds.db.uri
+          end
+        end
       end
     end
   end

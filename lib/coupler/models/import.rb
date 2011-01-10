@@ -13,14 +13,28 @@ module Coupler
                 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2} )\z /x
 
       many_to_one :project
-      mount_uploader :data, DataUploader
       plugin :serialization
       serialize_attributes :marshal, :field_types, :field_names
+
+      def file_name=(value)
+        result = super
+        self.name ||= File.basename(file_name).sub(/\.\w+?$/, "").gsub(/[_-]+/, " ").capitalize
+        discover_fields
+        result
+      end
+
+      def primary_key_sym
+        primary_key_name.to_sym
+      end
+
+      def table_name
+        :"import_#{id}"
+      end
 
       def preview
         if @preview.nil?
           @preview = []
-          FasterCSV.open(data.current_path) do |csv|
+          FasterCSV.open(file_name) do |csv|
             csv.shift   if self.has_headers
             50.times do |i|
               row = csv.shift
@@ -52,7 +66,8 @@ module Coupler
                 end
             }
           end
-          table_name = :"import_#{id}"
+          column_names << :dup_key_count
+          column_types << {:name => :dup_key_count, :type => Integer}
           db.create_table!(table_name) do
             columns.push(*column_types)
           end
@@ -62,13 +77,14 @@ module Coupler
           rows = []
           total = 0
           primary_key_index = field_names.index(primary_key_name)
-          csv = FasterCSV.foreach(data.current_path) do |row|
+          FasterCSV.foreach(file_name) do |row|
             total += 1
             next  if total == 1   # ignore the header
 
             key = row[primary_key_index]
-            key_frequencies[key] += 1
-            self.has_duplicate_keys = true if key_frequencies[key] > 1
+            num = key_frequencies[key] += 1
+            row.push(num > 1 ? num : nil)
+            self.has_duplicate_keys = true if num > 1
 
             rows << row
             if rows.length == 1000
@@ -78,21 +94,29 @@ module Coupler
           end
           ds.import(column_names, rows)   unless rows.empty?
 
-          primary_key_sym = primary_key_name.to_sym
+          primary_key = self.primary_key_sym
           if has_duplicate_keys
             # flag duplicate primary keys
-            db.alter_table(table_name) { add_column(:dup_key, TrueClass) }
             key_frequencies.each_pair do |key, count|
               next  if count == 1
-              ds.filter(primary_key_sym => key).update(:dup_key => true)
+              ds.filter(primary_key => key, :dup_key_count => nil).update(:dup_key_count => 1)
             end
           else
             # alter table to set primary key
-            db.alter_table(table_name) { add_primary_key([primary_key_sym]) }
+            db.alter_table(table_name) do
+              drop_column(:dup_key_count)
+              add_primary_key([primary_key])
+            end
           end
         end
         update(:occurred_at => Time.now)
         !has_duplicate_keys
+      end
+
+      def dataset
+        project.local_database do |db|
+          yield(db[table_name])
+        end
       end
 
       private
@@ -100,7 +124,7 @@ module Coupler
           types = []
           type_counts = []
           headers = nil
-          FasterCSV.open(data.current_path) do |csv|
+          FasterCSV.open(file_name) do |csv|
             headers = csv.shift
             count = 0
             if headers.any? { |h| h !~ /[A-Za-z_$]/ }
@@ -142,38 +166,34 @@ module Coupler
 
         def validate
           super
-          if !new?
-            validates_presence [:field_names, :primary_key_name]
-            if field_names.is_a?(Array)
-              validates_includes field_names, [:primary_key_name]
 
-              expected = field_types.length
-              if field_names.length != expected
-                errors.add(:field_names, "must be of length #{expected}")
-              end
+          # don't allow import to have the same name as an already existing resource
+          if project.resources_dataset.filter(:name => name).count > 0
+            errors.add(:name, "is already taken")
+          end
 
-              # check for duplicate field names
-              duplicates = {}
-              field_names.inject(Hash.new(0)) do |hash, field_name|
-                num = hash[field_name] += 1
-                duplicates[field_name] = num  if num > 1
-                hash
-              end
-              if !duplicates.empty?
-                message = "have duplicates (%s)" %
-                  duplicates.inject("") { |s, (k, v)| s + "#{k} x #{v}, " }.chomp(", ")
-                errors.add(:field_names, message)
-              end
+          validates_presence [:field_names, :primary_key_name]
+          if field_names.is_a?(Array)
+            validates_includes field_names, [:primary_key_name]
+
+            expected = field_types.length
+            if field_names.length != expected
+              errors.add(:field_names, "must be of length #{expected}")
+            end
+
+            # check for duplicate field names
+            duplicates = {}
+            field_names.inject(Hash.new(0)) do |hash, field_name|
+              num = hash[field_name] += 1
+              duplicates[field_name] = num  if num > 1
+              hash
+            end
+            if !duplicates.empty?
+              message = "have duplicates (%s)" %
+                duplicates.inject("") { |s, (k, v)| s + "#{k} x #{v}, " }.chomp(", ")
+              errors.add(:field_names, message)
             end
           end
-        end
-
-        def before_save
-          if new?
-            self.name = File.basename(data.current_path).sub(/\.\w+?$/, "").gsub(/[_-]+/, " ").capitalize
-            discover_fields
-          end
-          super
         end
     end
   end

@@ -20,8 +20,8 @@ module Coupler
 
     def test_filename_uniqueness
       uploader = DataUploader.new
-      uploader.store!(fixture_file('people.csv'))
-      assert_match /^[a-f0-9]+.csv$/, uploader.filename
+      uploader.store!(fixture_file_upload('people.csv'))
+      assert_match /^people-[a-f0-9]+.csv$/, uploader.filename
     end
   end
 end

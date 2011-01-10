@@ -89,6 +89,6 @@ Factory.define :comparison, :class => Coupler::Models::Comparison do |c|
 end
 
 Factory.define :import, :class => Coupler::Models::Import do |i|
-  i.data { fixture_file_upload('people.csv') }
+  i.file_name { fixture_path('people.csv') }
   i.association :project
 end
