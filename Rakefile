@@ -1,10 +1,12 @@
-require 'rubygems'
-require 'rake'
-
 if RUBY_PLATFORM != 'java'
   puts "ERROR: JRuby is required to run Coupler."
   exit
 end
+
+require 'rake'
+require 'rubygems'
+require 'bundler'
+Bundler.setup(:default, :development)
 
 def confirm(prompt)
   answer = nil

@@ -7,6 +7,7 @@ gem 'fastercsv'
 gem 'carrierwave'
 
 group :development do
+  gem 'rake'
   gem 'forgery', :require => false
   gem 'test-unit', :require => 'test/unit'
   gem 'mocha'
@@ -14,4 +15,5 @@ group :development do
   gem 'nokogiri'
   gem 'timecop'
   gem 'factory_girl'
+  gem 'git'
 end
