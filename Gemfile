@@ -2,7 +2,7 @@ source "http://rubygems.org"
 gem 'sinatra'
 gem 'sequel'
 gem 'rack-flash'
-gem 'json-jruby'
+gem 'json'
 gem 'fastercsv'
 gem 'carrierwave'
 
@@ -16,4 +16,6 @@ group :development do
   gem 'timecop'
   gem 'factory_girl'
   gem 'git'
+  gem 'thor'
+  gem 'rake'
 end

@@ -45,21 +45,27 @@ module Coupler
     }
 
     def self.each_vendor_lib
-      VENDOR_LIBS.each_pair do |name, info|
-        info = info.merge({:url => info[:url] % info[:version]})
-        info[:dir]      %= info[:version]   if info[:dir]
-        info[:filename] %= info[:version]   if info[:filename]
-        yield(name, info)
+      VENDOR_LIBS.each_key do |name|
+        yield(name, vendor_lib_info(name))
       end
     end
 
-    def self.require_vendor_libs(name)
+    def self.vendor_lib_info(name)
+      info = VENDOR_LIBS[name].merge({:url => info[:url] % info[:version]})
+      info[:dir]      %= info[:version]   if info[:dir]
+      info[:filename] %= info[:version]   if info[:filename]
+      info
+    end
+
+    def self.vendor_lib_paths(name)
       info = VENDOR_LIBS[name]
       version = info[:version]
       path = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', 'vendor', info[:type], info[:dir] % version))
-      info[:libs].each do |lib|
-        require File.join(path, lib % version)
-      end
+      info[:libs].collect { |lib| File.join(path, lib % version) }
+    end
+
+    def self.require_vendor_libs(name)
+      vendor_lib_paths(name).each { |path| require(path) }
     end
 
     @@config = nil

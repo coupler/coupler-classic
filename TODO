@@ -1,10 +1,11 @@
 Major features/bugs:
+- Job management: canceling, etc.
+- Chain matchers
+- package:dist changes bundler config; fix this!
+
+Other ideas:
+- Do authorization on projects
+- Allow user to enter resource password whenever needed; don't store it
 - Better migrations based on commit hashes
   - Use classes in a previous state
   - Run migrations before upgrading code, or vice versa
-- Job management: canceling, etc.
-- Chain matchers
-
-Fancy features for the future:
-- Do authorization on projects
-- Allow user to enter resource password whenever needed; don't store it

@@ -1,4 +1,6 @@
 task :environment do
+  require 'bundler'
+  Bundler.setup(:default, :development)
   require File.join(File.dirname(__FILE__), '..', 'lib', 'coupler')
 end
 

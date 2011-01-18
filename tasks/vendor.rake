@@ -1,7 +1,3 @@
-require 'open-uri'
-require 'tempfile'
-require 'fileutils'
-
 namespace :vendor do
   desc "Fetch vendor packages"
   task :fetch do
