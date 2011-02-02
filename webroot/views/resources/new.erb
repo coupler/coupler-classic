@@ -95,7 +95,7 @@
 </div>
 
 <div id="resource-csv"<%= ' style="display: none"' if @resource.resource_type != 'csv' %>>
-  <form id="new-import" method="post" action="/projects/<%= @project.id %>/imports" enctype="multipart/form-data">
+  <form id="new-import" method="post" action="/projects/<%= @project.id %>/imports/upload" enctype="multipart/form-data">
     <div style='display: none;'><input type='hidden' name="resource[resource_type]" value="csv" /></div>
     <h2>CSV Import</h2>
     <p>

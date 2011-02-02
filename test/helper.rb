@@ -12,6 +12,9 @@ require 'rack/flash'
 require 'rack/flash/test'
 require 'nokogiri'
 require 'timecop'
+require 'tempfile'
+require 'tmpdir'
+require 'fileutils'
 
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
@@ -38,11 +41,21 @@ class Test::Unit::TestCase
   end
 
   def teardown
+    if @tmpdirs
+      @tmpdirs.each { |t| FileUtils.rm_rf(t) }
+    end
     assert_equal @original_database_count, Sequel::DATABASES.length
   end
 
   def _connection_count
     Sequel::DATABASES.inject(0) { |sum, db| sum + db.pool.size }
+  end
+
+  def make_tmpdir(prefix = 'coupler')
+    tmpdir = Dir.mktmpdir(prefix)
+    @tmpdirs ||= []
+    @tmpdirs << tmpdir
+    tmpdir
   end
 end
 
@@ -62,7 +75,8 @@ def fixture_file(name)
   File.open(fixture_path(name))
 end
 
-module VerboseConnectionMessages
+module
+ VerboseConnectionMessages
   def self.extended(base)
     com.mysql.jdbc.Driver
     $conn = java.sql.DriverManager.getConnection("jdbc:mysql://localhost:12345/INFORMATION_SCHEMA?user=coupler&password=cupla");

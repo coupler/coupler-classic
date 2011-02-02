@@ -15,10 +15,11 @@ module Coupler
       many_to_one :project
       plugin :serialization
       serialize_attributes :marshal, :field_types, :field_names
+      mount_uploader :data, DataUploader
 
-      def file_name=(value)
+      def data=(value)
         result = super
-        self.name ||= File.basename(file_name).sub(/\.\w+?$/, "").gsub(/[_-]+/, " ").capitalize
+        self.name ||= File.basename(data.file.original_filename).sub(/\.\w+?$/, "").gsub(/[_-]+/, " ").capitalize
         discover_fields
         result
       end
@@ -34,15 +35,15 @@ module Coupler
       def preview
         if @preview.nil?
           @preview = []
-          FasterCSV.open(file_name) do |csv|
-            csv.shift   if self.has_headers
-            50.times do |i|
-              row = csv.shift
-              if row
-                @preview << row
-              else
-                break
-              end
+          @csv ||= FasterCSV.new(data.read)
+          @csv.rewind
+          @csv.shift   if self.has_headers
+          50.times do |i|
+            row = @csv.shift
+            if row
+              @preview << row
+            else
+              break
             end
           end
         end
@@ -77,7 +78,7 @@ module Coupler
           rows = []
           total = 0
           primary_key_index = field_names.index(primary_key_name)
-          FasterCSV.foreach(file_name) do |row|
+          FasterCSV.parse(data.read) do |row|
             total += 1
             next  if total == 1   # ignore the header
 
@@ -119,41 +120,77 @@ module Coupler
         end
       end
 
+      def repair_duplicate_keys!(rows_to_remove = nil)
+        pkey = primary_key_sym
+        project.local_database do |db|
+          ds = db[table_name]
+          if rows_to_remove
+            filtered_ds = nil
+            rows_to_remove.each_pair do |key, dups|
+              hsh = {pkey => key, :dup_key_count => dups}
+              filtered_ds = filtered_ds ? filtered_ds.or(hsh) : ds.filter(hsh)
+            end
+            filtered_ds.delete if filtered_ds
+          end
+
+          # only reassign keys if there is more than 1 duplicate per key
+          keys = ds.group(pkey).having { count(pkey) > 1 }.select_map(pkey)
+
+          current_key = nil
+          next_key = ds.order(pkey).last[pkey].next
+          ds.filter(pkey => keys).order(:dup_key_count).each do |row|
+            # skip the first one, since it'll retain the key
+            if current_key != row[pkey]
+              current_key = row[pkey]
+            else
+              ds.filter(pkey => row[pkey], :dup_key_count => row[:dup_key_count]).
+                update(pkey => next_key)
+              next_key = next_key.next
+            end
+          end
+
+          db.alter_table(table_name) do
+            drop_column(:dup_key_count)
+            add_primary_key([pkey])
+          end
+        end
+      end
+
       private
         def discover_fields
+          @csv ||= FasterCSV.new(data.read)
+          @csv.rewind
+
+          count = 0
           types = []
           type_counts = []
-          headers = nil
-          FasterCSV.open(file_name) do |csv|
-            headers = csv.shift
-            count = 0
-            if headers.any? { |h| h !~ /[A-Za-z_$]/ }
-              row = headers
-              headers = nil
-              self.has_headers = false
-            else
-              self.has_headers = true
-              headers.each_with_index do |name, i|
-                if name =~ /^id$/i
-                  self.primary_key_name = name
-                end
+          headers = @csv.shift
+          if headers.any? { |h| h !~ /[A-Za-z_$]/ }
+            row = headers
+            headers = nil
+            self.has_headers = false
+          else
+            self.has_headers = true
+            headers.each_with_index do |name, i|
+              if name =~ /^id$/i
+                self.primary_key_name = name
               end
-              row = csv.shift
             end
+            row = @csv.shift
+          end
 
-            while row && count < 50
-              row.each_with_index do |value, i|
-                hash = type_counts[i] ||= {}
-                type =
-                  case value
-                  when /^\d+$/ then 'integer'
-                  else 'string'
-                  end
-                hash[type] = (hash[type] || 0) + 1
-              end
-              row = csv.shift
-              count += 1
+          while row && count < 50
+            row.each_with_index do |value, i|
+              hash = type_counts[i] ||= {}
+              type =
+                case value
+                when /^\d+$/ then 'integer'
+                else 'string'
+                end
+              hash[type] = (hash[type] || 0) + 1
             end
+            row = @csv.shift
+            count += 1
           end
 
           type_counts.each_with_index do |type_count, i|

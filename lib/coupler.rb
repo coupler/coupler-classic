@@ -9,6 +9,7 @@ require 'singleton'
 require 'logger'
 require 'optparse'
 require 'thwait'
+require 'digest'
 require 'rack'
 require 'rack/mime'   # This is an attempt to avoid NameError exceptions
 require 'sinatra/base'

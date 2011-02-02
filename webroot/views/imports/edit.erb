@@ -1,11 +1,60 @@
-<% @breadcrumbs = [@project, "CSV Import"] %>
+<% @breadcrumbs = [@project, @import, 'Edit'] %>
 <%- add_javascript('jquery.dataTables.min.js') -%>
 <%- add_stylesheet('dataTables.css') -%>
 <%= error_messages_for @import %>
-<%= error_messages_for @resource %>
 
-<%- if @import.occurred_at -%>
-  <%= erb(:'imports/fix', :layout => false) %>
-<%- else -%>
-  <%= erb(:'imports/form', :layout => false) %>
+<style type="text/css">
+  #keylist thead tr.one th { border: 1px gray; border-style: solid none solid solid; }
+  #keylist thead tr.one th.two { vertical-align: middle; border-width: 1px 1px 2px 1px; border-style: solid; }
+
+  #keylist thead tr.two th { border-color: gray; border-width: 0 0 2px 0px; border-style: none none solid none; }
+  #keylist thead tr.two th.one { border-width: 0 0 2px 1px; border-style: none none solid solid; }
+
+  #keylist tbody tr { border: 1px gray; border-style: none solid; }
+  #keylist tbody tr.bottom { border-style: none solid solid solid; }
+  #keylist tbody tr td.choice { text-align: center; border: 1px gray; border-style: none solid; }
+
+  #keylist input.text { width: 50px; }
+</style>
+<%- if @import.has_duplicate_keys -%>
+  <h2>Duplicate Keys</h2>
+  <div class="section">
+    <p>There were some records in your dataset with duplicate keys.  If any
+    rows are legitimate duplicates, you can check the box to have the row
+    removed.  Otherwise, new keys will be automatically generated.</p>
+
+    <%- @import.dataset do |ds| -%>
+      <%- primary_key = @import.primary_key_sym -%>
+      <%- ds = ds.filter(~{:dup_key_count => nil}).order(primary_key, :dup_key_count) -%>
+      <form action="/projects/<%= @project.id %>/imports/<%= @import.id %>" method="post">
+        <input type="hidden" name="_method" value="put" />
+        <table id="keylist" class="list">
+          <thead>
+            <tr class="one">
+              <th class="one" colspan="<%= @import.field_names.length %>">Current Values</th>
+              <th class="two" rowspan="2">Remove<br/>Row</th>
+            </tr>
+            <tr class="two">
+              <%- @import.field_names.each_with_index do |name, i| -%>
+                <th<%= %{ class="one"} if i == 0 %>><%= name %></th>
+              <%- end -%>
+            </tr>
+          </thead>
+          <tbody>
+            <%- count = ds.count -%>
+            <%- ds.each_with_index do |row, i| -%>
+              <%- klasses = []; klasses << 'alt' if i % 2 == 1; klasses << "bottom" if i == count - 1 -%>
+              <tr<%= %{ class="#{klasses.join(" ")}"} if !klasses.empty? %>>
+                <%- @import.field_names.each do |name| -%>
+                  <td><%= row[name.to_sym] %></td>
+                <%- end -%>
+                <td class="choice"><input type="checkbox" name="delete[<%= row[primary_key] %>][]" value="<%= row[:dup_key_count] %>" /></td>
+              </tr>
+            <%- end -%>
+          </tbody>
+        </table>
+        <input type="submit" value="Submit" />
+      </form>
+    <%- end -%>
+  </div>
 <%- end -%>

@@ -3,6 +3,7 @@
 <%- add_stylesheet('dataTables.css') -%>
 
 <form action="/projects/<%= @project.id %>/imports" method="post">
+  <input type="hidden" name="import[data_cache]" value="<%= @import.data_cache %>" />
   <p>
     <label for="name"><strong>Name:</strong></label>
     <input id="name" type="text" name="import[name]" value="<%= @import.name %>" />
