@@ -15,8 +15,8 @@ module Coupler
       'jruby' => {
         :type => 'java',
         :filetype => 'jar',
-        :version => '1.5.6',
-        :url => "http://repository.codehaus.org/org/jruby/jruby-complete/%1$s/jruby-complete-%1$s.jar",
+        :version => '1.6.0.RC2',
+        :url => "http://jruby.org.s3.amazonaws.com/downloads/%1$s/jruby-complete-%1$s.jar",
         :uncompress => false,
         :filename => "jruby-complete-%s.jar",
         :symlink => "jruby-complete.jar"
@@ -51,7 +51,8 @@ module Coupler
     end
 
     def self.vendor_lib_info(name)
-      info = VENDOR_LIBS[name].merge({:url => info[:url] % info[:version]})
+      info = VENDOR_LIBS[name]
+      info = info.merge({:url => info[:url] % info[:version]})
       info[:dir]      %= info[:version]   if info[:dir]
       info[:filename] %= info[:version]   if info[:filename]
       info

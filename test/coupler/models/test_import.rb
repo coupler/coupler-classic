@@ -190,6 +190,20 @@ module Coupler
           assert db.schema(:"import_#{import.id}").assoc(:id)[1][:primary_key]
         end
       end
+
+      def test_discover_fields_for_csv_with_headers_and_varying_number_of_fields
+        tempfile = Tempfile.new('coupler-import')
+        tempfile.write("id,foo,bar\n1,2,3\n1,4,5\n1,6,7,\n123,456,789,,\n")
+        tempfile.close
+
+        import = Factory.build(:import, :data => file_upload(tempfile.path))
+        expected_types = %w{integer integer integer string string}
+        expected_names = %w{id foo bar}
+        assert_equal expected_names, import.field_names
+        assert_equal expected_types, import.field_types
+        assert_equal "id", import.primary_key_name
+        assert import.has_headers
+      end
     end
   end
 end
