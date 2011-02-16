@@ -12,4 +12,3 @@ nbproject
 profile
 src/edu/vanderbilt/coupler/*.class
 build
-vendor/java/jruby-complete.jar
