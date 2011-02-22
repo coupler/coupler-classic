@@ -137,14 +137,18 @@ module Coupler
           :scenario => scenario
         })
 
+        x = 0
         runner = mock("runner", :run! => nil)
-        Scenario::Runner.expects(:new).with(scenario).returns(runner)
+        Scenario::Runner.expects(:new).with(scenario).yields(1).returns(runner)
 
         now = Time.now
-        Timecop.freeze(now) { scenario.run! }
+        Timecop.freeze(now) do
+          scenario.run! { |n| x += n }
+        end
         assert_equal now, scenario.last_run_at
         assert_equal 1, scenario.run_count
         assert_equal 1, scenario.results_dataset.count
+        assert_equal 1, x
 
         result = scenario.results_dataset[:run_number => 1]
         assert result

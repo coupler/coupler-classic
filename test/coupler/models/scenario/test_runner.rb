@@ -66,8 +66,10 @@ module Coupler
               'operator' => 'equals'
             }]
           })
-          runner = Runner.new(scenario)
+          progress = 0
+          runner = Runner.new(scenario) { |n| progress += n }
           runner.run!
+          assert_not_equal 0, progress
 
           groups = {}
           scenario.local_database do |db|

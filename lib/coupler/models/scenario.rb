@@ -44,13 +44,13 @@ module Coupler
         }, &block)
       end
 
-      def run!
+      def run!(&progress)
         case status
         when 'no_matcher'             then raise NoMatcherError
         when 'resources_out_of_date'  then raise ResourcesOutOfDateError
         end
 
-        runner = Runner.new(self)
+        runner = Runner.new(self, &progress)
         runner.run!
 
         update(:run_count => run_count + 1, :last_run_at => Time.now)

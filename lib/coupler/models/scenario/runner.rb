@@ -4,8 +4,9 @@ module Coupler
       class Runner
         LIMIT = 10000
 
-        def initialize(parent)
+        def initialize(parent, &progress)
           @parent = parent
+          @progress = progress
           @matcher = parent.matcher
           @type = parent.linkage_type
           if @type == 'cross-linkage'
