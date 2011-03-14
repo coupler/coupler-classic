@@ -5,32 +5,13 @@ module Coupler
     class TestResults < Test::Unit::TestCase
       class << self
         def startup
-          ### Test Resource 1 ###
-          Sequel.connect(Config.connection_string('test_resource_1', :create_database => true)) do |db|
-            db.create_table!(:records) do
-              primary_key :id
-              String :uno_col
-              String :dos_col
-            end
-            db[:records].import \
-              [:id, :uno_col, :dos_col],
-              [
-                # Group 1
-                [18, "foo", nil], [16, "foo", nil], [17, "foo", nil],
-                [15, nil, "foo"], [13, nil, "foo"], [10, nil, "foo"], [19, nil, "foo"],
-                # Group 2
-                [25, "bar", nil], [23, "bar", nil], [20, "bar", nil], [29, "bar", nil],
-                [28, nil, "bar"], [26, nil, "bar"], [27, nil, "bar"],
-                # Group 3
-                [38, "baz", nil],
-                [35, nil, "baz"], [33, nil, "baz"], [30, nil, "baz"], [39, nil, "baz"],
-                # Group 4
-                [45, "quux", nil], [43, "quux", nil], [40, "quux", nil], [49, "quux", nil],
-                [48, nil, "quux"],
-                # Group 5
-                [55, "ditto", "ditto"], [53, "ditto", "ditto"]
-              ]
-          end
+          super
+          load_table_set(:basic_cross_linkage)
+        end
+
+        def shutdown
+          unload_table_set(:basic_cross_linkage)
+          super
         end
       end
 

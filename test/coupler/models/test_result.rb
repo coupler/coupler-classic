@@ -3,6 +3,24 @@ require File.dirname(__FILE__) + '/../../helper'
 module Coupler
   module Models
     class TestResult < Test::Unit::TestCase
+      class << self
+        def startup
+          super
+          load_table_set(:basic_cross_linkage)
+        end
+
+        def shutdown
+          unload_table_set(:basic_cross_linkage)
+          super
+        end
+      end
+
+      def setup
+        super
+        @project = Factory(:project)
+        @resource = Factory(:resource, :database_name => 'test_resource_1', :table_name => 'records', :project => @project)
+      end
+
       def test_sequel_model
         assert_equal ::Sequel::Model, Result.superclass
         assert_equal :results, Result.table_name
@@ -13,7 +31,7 @@ module Coupler
       end
 
       def test_sets_scenario_version
-        scenario = Factory(:scenario)
+        scenario = Factory(:scenario, :resource_1 => @resource, :project => @project)
         result = Factory(:result, :scenario => scenario)
         assert_equal scenario.version, result.scenario_version
       end
@@ -29,7 +47,7 @@ module Coupler
       end
 
       def test_snapshot_gets_originating_scenario
-        scenario = Factory(:scenario, :name => "Bar Scenario")
+        scenario = Factory(:scenario, :name => "Bar Scenario", :project => @project)
         result = Factory(:result, :scenario => scenario)
         scenario.update(:name => "Foo Scenario")
 
@@ -50,30 +68,6 @@ module Coupler
         hash = result.snapshot
         assert_equal "Uno", hash[:resource_1][:name]
         assert_equal "Dos", hash[:resource_2][:name]
-      end
-
-      def test_to_csv
-        pend
-        project = Factory(:project)
-        resource_1 = Factory(:resource, :project => project, :name => "Uno")
-        resource_2 = Factory(:resource, :project => project, :name => "Dos")
-        scenario = Factory(:scenario, :project => project, :resource_1 => resource_1, :resource_2 => resource_2)
-        score_set_id = nil
-        ScoreSet.create do |score_set|
-          score_set_id = score_set.id
-          score_set.insert(:first_id => 13, :second_id => 37, :score => 456, :matcher_id => 1)
-          score_set.insert(:first_id => 867, :second_id => 5309, :score => 123, :matcher_id => 1)
-          score_set.insert(:first_id => 867, :second_id => 5309, :score => 321, :matcher_id => 2)
-        end
-        result = Factory(:result, :scenario => scenario, :score_set_id => score_set_id)
-
-        expected = [
-          %w{uno_id dos_id score matcher_ids},
-          %w{13 37 456 1},
-          %w{867 5309 444 1,2}
-        ]
-        arr = FasterCSV.parse(result.to_csv)
-        assert_equal expected, arr
       end
 
       def test_groups_dataset
@@ -98,59 +92,6 @@ module Coupler
         end
       end
 
-      def test_summary_for_simple_self_linkage
-        project = Factory(:project)
-        resource = Factory(:resource, :project => project)
-        field = resource.fields_dataset[:name => 'first_name']
-        scenario = Factory(:scenario, :project => project, :resource_1 => resource)
-        matcher = Factory(:matcher, :scenario => scenario, :comparisons_attributes => [{
-          'lhs_type' => 'field', 'raw_lhs_value' => field.id, 'lhs_which' => 1,
-          'rhs_type' => 'field', 'raw_rhs_value' => field.id, 'rhs_which' => 2,
-          'operator' => 'equals'
-        }])
-        scenario.run!
-        result = scenario.results_dataset.first
-        summary = result.summary
-        assert_equal([["first_name", "first_name"]], summary[:fields])
-        scenario.local_database do |db|
-          counts = db[:groups_records_1].group_and_count(:group_id, :which).order(:group_id).all
-          assert_equal counts.length, summary[:groups].length
-          summary[:groups].each_with_index do |group, i|
-            assert_equal counts[i][:group_id], group[:id]
-            assert_equal counts[i][:count], group[:matches][nil].length
-            assert group[:matches][nil].length > 1
-          end
-          assert_equal db[:groups_records_1].group_and_count(:which).all, summary[:total_matches]
-        end
-      end
-
-      def test_summary_for_cross_linkage
-        project = Factory(:project)
-        resource = Factory(:resource, :project => project)
-        field_1 = resource.fields_dataset[:name => 'first_name']
-        field_2 = resource.fields_dataset[:name => 'last_name']
-        scenario = Factory(:scenario, :project => project, :resource_1 => resource)
-        matcher = Factory(:matcher, :scenario => scenario, :comparisons_attributes => [{
-          'lhs_type' => 'field', 'raw_lhs_value' => field_1.id, 'lhs_which' => 1,
-          'rhs_type' => 'field', 'raw_rhs_value' => field_2.id, 'rhs_which' => 2,
-          'operator' => 'equals'
-        }])
-        scenario.run!
-        result = scenario.results_dataset.first
-        summary = result.summary
-        assert_equal([["first_name", "last_name"]], summary[:fields])
-        scenario.local_database do |db|
-          counts = db[:groups_records_1].group_and_count(:group_id, :which).order(:group_id).all
-          assert_equal counts.length, summary[:groups].length
-          summary[:groups].each_with_index do |group, i|
-            assert_equal counts[i][:group_id], group[:id]
-            assert_equal counts[i][:count], group[:matches][resource.id].length
-            assert group[:matches][resource.id].length > 1
-          end
-          assert_equal db[:groups_records_1].group_and_count(:which).all, summary[:total_matches]
-        end
-      end
-
       def test_groups_table_name
         scenario = Factory(:scenario)
         matcher = Factory(:matcher, :scenario => scenario)
@@ -165,6 +106,23 @@ module Coupler
         scenario.run!
         result = scenario.results_dataset.first
         assert_equal :groups_records_1, result.groups_records_table_name
+      end
+
+      def test_default_csv_export
+        scenario = Factory(:scenario, :resource_1 => @resource, :project => @project)
+        matcher = Factory(:matcher, {
+          :scenario => scenario,
+          :comparisons_attributes => [{
+            'lhs_type' => 'field', 'raw_lhs_value' => @resource.fields_dataset[:name => 'uno_col'].id, 'lhs_which' => 1,
+            'rhs_type' => 'field', 'raw_rhs_value' => @resource.fields_dataset[:name => 'dos_col'].id, 'rhs_which' => 2,
+            'operator' => 'equals'
+          }]
+        })
+        scenario.run!
+        result = scenario.results_dataset.first
+        csv = result.to_csv
+
+        # FIXME: add some actual csv tests you lazy bastard
       end
     end
   end

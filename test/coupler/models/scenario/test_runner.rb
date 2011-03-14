@@ -6,6 +6,7 @@ module Coupler
       class TestRunner < Test::Unit::TestCase
         class << self
           def startup
+            super
             Sequel.connect(Config.connection_string('ruby_runner_test', :create_database => true)) do |db|
               db.create_table!(:resource_1) do
                 primary_key :id

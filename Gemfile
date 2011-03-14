@@ -18,4 +18,5 @@ group :development do
   gem 'git'
   gem 'thor'
   gem 'rake'
+  gem 'table_maker'
 end

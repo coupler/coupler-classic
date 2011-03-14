@@ -12,3 +12,4 @@ nbproject
 profile
 src/edu/vanderbilt/coupler/*.class
 build
+output.txt

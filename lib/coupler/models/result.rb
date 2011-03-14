@@ -18,33 +18,6 @@ module Coupler
         }
       end
 
-=begin
-      def to_csv
-        csv = FasterCSV.new("")
-        hash = snapshot
-        if snapshot[:scenario][:linkage_type] == "self-linkage"
-          rslug = snapshot[:resource_1][:slug]
-          csv << %W{#{rslug}_id_1 #{rslug}_id_2 score matcher_ids}
-        else
-          rslug1 = snapshot[:resource_1][:slug]
-          rslug2 = snapshot[:resource_2][:slug]
-          csv << %W{#{rslug1}_id #{rslug2}_id score matcher_ids}
-        end
-
-        ScoreSet.find(score_set_id) do |score_set|
-          ds = score_set.select{[
-            first_id,
-            second_id,
-            sum(score).cast(Integer).as(score),
-            group_concat(matcher_id).as(matcher_ids)
-          ]}.group(:first_id, :second_id)
-          ds.each { |row| csv << row.values_at(:first_id, :second_id, :score, :matcher_ids) }
-        end
-        csv.close
-        csv.string
-      end
-=end
-
       def groups_table_name
         :"groups_#{run_number}"
       end
@@ -77,28 +50,34 @@ module Coupler
         end
       end
 
-      # This isn't really being used.
-      def summary
-        summary = {}
-        summary[:fields] = scenario.matcher.comparisons.inject([]) do |arr, comparison|
-          if !comparison.blocking?
-            arr << comparison.fields.collect(&:name)
-          end
-          arr
+      def to_csv
+        # grab primary keys and datasets from the scenario's resources
+        rdatasets = []
+        rkeys = []
+        headers = []
+        scenario.resources.each do |resource|
+          field_names = resource.selected_fields_dataset.select(:name).order(:id).naked.map { |f| f[:name].to_sym }
+          rdatasets << resource.final_dataset.select(*field_names)
+          rkeys << resource.primary_key_sym
+          headers |= field_names
         end
-        scenario.local_database do |db|
-          records_ds = db[:"groups_records_#{run_number}"]
-          summary[:groups] = db[:"groups_#{run_number}"].collect do |group_row|
-            group_row[:matches] = {}
-            records_ds.select(:record_id, :which).filter(:group_id => group_row[:id]).each do |record_row|
-              arr = group_row[:matches][record_row[:which]] ||= []
-              arr.push(record_row[:record_id])
-            end
-            group_row
-          end
-          summary[:total_matches] = records_ds.group_and_count(:which).all
+        headers << :coupler_group_id
+
+        csv = FasterCSV.new("", :headers => true)
+        csv << headers
+
+        groups_records_dataset.each do |group_record|
+          # 'which' is either 0 or 1; rdatasets can be either length 1 or 2
+          rdataset = rdatasets[-group_record[:which]]
+          rkey = rkeys[-group_record[:which]]
+
+          record = rdataset[rkey => group_record[:record_id]]
+          record[:coupler_group_id] = group_record[:group_id]
+          csv << record   # slots everything correctly
         end
-        summary
+
+        rdatasets.each { |r| r.db.disconnect }
+        csv.string
       end
 
       private
