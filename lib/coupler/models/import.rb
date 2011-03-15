@@ -35,7 +35,7 @@ module Coupler
       def preview
         if @preview.nil?
           @preview = []
-          @csv ||= FasterCSV.new(data.read)
+          @csv ||= FasterCSV.new(File.open(data.file.file))
           @csv.rewind
           @csv.shift   if self.has_headers
           50.times do |i|
@@ -78,7 +78,7 @@ module Coupler
           rows = []
           total = 0
           primary_key_index = field_names.index(primary_key_name)
-          FasterCSV.parse(data.read) do |row|
+          FasterCSV.foreach(data.file.file) do |row|
             total += 1
             next  if total == 1   # ignore the header
 
@@ -158,7 +158,7 @@ module Coupler
 
       private
         def discover_fields
-          @csv ||= FasterCSV.new(data.read)
+          @csv ||= FasterCSV.new(File.open(data.file.file))
           @csv.rewind
 
           count = 0

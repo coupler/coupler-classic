@@ -8,9 +8,12 @@ GEM
     fastercsv (1.5.4)
     forgery (0.3.7)
       nokogiri (~> 1.4)
+    gem_plugin (0.2.3)
     git (1.2.5)
     json (1.5.1-java)
     mocha (0.9.12)
+    mongrel (1.1.5-java)
+      gem_plugin (>= 0.2.3)
     nokogiri (1.4.4.2-java)
       weakling (>= 0.0.3)
     rack (1.2.2)
@@ -42,6 +45,7 @@ DEPENDENCIES
   git
   json
   mocha
+  mongrel
   nokogiri
   rack-flash
   rack-test

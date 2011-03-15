@@ -5,6 +5,7 @@ gem 'rack-flash'
 gem 'json'
 gem 'fastercsv'
 gem 'carrierwave'
+gem 'mongrel'
 
 group :development do
   gem 'rake'
