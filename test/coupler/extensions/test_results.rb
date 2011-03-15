@@ -18,7 +18,7 @@ module Coupler
       def setup
         super
         @project = Factory(:project)
-        @resource = Factory(:resource, :database_name => 'test_resource_1', :table_name => 'records', :project => @project)
+        @resource = Factory(:resource, :database_name => 'coupler_test_data', :table_name => 'records', :project => @project)
         @scenario = Factory(:scenario, :project => @project, :resource_1 => @resource)
         @matcher = Factory(:matcher, {
           :scenario => @scenario,
@@ -65,25 +65,19 @@ module Coupler
         assert last_response.ok?
       end
 
-=begin
       def test_show_sends_csv
-        pend
-        ScoreSet.create do |score_set|
-          @result.update(:score_set_id => score_set.id)
-          score_set.insert(:first_id => 1, :second_id => 2, :score => 100)
-        end
-
-        get "/projects/#{@project.id}/scenarios/#{@scenario.id}/results/#{@result.id}"
-        assert_equal %{attachment; filename="#{@scenario.slug}-run-#{@result.created_at.strftime('%Y%m%d-%H%M')}.txt"}, last_response['Content-Disposition']
+        Models::Result.any_instance.expects(:to_csv).returns("foo,bar\n1,2")
+        get "/projects/#{@project.id}/scenarios/#{@scenario.id}/results/#{@result.id}.csv"
+        assert_equal %{attachment; filename="#{@scenario.slug}-run-#{@result.created_at.strftime('%Y%m%d-%H%M')}.csv"}, last_response['Content-Disposition']
 
         body = last_response.body
-        if md = body.match(/^(.+?)\n\n/m)
-          metadata = md[1]
-          body = body[md.end(0)..-1]
-        else
-          flunk "No metadata found"
-        end
-        assert_equal @result.to_csv, body
+        #if md = body.match(/^(.+?)\n\n/m)
+          #metadata = md[1]
+          #body = body[md.end(0)..-1]
+        #else
+          #flunk "No metadata found"
+        #end
+        assert_equal "foo,bar\n1,2", body
       end
 
       def test_show_with_non_existant_result
@@ -93,7 +87,6 @@ module Coupler
         follow_redirect!
         assert_match /The result you were looking for doesn't exist/, last_response.body
       end
-=end
     end
   end
 end

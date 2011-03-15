@@ -67,9 +67,11 @@ module Coupler
         csv << headers
 
         groups_records_dataset.each do |group_record|
-          # 'which' is either 0 or 1; rdatasets can be either length 1 or 2
-          rdataset = rdatasets[-group_record[:which]]
-          rkey = rkeys[-group_record[:which]]
+          # 'which' is either 0 or 1 (or nil for self-linkages)
+          # rdatasets can be either length 1 or 2
+          which = group_record[:which] || 0
+          rdataset = rdatasets[-which]
+          rkey = rkeys[-which]
 
           record = rdataset[rkey => group_record[:record_id]]
           record[:coupler_group_id] = group_record[:group_id]

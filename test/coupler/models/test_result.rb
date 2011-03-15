@@ -7,10 +7,12 @@ module Coupler
         def startup
           super
           load_table_set(:basic_cross_linkage)
+          load_table_set(:basic_self_linkage)
         end
 
         def shutdown
           unload_table_set(:basic_cross_linkage)
+          unload_table_set(:basic_self_linkage)
           super
         end
       end
@@ -18,7 +20,7 @@ module Coupler
       def setup
         super
         @project = Factory(:project)
-        @resource = Factory(:resource, :database_name => 'test_resource_1', :table_name => 'records', :project => @project)
+        @resource = Factory(:resource, :database_name => 'coupler_test_data', :table_name => 'records', :project => @project)
       end
 
       def test_sequel_model
@@ -108,7 +110,25 @@ module Coupler
         assert_equal :groups_records_1, result.groups_records_table_name
       end
 
-      def test_default_csv_export
+      def test_default_csv_export_self_linkage
+        resource = Factory(:resource, :database_name => 'coupler_test_data', :table_name => 'basic_self_linkage', :project => @project)
+        scenario = Factory(:scenario, :resource_1 => resource, :project => @project)
+        matcher = Factory(:matcher, {
+          :scenario => scenario,
+          :comparisons_attributes => [{
+            'lhs_type' => 'field', 'raw_lhs_value' => resource.fields_dataset[:name => 'foo'].id, 'lhs_which' => 1,
+            'rhs_type' => 'field', 'raw_rhs_value' => resource.fields_dataset[:name => 'foo'].id, 'rhs_which' => 2,
+            'operator' => 'equals'
+          }]
+        })
+        scenario.run!
+        result = scenario.results_dataset.first
+        csv = result.to_csv
+
+        # FIXME: add some actual csv tests you lazy bastard
+      end
+
+      def test_default_csv_export_cross_linkage
         scenario = Factory(:scenario, :resource_1 => @resource, :project => @project)
         matcher = Factory(:matcher, {
           :scenario => scenario,
