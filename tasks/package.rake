@@ -34,6 +34,7 @@ namespace :package do
       Bundler.settings[:path] = nil
       Bundler.settings[:disable_shared_gems] = nil
       Bundler.settings.without = []
+      ant.delete :dir => '.bundle'
     end
   end
 
@@ -97,6 +98,7 @@ namespace :package do
     ant.copy :file => "LICENSE", :tofile => File.join(licenses_dir, "coupler.license")
   end
 
+  desc "Create a distributable JAR"
   task :dist => [:copy_libs, :compile_runner, :copy_licenses, :environment] do
     coupler_version_short = coupler_version[0..6]
     ant.jar :destfile => File.join(build_dir, "coupler-#{coupler_version[0..6]}.jar"), :basedir => root_dir do
@@ -113,7 +115,7 @@ namespace :package do
     end
   end
 
-  #<target name="clean" description="clean up">
-    #<delete dir="${build}"/>
-  #</target>
+  task :clean do
+    ant.delete :dir => build_dir
+  end
 end
