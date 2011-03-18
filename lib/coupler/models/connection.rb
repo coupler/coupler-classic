@@ -3,11 +3,11 @@ module Coupler
     class Connection < Sequel::Model
       include CommonModel
 
-      ADAPTERS = [%w{mysql MySQL}]
+      ADAPTERS = [%w{mysql MySQL h2 H2}]
 
       one_to_many :resources
 
-      def database(database_name, &block)
+      def database(database_name = nil, &block)
         Sequel.connect(connection_string(database_name), {
           :loggers => [Coupler::Logger.instance],
           :max_connections => 20
@@ -19,11 +19,16 @@ module Coupler
       end
 
       private
-        def connection_string(database_name)
-          misc = adapter == 'mysql' ? '&zeroDateTimeBehavior=convertToNull' : ''
-          "jdbc:%s://%s:%d/%s?user=%s&password=%s%s" % [
-            adapter, host, port, database_name, username, password, misc
-          ]
+        def connection_string(database_name = nil)
+          case adapter
+          when 'mysql'
+            misc = '&zeroDateTimeBehavior=convertToNull'
+            "jdbc:mysql://%s:%d/%s?user=%s&password=%s%s" % [
+              host, port, database_name, username, password, misc
+            ]
+          when 'h2'
+            "jdbc:h2:#{path}"
+          end
         end
 
         def before_validation

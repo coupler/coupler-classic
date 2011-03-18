@@ -3,10 +3,6 @@ require File.dirname(__FILE__) + '/../../helper'
 module Coupler
   module Models
     class TestProject < Test::Unit::TestCase
-      def db(&block)
-        Sequel.connect(Config.connection_string("information_schema"), &block)
-      end
-
       def test_sequel_model
         assert_equal ::Sequel::Model, Project.superclass
         assert_equal :projects, Project.table_name
@@ -131,10 +127,7 @@ module Coupler
 
       def test_local_database
         project = Factory(:project, :name => "roflsauce")
-        db do |inf|
-          databases = inf["SHOW DATABASES"].collect { |x| x[:Database] }
-          inf.run("DROP DATABASE project_#{project.id}")  if databases.include?("project_#{project.id}")
-        end
+        FileUtils.rm(Dir[Base.db_path("project_#{project.id}")+".*"])
 
         project.local_database do |db|
           assert_kind_of Sequel::JDBC::Database, db
@@ -156,10 +149,7 @@ module Coupler
         project = Factory(:project)
         project.local_database { |db| db.test_connection }  # force creation of database
         project.destroy
-        db do |inf|
-          databases = inf["SHOW DATABASES"].collect { |x| x[:Database] }
-          assert !databases.include?("project_#{project.id}")
-        end
+        assert Dir[Base.db_path("project_#{project.id}")+".*"].empty?
       end
 
       def test_does_not_delete_versions_after_destroy

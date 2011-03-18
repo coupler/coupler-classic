@@ -10,7 +10,7 @@ module Coupler
     def test_connection
       assert_kind_of Sequel::JDBC::Database, @database.__getobj__
 
-      expected = Config.connection_string("coupler_test", :create_database => true)
+      expected = Base.connection_string('coupler')
       assert_equal expected, @database.uri
     end
 

@@ -64,7 +64,8 @@ module Coupler
                 case field_types[i]
                 when 'integer' then Integer
                 when 'string' then String
-                end
+                end,
+              :null => !(name == primary_key_name)
             }
           end
           column_names << :dup_key_count

@@ -3,10 +3,6 @@ require File.dirname(__FILE__) + '/../../helper'
 module Coupler
   module Models
     class TestResource < Test::Unit::TestCase
-      def db(&block)
-        Sequel.connect(Config.connection_string("information_schema"), &block)
-      end
-
       def test_sequel_model
         assert_equal Sequel::Model, Resource.superclass
         assert_equal :resources, Resource.table_name
@@ -202,8 +198,8 @@ module Coupler
       end
 
       def test_source_database
-        resource = Factory(:resource, :database_name => 'fake_data')
-        resource.connection.expects(:database).with('fake_data')
+        resource = Factory(:resource, :database_name => 'coupler_fake_data')
+        resource.connection.expects(:database).with('coupler_fake_data')
         resource.source_database { puts "huge" }
       end
 
@@ -232,7 +228,7 @@ module Coupler
 
       def test_local_dataset
         project = Factory(:project, :name => "local_dataset test")
-        db { |inf| inf.execute("DROP DATABASE IF EXISTS project_#{project.id}") }
+        FileUtils.rm(Dir[Base.db_path("project_#{project.id}")+".*"])
 
         resource = Factory(:resource, :name => "Resource 1", :project => project)
         field = resource.fields.first
@@ -244,7 +240,7 @@ module Coupler
 
         resource.local_dataset do |dataset|
           database = dataset.db
-          assert_equal Config.connection_string("project_#{project.id}", :create_database => true, :zero_date_time_behavior => :convert_to_null), database.uri
+          assert_equal Base.connection_string("project_#{project.id}"), database.uri
           assert_equal database[:"resource_#{resource.id}"].select_sql, dataset.select_sql
         end
       end
@@ -360,8 +356,11 @@ module Coupler
           :source_field => resource.fields_dataset[:name => 'first_name']
         })
 
-        original_row = nil
-        resource.source_dataset { |ds| original_row = ds.first }
+        original_row = original_schema = nil
+        resource.source_dataset do |ds|
+          original_row = ds.first
+          original_schema = ds.db.dump_table_schema(ds.first_source)
+        end
 
         Timecop.freeze(Time.now) do
           resource.transform!
@@ -369,11 +368,9 @@ module Coupler
         end
         assert_equal "#{transformation.id}", resource.transformed_with
 
-        Sequel.connect(Config.connection_string("project_#{project.id}")) do |db|
+        Sequel.connect(Base.connection_string("project_#{project.id}")) do |db|
           assert db.tables.include?(:"resource_#{resource.id}")
-
-          expected = [[:id, {:allow_null=>false, :default=>nil, :primary_key=>true, :db_type=>"int(11)", :type=>:integer, :ruby_default=>nil}], [:first_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}], [:last_name, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"varchar(255)", :type=>:string, :ruby_default=>nil}], [:age, {:allow_null=>true, :default=>nil, :primary_key=>false, :db_type=>"int(11)", :type=>:integer, :ruby_default=>nil}]]
-          assert_equal expected, db.schema(:"resource_#{resource.id}")
+          assert_equal original_schema, db.dump_table_schema(:"resource_#{resource.id}")
 
           changed_row = db[:"resource_#{resource.id}"][:id => original_row[:id]]
           assert_equal original_row[:first_name].downcase, changed_row[:first_name]

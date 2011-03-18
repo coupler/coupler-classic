@@ -6,6 +6,8 @@ gem 'json'
 gem 'fastercsv'
 gem 'carrierwave'
 gem 'mongrel'
+gem 'mvn:com.h2database:h2'
+gem 'jdbc-mysql'
 
 group :development do
   gem 'rake'

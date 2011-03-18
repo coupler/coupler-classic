@@ -7,7 +7,7 @@ module Coupler
         class << self
           def startup
             super
-            Sequel.connect(Config.connection_string('ruby_runner_test', :create_database => true)) do |db|
+            Sequel.connect(Base.connection_string('ruby_runner_test')) do |db|
               db.create_table!(:resource_1) do
                 primary_key :id
                 String :ssn, :index => true

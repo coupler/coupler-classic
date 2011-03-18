@@ -63,7 +63,7 @@ module Coupler
       def test_accepts_nested_attributes_for_result_field
         resource = Factory(:resource)
         field = resource.fields_dataset[:name => "first_name"]
-        transformer = Factory(:transformer, :code => %w{value}, :result_type => 'same')
+        transformer = Factory(:transformer, :code => %{value}, :result_type => 'same')
 
         count = resource.fields_dataset.count
         transformation = Factory(:transformation, {

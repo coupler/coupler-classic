@@ -66,13 +66,22 @@ module Coupler
           :name => "testing",
           :adapter => "mysql",
           :host => "localhost",
-          :port => 12345,
-          :username => "coupler",
-          :password => "cupla",
+          :port => 3306,
         })
-        connection.database('fake_data') do |database|
+        connection.database('coupler_fake_data') do |database|
           assert_kind_of Sequel::JDBC::Database, database
-          assert_match /zeroDateTimeBehavior=convertToNull/, database.uri
+          assert database.test_connection
+        end
+      end
+
+      def test_embedded_h2_database
+        connection = Factory(:connection, {
+          :name => "testing",
+          :adapter => "h2",
+          :path => Base.settings.db_path('foo')
+        })
+        connection.database do |database|
+          assert_kind_of Sequel::JDBC::Database, database
           assert database.test_connection
         end
       end

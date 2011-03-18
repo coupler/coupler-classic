@@ -7,13 +7,13 @@ module Coupler
     end
 
     def test_store_dir_same_as_upload_path
-      Coupler::Config.expects(:get).with(:upload_path).returns("/path/to/uploads")
+      Base.expects(:upload_path).returns("/path/to/uploads")
       uploader = DataUploader.new
       assert_equal "/path/to/uploads", uploader.store_dir
     end
 
     def test_cache_dir_uses_upload_path
-      Coupler::Config.expects(:get).with(:upload_path).returns("/path/to/uploads")
+      Base.expects(:upload_path).returns("/path/to/uploads")
       uploader = DataUploader.new
       assert_equal "/path/to/uploads/tmp", uploader.cache_dir
     end

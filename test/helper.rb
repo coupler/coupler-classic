@@ -16,6 +16,8 @@ require 'tempfile'
 require 'tmpdir'
 require 'fileutils'
 require 'table_maker'
+require 'sequel'
+require 'sequel/extensions/schema_dumper'
 
 dir = File.dirname(__FILE__)
 $LOAD_PATH.unshift(dir)
@@ -37,11 +39,11 @@ class Test::Unit::TestCase
   end
 
   def self.startup
-    @@test_database = Sequel.connect(Coupler::Config.connection_string("coupler_test_data", :create_database => true))
+    Coupler::Database.instance.migrate!
+    @@test_database = Sequel.connect(Coupler::Base.connection_string("coupler_test_data"))
   end
 
   def self.shutdown
-    @@test_database.run("DROP DATABASE coupler_test_data")
     @@test_database.disconnect
   end
 

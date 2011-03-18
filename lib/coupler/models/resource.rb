@@ -147,10 +147,7 @@ module Coupler
         end
 
         def local_connection_string
-          Config.connection_string(:"project_#{project.id}", {
-            :create_database => true,
-            :zero_date_time_behavior => :convert_to_null
-          })
+          Base.connection_string("project_#{project.id}")
         end
 
         def create_fields
@@ -218,7 +215,7 @@ module Coupler
             self.project = import.project
             self.name = import.name
             self.table_name = "import_#{import.id}"
-            self.database_name = "project_#{import.project.id}"
+            self.database_name = "project_#{project.id}"
           end
         end
 

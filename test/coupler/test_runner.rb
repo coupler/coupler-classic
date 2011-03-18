@@ -4,27 +4,13 @@ module Coupler
   class TestRunner < Test::Unit::TestCase
     def setup
       super
-      @server = stub("server", :is_running? => true, :start => nil)
-      Server.stubs(:instance).returns(@server)
+      #@server = stub("server", :is_running? => true, :start => nil)
+      #Server.stubs(:instance).returns(@server)
       @scheduler = stub("scheduler", :is_started? => true, :start => nil)
       Scheduler.stubs(:instance).returns(@scheduler)
       @database = stub("database", :migrate! => nil)
       Database.stubs(:instance).returns(@database)
-      Config.stubs(:set)
       Base.stubs(:run!)
-    end
-
-    def test_starts_server
-      @server.stubs(:is_running?).returns(false)
-      @server.expects(:start)
-      Runner.new([])
-    end
-
-    def test_stops_server_if_started
-      @server.stubs(:is_running?).returns(false)
-      @server.expects(:shutdown)
-      Base.expects(:run!).yields(stub())
-      Runner.new([])
     end
 
     def test_starts_scheduler
@@ -51,15 +37,9 @@ module Coupler
       Runner.new(argv)
     end
 
-    def test_sets_database_port
-      argv = %w{--dport=31337}
-      Config.expects(:set).with(:database, :port, 31337)
-      Runner.new(argv)
-    end
-
     def test_sets_data_path
       argv = %w{--dir=/tmp/coupler}
-      Config.expects(:set).with(:data_path, '/tmp/coupler')
+      Base.expects(:set).with(:data_path, '/tmp/coupler')
       Runner.new(argv)
     end
 
