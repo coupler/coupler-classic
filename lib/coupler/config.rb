@@ -15,7 +15,7 @@ module Coupler
       'jruby' => {
         :type => 'java',
         :filetype => 'jar',
-        :version => '1.6.0.RC3',
+        :version => '1.6.0',
         :url => "http://jruby.org.s3.amazonaws.com/downloads/%1$s/jruby-complete-%1$s.jar",
         :uncompress => false,
         :filename => "jruby-complete-%s.jar",
