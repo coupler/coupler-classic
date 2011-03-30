@@ -35,15 +35,13 @@ module Coupler
       def preview
         if @preview.nil?
           @preview = []
-          @csv ||= FasterCSV.new(File.open(data.file.file))
-          @csv.rewind
-          @csv.shift   if self.has_headers
-          50.times do |i|
-            row = @csv.shift
-            if row
+          FasterCSV.open(data.file.file) do |csv|
+            csv.rewind
+            csv.shift   if self.has_headers
+            50.times do |i|
+              row = csv.shift
+              break if row.nil?
               @preview << row
-            else
-              break
             end
           end
         end
@@ -158,47 +156,48 @@ module Coupler
 
       private
         def discover_fields
-          @csv ||= FasterCSV.new(File.open(data.file.file))
-          @csv.rewind
+          FasterCSV.open(data.file.file) do |csv|
+            csv.rewind
 
-          count = 0
-          types = []
-          type_counts = []
-          headers = @csv.shift
-          if headers.any? { |h| h !~ /[A-Za-z_$]/ }
-            row = headers
-            headers = nil
-            self.has_headers = false
-          else
-            self.has_headers = true
-            headers.each_with_index do |name, i|
-              if name =~ /^id$/i
-                self.primary_key_name = name
-              end
-            end
-            row = @csv.shift
-          end
-
-          while row && count < 50
-            row.each_with_index do |value, i|
-              hash = type_counts[i] ||= {}
-              type =
-                case value
-                when /^\d+$/ then 'integer'
-                else 'string'
+            count = 0
+            types = []
+            type_counts = []
+            headers = csv.shift
+            if headers.any? { |h| h !~ /[A-Za-z_$]/ }
+              row = headers
+              headers = nil
+              self.has_headers = false
+            else
+              self.has_headers = true
+              headers.each_with_index do |name, i|
+                if name =~ /^id$/i
+                  self.primary_key_name = name
                 end
-              hash[type] = (hash[type] || 0) + 1
+              end
+              row = csv.shift
             end
-            row = @csv.shift
-            count += 1
-          end
 
-          type_counts.each_with_index do |type_count, i|
-            types[i] = type_count.max { |a, b| a[1] <=> b[1] }[0]
-          end
+            while row && count < 50
+              row.each_with_index do |value, i|
+                hash = type_counts[i] ||= {}
+                type =
+                  case value
+                  when /^\d+$/ then 'integer'
+                  else 'string'
+                  end
+                hash[type] = (hash[type] || 0) + 1
+              end
+              row = csv.shift
+              count += 1
+            end
 
-          self.field_types = types
-          self.field_names = headers
+            type_counts.each_with_index do |type_count, i|
+              types[i] = type_count.max { |a, b| a[1] <=> b[1] }[0]
+            end
+
+            self.field_types = types
+            self.field_names = headers
+          end
         end
 
         def validate
