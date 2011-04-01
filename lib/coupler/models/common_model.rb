@@ -88,6 +88,7 @@ module Coupler
         if !save(*args)
           raise "couldn't save: " + errors.full_messages.join("; ")
         end
+        self
       end
     end
   end

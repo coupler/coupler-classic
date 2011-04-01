@@ -22,4 +22,5 @@ group :development do
   gem 'thor'
   gem 'rake'
   gem 'table_maker'
+  gem 'ruby-debug'
 end

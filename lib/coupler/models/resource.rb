@@ -26,11 +26,29 @@ module Coupler
         dataset.naked.group_and_count(:project_id).to_hash(:project_id, :count)
       end
 
+      def import=(*args)
+        result = super
+        if new?
+          self.project = import.project
+          self.name = import.name
+          self.table_name = "import_#{import.id}"
+        end
+        result
+      end
+
+      def name=(*args)
+        result = super
+        if new?
+          self.slug ||= name.downcase.gsub(/\s+/, "_")
+        end
+        result
+      end
+
       def source_database(&block)
         if import
           project.local_database(&block)
         else
-          connection.database(database_name, &block)
+          connection.database(&block)
         end
       end
 
@@ -55,7 +73,7 @@ module Coupler
 
       def source_schema
         schema = nil
-        source_database { |db| schema = db.schema(table_name) }
+        source_database { |db| schema = db.schema(table_name.to_sym) }
         schema
       end
 
@@ -105,9 +123,10 @@ module Coupler
           if transformation.source_field_id == transformation.result_field_id
             source_field = transformation.source_field
             changes = transformation.field_changes[source_field.id]
-            source_field.local_db_type = changes[:db_type] || source_field[:db_type]
-            source_field.local_type = changes[:type] || source_field[:type]
-            source_field.save
+            source_field.update({
+              :local_db_type => changes[:db_type] || source_field[:db_type],
+              :local_type    => changes[:type]    || source_field[:type]
+            })
           end
         end
       end
@@ -152,12 +171,11 @@ module Coupler
 
         def create_fields
           source_schema.each do |(name, info)|
-            Field.create({
+            add_field({
               :name => name,
               :type => info[:type],
               :db_type => info[:db_type],
-              :is_primary_key => info[:primary_key] ? 1 : 0,
-              :resource_id => self.id
+              :is_primary_key => info[:primary_key]
             })
           end
         end
@@ -209,48 +227,24 @@ module Coupler
           end
         end
 
-        def before_validation
-          super
-          if new? && import
-            self.project = import.project
-            self.name = import.name
-            self.table_name = "import_#{import.id}"
-            self.database_name = "project_#{project.id}"
-          end
-        end
-
         def validate
           super
           validates_presence [:project_id, :name]
-          if new? && errors.on(:name).nil?
-            self.slug ||= name.downcase.gsub(/\s+/, "_")
-          end
           validates_presence :slug
           validates_unique [:name, :project_id], [:slug, :project_id]
+          validates_presence [:table_name]
 
-          if import.nil?
-            validates_presence [:database_name, :table_name]
-
-            if errors.on(:database_name).nil?
-              begin
-                connection.database(database_name) { |db| db.test_connection }
-              rescue Sequel::DatabaseConnectionError, Sequel::DatabaseError => e
-                errors.add(:database_name, "is not valid")
-              end
-            end
-
-            if errors.on(:database_name).nil? && errors.on(:table_name).nil?
-              source_database do |db|
-                sym = self.table_name.to_sym
-                if !db.tables.include?(sym)
-                  errors.add(:table_name, "is invalid")
-                else
-                  keys = db.schema(sym).select { |info| info[1][:primary_key] }
-                  if keys.empty?
-                    errors.add(:table_name, "doesn't have a primary key")
-                  elsif keys.length > 1
-                    errors.add(:table_name, "has too many primary keys")
-                  end
+          if errors.on(:table_name).nil?
+            source_database do |db|
+              sym = self.table_name.to_sym
+              if !db.tables.include?(sym)
+                errors.add(:table_name, "is invalid")
+              else
+                keys = db.schema(sym).select { |info| info[1][:primary_key] }
+                if keys.empty?
+                  errors.add(:table_name, "doesn't have a primary key")
+                elsif keys.length > 1
+                  errors.add(:table_name, "has too many primary keys")
                 end
               end
             end
@@ -263,7 +257,7 @@ module Coupler
             # serialization happens in before_save, which gets called before
             # the before_create hook
             source_database do |db|
-              schema = db.schema(self.table_name)
+              schema = db.schema(table_name.to_sym)
               info = schema.detect { |x| x[1][:primary_key] }
               self.primary_key_name = info[0].to_s
               self.primary_key_type = info[1][:type].to_s
@@ -279,13 +273,14 @@ module Coupler
 
         def after_destroy
           super
-          if transformations_dataset.count > 0 && !transformed_at.nil?
+          tds = transformations_dataset
+          if tds.count > 0 && !transformed_at.nil?
             project.local_database do |db|
               db.drop_table(:"resource_#{id}")
             end
           end
           fields_dataset.each { |f| f.delete_versions_on_destroy = self.delete_versions_on_destroy; f.destroy }
-          transformations_dataset.each { |t| t.delete_versions_on_destroy = self.delete_versions_on_destroy; t.destroy }
+          tds.each { |t| t.delete_versions_on_destroy = self.delete_versions_on_destroy; t.destroy }
         end
     end
   end

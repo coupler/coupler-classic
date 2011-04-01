@@ -5,6 +5,8 @@ require 'rubygems'
 require 'bundler'
 Bundler.setup(:default, :development)
 
+require 'yaml'
+require 'erb'
 require 'test/unit'
 require 'mocha'
 require 'rack/test'
@@ -18,6 +20,8 @@ require 'fileutils'
 require 'table_maker'
 require 'sequel'
 require 'sequel/extensions/schema_dumper'
+require 'forgery'
+require 'ruby-debug'
 
 dir = File.dirname(__FILE__)
 $LOAD_PATH.unshift(dir)
@@ -33,6 +37,8 @@ Coupler::Base.set(:environment, :test)
 class Test::Unit::TestCase
   include Rack::Test::Methods
   extend TableSets
+
+  @@test_config = YAML.load(ERB.new(File.read(File.join(File.dirname(__FILE__), 'config.yml'))).result(binding))
 
   def app
     Coupler::Base
@@ -62,6 +68,13 @@ class Test::Unit::TestCase
       next  if name == :schema_info
       @_database[name].delete
     end
+  end
+
+  def run(*args, &block)
+    #Sequel::Model.db.transaction do
+      super
+      #raise Sequel::Error::Rollback
+    #end
   end
 
   def teardown
@@ -98,6 +111,24 @@ class Test::Unit::TestCase
 
   def fixture_file(name)
     File.open(fixture_path(name))
+  end
+
+  # connection helpers
+  def self.each_adapter
+    @@test_config.each_pair { |k, v| yield(k, v) }
+  end
+
+  def self.adapter_test(adapter, description, &block)
+    test("#{description} for #{adapter} adapter", &block)
+  end
+
+  def self.new_connection(adapter, attribs = {})
+    Coupler::Models::Connection.new(
+      @@test_config[adapter].merge(:adapter => adapter).update(attribs))
+  end
+
+  def new_connection(*args)
+    self.class.new_connection(*args)
   end
 end
 

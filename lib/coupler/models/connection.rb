@@ -7,8 +7,8 @@ module Coupler
 
       one_to_many :resources
 
-      def database(database_name = nil, &block)
-        Sequel.connect(connection_string(database_name), {
+      def database(&block)
+        Sequel.connect(connection_string, {
           :loggers => [Coupler::Logger.instance],
           :max_connections => 20
         }, &block)
@@ -19,7 +19,7 @@ module Coupler
       end
 
       private
-        def connection_string(database_name = nil)
+        def connection_string
           case adapter
           when 'mysql'
             misc = '&zeroDateTimeBehavior=convertToNull'
@@ -42,7 +42,7 @@ module Coupler
           validates_unique :name, :slug
 
           begin
-            database("") { |db| db.test_connection }
+            database { |db| db.test_connection }
           rescue Sequel::DatabaseConnectionError, Sequel::DatabaseError => e
             errors.add(:base, "Couldn't connect to the database")
           end

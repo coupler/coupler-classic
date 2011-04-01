@@ -1,0 +1,9 @@
+h2:
+  :path: <%= File.join(File.dirname(__FILE__), '..', 'db', 'test', 'coupler_fake_data') %>
+
+mysql:
+  :host: localhost
+  :port: 3306
+  :username: coupler
+  :password: cupla
+  :database_name: coupler_fake_data
