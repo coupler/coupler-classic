@@ -15,4 +15,4 @@ Coupler is a Sinatra application for linking databases together.
 
 == Copyright
 
-Copyright (c) 2009-2010 Vanderbilt University. See LICENSE for details.
+Copyright (c) 2009-2011 Vanderbilt University. See LICENSE for details.
