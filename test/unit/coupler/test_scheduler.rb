@@ -1,9 +1,9 @@
-require File.dirname(__FILE__) + "/../helper"
+require 'helper'
 
 module Coupler
   class TestScheduler < Test::Unit::TestCase
-    def test_schedule_transform_job
-      resource = Factory(:resource)
+    test "schedule transform job" do
+      resource = mock('resource')
       Models::Job.expects(:create).with({
         :name => "transform",
         :resource => resource,
@@ -13,8 +13,8 @@ module Coupler
       Scheduler.instance.schedule_transform_job(resource)
     end
 
-    def test_schedule_run_scenario_job
-      scenario = Factory(:scenario)
+    test "schedule run scenario job" do
+      scenario = mock('scenario')
       Models::Job.expects(:create).with({
         :name => "run_scenario",
         :scenario => scenario,
@@ -24,7 +24,7 @@ module Coupler
       Scheduler.instance.schedule_run_scenario_job(scenario)
     end
 
-    def test_run_jobs_executes_first_scheduled_job
+    test "run_jobs executes first scheduled job" do
       running_dataset = mock('dataset')
       scheduled_dataset = mock('dataset')
       job = mock('job')
@@ -40,7 +40,7 @@ module Coupler
       Scheduler.instance.run_jobs
     end
 
-    def test_run_jobs_does_not_execute_job_if_one_already_running
+    test "run_jobs does not execute job if one already running" do
       running_dataset = mock('dataset')
 
       Models::Job.expects(:filter).with(:status => 'running').returns(running_dataset)
@@ -49,7 +49,7 @@ module Coupler
       Scheduler.instance.run_jobs
     end
 
-    def test_start_and_shutdown
+    test "start and shutdown" do
       scheduler = Scheduler.instance
       thread = stub('thread')
       Thread.expects(:new).once.returns(thread)

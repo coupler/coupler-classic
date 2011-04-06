@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + "/../helper"
+require 'helper'
 
 module Coupler
   class TestRunner < Test::Unit::TestCase

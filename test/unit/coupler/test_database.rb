@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + "/../helper"
+require 'helper'
 
 module Coupler
   class TestDatabase < Test::Unit::TestCase
@@ -15,7 +15,7 @@ module Coupler
     end
 
     def test_migrate
-      dir = File.expand_path(File.join(File.dirname(__FILE__), "..", "..", "db", "migrate"))
+      dir = File.expand_path(File.join(File.dirname(__FILE__), "..", "..", "..", "db", "migrate"))
       Sequel::Migrator.expects(:apply).with(@database.__getobj__, dir)
       @database.migrate!
     end
