@@ -15,7 +15,7 @@ Sequel.migration do
     results.order(:scenario_id, :id.desc).each do |result|
       if result[:scenario_id] != last_scenario_id
         last_scenario_id = result[:scenario_id]
-        results.filter(:id => result[:id]).update(:run_number => number)
+        results.filter(:id => result[:id]).update(:run_number => 1)
       else
         results.filter(:id => result[:id]).delete
       end
