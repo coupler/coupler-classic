@@ -204,6 +204,18 @@ module Coupler
         assert_equal "id", import.primary_key_name
         assert import.has_headers
       end
+
+      def test_importing_bad_integers
+        tempfile = Tempfile.new('coupler-import')
+        tempfile.write("id,foo,bar\n1,2,3\n2,4,5\n3,6,7\n4,456\n")
+        tempfile.close
+
+        project = Factory(:project)
+        import = Factory(:import, :data => file_upload(tempfile.path), :project => project)
+        assert_nothing_raised do
+          import.import!
+        end
+      end
     end
   end
 end
