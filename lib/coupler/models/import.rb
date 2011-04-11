@@ -73,25 +73,24 @@ module Coupler
 
           ds = db[table_name]
           key_frequencies = Hash.new { |h, k| h[k] = 0 }
-          rows = []
-          total = 0
+          buffer = ImportBuffer.new(column_names, ds)
+          skip = has_headers
           primary_key_index = field_names.index(primary_key_name)
           FasterCSV.foreach(data.file.file) do |row|
-            total += 1
-            next  if total == 1   # ignore the header
+            if skip
+              # skip header if necessary
+              skip = false
+              next
+            end
 
             key = row[primary_key_index]
             num = key_frequencies[key] += 1
             row.push(num > 1 ? num : nil)
             self.has_duplicate_keys = true if num > 1
 
-            rows << row
-            if rows.length == 1000
-              ds.import(column_names, rows)
-              rows.clear
-            end
+            buffer.add(row)
           end
-          ds.import(column_names, rows)   unless rows.empty?
+          buffer.flush
 
           primary_key = self.primary_key_sym
           if has_duplicate_keys

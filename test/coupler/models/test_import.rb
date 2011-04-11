@@ -207,7 +207,7 @@ module Coupler
 
       def test_importing_bad_integers
         tempfile = Tempfile.new('coupler-import')
-        tempfile.write("id,foo,bar\n1,2,3\n2,4,5\n3,6,7\n4,456\n")
+        tempfile.write(%{id,foo,bar\n1,2,3\n2,4,5\n3,6,7\n4,456,""\n})
         tempfile.close
 
         project = Factory(:project)
