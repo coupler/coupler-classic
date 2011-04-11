@@ -41,6 +41,10 @@
       <%- end -%>
       </tbody>
     </table>
+    <p>
+      <input id="import_has_headers" type="checkbox" name="import[has_headers]" <%= 'checked="checked"' if @import.has_headers %> />
+      <label for="import_has_headers">Has header row?</label>
+    </p>
   </div>
 
   <h3>Data Preview</h3>
