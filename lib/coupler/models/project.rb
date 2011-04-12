@@ -13,11 +13,6 @@ module Coupler
         }, &block)
       end
 
-      def touch!
-        @skip_new_version = true
-        update(:last_accessed_at => Time.now)
-      end
-
       private
         def local_connection_string
           Base.connection_string("project_#{id}")
@@ -36,7 +31,7 @@ module Coupler
 
         def after_destroy
           super
-          FileUtils.rm(Base.db_path("project_#{id}"))
+          FileUtils.rm(Dir[Base.db_path("project_#{id}")+".*"], :force => true)
           resources_dataset.each { |r| r.delete_versions_on_destroy = self.delete_versions_on_destroy; r.destroy }
           scenarios_dataset.each { |s| s.delete_versions_on_destroy = self.delete_versions_on_destroy; s.destroy }
         end

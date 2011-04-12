@@ -90,6 +90,11 @@ module Coupler
         end
         self
       end
+
+      def touch!
+        @skip_new_version = true
+        update(:last_accessed_at => Time.now)
+      end
     end
   end
 end
