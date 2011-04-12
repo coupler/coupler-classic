@@ -1,108 +1,83 @@
-require File.dirname(__FILE__) + '/../../helper'
+require 'helper'
 
 module Coupler
   module Models
     class TestMatcher < Test::Unit::TestCase
-      def test_sequel_model
+      def new_matcher(attribs = {})
+        values = {
+          :scenario => @scenario,
+          :comparisons_attributes => [{
+            :lhs_type => 'field', :raw_lhs_value => 1,
+            :rhs_type => 'field', :raw_rhs_value => 2,
+            :operator => 'equals'
+          }]
+        }.update(attribs)
+        m = Matcher.new(values)
+        m.stubs(:scenario_dataset).returns(stub({:all => [values[:scenario]]}))
+        m
+      end
+
+      def setup
+        super
+        @scenario = stub('scenario', :pk => 456, :id => 456, :associations => {})
+        @field_1 = stub('field 1', :pk => 1, :id => 1, :associations => {})
+        @field_2 = stub('field 2', :pk => 2, :id => 2, :associations => {})
+      end
+
+      test "sequel model" do
         assert_equal ::Sequel::Model, Matcher.superclass
         assert_equal :matchers, Matcher.table_name
       end
 
-      def test_many_to_one_scenario
+      test "many to one scenario" do
         assert_respond_to Matcher.new, :scenario
       end
 
-      def test_one_to_many_comparisons
+      test "one to many comparisons" do
         assert_respond_to Matcher.new, :comparisons
       end
 
-      def test_nested_attributes_for_comparisons
-        project = Factory(:project)
-        resource = Factory(:resource, :project => project)
-        fields = resource.fields
-        scenario = Factory(:scenario, :project => project, :resource_1 => resource)
-        matcher = Factory(:matcher, {
-          :scenario => scenario,
-          :comparisons_attributes => {
-            '1' => {
-              'lhs_type' => 'field', 'raw_lhs_value' => fields[1].id.to_s,
-              'rhs_type' => 'field', 'raw_rhs_value' => fields[2].id.to_s,
-              'operator' => 'equals'
-            }
-          }
-        })
-        assert_equal 1, matcher.comparisons_dataset.count
+      test "nested attributes for comparisons" do
+        assert_respond_to Matcher.new, :comparisons_attributes=
       end
 
-      def test_invalid_if_comparisons_are_invalid
-        matcher = Factory.build(:matcher, {
-          :comparisons_attributes => {
-            '1' => {
-              'lhs_type' => 'integer', 'raw_lhs_value' => 1,
-              'rhs_type' => 'integer', 'raw_rhs_value' => 1,
-              'operator' => 'foo'
-            }
-          }
+      #test "deletes comparisons via nested attributes" do
+        #matcher = new_matcher({
+          #:comparisons_attributes => [
+            #{
+              #'lhs_type' => 'field', 'raw_lhs_value' => fields[1].id.to_s,
+              #'rhs_type' => 'field', 'raw_rhs_value' => fields[2].id.to_s,
+              #'operator' => 'equals'
+            #},
+            #{
+              #'lhs_type' => 'integer', 'raw_lhs_value' => 1,
+              #'rhs_type' => 'integer', 'raw_rhs_value' => 1,
+              #'operator' => 'equals'
+            #}
+          #]
+        #})
+        #assert_equal 2, matcher.comparisons_dataset.count
+
+        #comparison = matcher.comparisons_dataset.first
+        #matcher.update({
+          #:updated_at => Time.now,
+          #:comparisons_attributes => [{:id => comparison.id, :_delete => true}]
+        #})
+        #assert_equal 1, matcher.comparisons_dataset.count
+      #end
+
+      test "requires at least one field to field comparison" do
+        matcher = new_matcher
+        matcher.expects(:comparisons_dataset).returns(mock {
+          expects(:filter).with(:rhs_type => "field", :lhs_type => "field").returns(self)
+          expects(:count).returns(0)
         })
         assert !matcher.valid?
       end
 
-      def test_deletes_comparisons_via_nested_attributes
-        project = Factory(:project)
-        resource = Factory(:resource, :project => project)
-        fields = resource.fields
-        scenario = Factory(:scenario, :project => project, :resource_1 => resource)
-        matcher = Factory(:matcher, {
-          :scenario => scenario,
-          :comparisons_attributes => {
-            '1' => {
-              'lhs_type' => 'field', 'raw_lhs_value' => fields[1].id.to_s,
-              'rhs_type' => 'field', 'raw_rhs_value' => fields[2].id.to_s,
-              'operator' => 'equals'
-            },
-            '2' => {
-              'lhs_type' => 'integer', 'raw_lhs_value' => 1,
-              'rhs_type' => 'integer', 'raw_rhs_value' => 1,
-              'operator' => 'equals'
-            }
-          }
-        })
-        assert_equal 2, matcher.comparisons_dataset.count
-
-        comparison = matcher.comparisons_dataset.first
-        matcher.update({
-          :updated_at => Time.now,
-          :comparisons_attributes => [{:id => comparison.id, :_delete => true}]
-        })
-        assert_equal 1, matcher.comparisons_dataset.count
-      end
-
-      def test_requires_at_least_one_field_to_field_comparison
-        matcher = Factory.build(:matcher, {
-          :comparisons_attributes => {
-            '1' => {
-              'lhs_type' => 'integer', 'raw_lhs_value' => 1,
-              'rhs_type' => 'integer', 'raw_rhs_value' => 1,
-              'operator' => 'equals'
-            }
-          }
-        })
-        assert !matcher.valid?
-      end
-
-      def test_cross_match_is_true_when_a_comparison_is_a_cross_match
-        resource = Factory(:resource)
-        scenario = Factory(:scenario, :project => resource.project, :resource_1 => resource)
-        matcher = Factory(:matcher, {
-          :scenario => scenario,
-          :comparisons_attributes => {
-            '1' => {
-              'lhs_type' => 'field', 'raw_lhs_value' => resource.fields_dataset[:name => 'first_name'].id,
-              'rhs_type' => 'field', 'raw_rhs_value' => resource.fields_dataset[:name => 'last_name'].id,
-              'operator' => 'equals'
-            }
-          }
-        })
+      test "cross_match is true when a comparison is a cross match" do
+        matcher = new_matcher
+        matcher.expects(:comparisons).returns([mock(:cross_match? => true)])
         assert matcher.cross_match?
       end
     end
