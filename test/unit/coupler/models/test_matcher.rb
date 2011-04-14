@@ -68,10 +68,7 @@ module Coupler
 
       test "requires at least one field to field comparison" do
         matcher = new_matcher
-        matcher.expects(:comparisons_dataset).returns(mock {
-          expects(:filter).with(:rhs_type => "field", :lhs_type => "field").returns(self)
-          expects(:count).returns(0)
-        })
+        matcher.expects(:comparisons).returns([stub(:rhs_type => "integer", :lhs_type => "integer")])
         assert !matcher.valid?
       end
 

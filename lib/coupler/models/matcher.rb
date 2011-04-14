@@ -15,7 +15,12 @@ module Coupler
       private
         def validate
           super
-          if comparisons_dataset.filter(:lhs_type => "field", :rhs_type => "field").count == 0
+          # use comparisons instead of comparisons_dataset, because the
+          # comparisons aren't created yet
+          result = comparisons.any? do |comparison|
+            comparison.lhs_type == "field" && comparison.rhs_type == "field"
+          end
+          if !result
             errors.add(:base, "At least one field-to-field comparison is required.")
           end
         end
