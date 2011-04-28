@@ -31,7 +31,7 @@ namespace :package do
   end
 
   task :create_dependency_jar => [:install_gems, :environment] do
-    ant.jar :destfile => File.join(build_dir, "coupler-dependencies-#{coupler_version[0..6]}.jar"), :basedir => gem_inst_dir do
+    ant.jar :destfile => File.join(build_dir, "coupler-dependencies-#{coupler_version[0..6]}.jar"), :basedir => File.join(gem_inst_dir, 'jruby', '1.8') do
       Coupler::Config.vendor_lib_paths('mysql-connector-java').each do |path|
         zipfileset :src => path
       end
