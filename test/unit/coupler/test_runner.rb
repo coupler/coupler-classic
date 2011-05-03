@@ -1,7 +1,7 @@
 require 'helper'
 
 module Coupler
-  class TestRunner < Test::Unit::TestCase
+  class TestRunner < Coupler::Test::UnitTest
     def setup
       super
       #@server = stub("server", :is_running? => true, :start => nil)

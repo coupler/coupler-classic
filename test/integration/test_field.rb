@@ -1,9 +1,6 @@
-require File.join(File.dirname(__FILE__), '..', 'helper')
+require 'helper'
 
-class TestField < Test::Unit::TestCase
-  include Coupler
-  include Coupler::Models
-
+class TestField < Coupler::Test::IntegrationTest
   def self.startup
     super
     Connection.delete

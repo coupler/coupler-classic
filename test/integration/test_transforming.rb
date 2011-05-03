@@ -1,8 +1,6 @@
-require File.join(File.dirname(__FILE__), '..', 'helper')
+require 'helper'
 
-class TestTransforming < Test::Unit::TestCase
-  include Coupler
-  include Coupler::Models
+class TestTransforming < Coupler::Test::IntegrationTest
 
   def self.startup
     super

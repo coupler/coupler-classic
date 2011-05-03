@@ -1,8 +1,8 @@
-require File.dirname(__FILE__) + '/../../helper'
+require 'helper'
 
 module Coupler
   module Extensions
-    class TestResources < Test::Unit::TestCase
+    class TestResources < Coupler::Test::UnitTest
       def setup
         super
         Timecop.freeze(Time.now - 50) do

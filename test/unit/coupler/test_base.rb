@@ -1,7 +1,7 @@
 require 'helper'
 
 module Coupler
-  class TestBase < Test::Unit::TestCase
+  class TestBase < Coupler::Test::UnitTest
     def test_subclasses_sinatra_base
       assert_equal Sinatra::Base, Coupler::Base.superclass
     end

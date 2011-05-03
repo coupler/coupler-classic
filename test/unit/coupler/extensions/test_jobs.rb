@@ -1,8 +1,8 @@
-require File.dirname(__FILE__) + '/../../helper'
+require 'helper'
 
 module Coupler
   module Extensions
-    class TestJobs < Test::Unit::TestCase
+    class TestJobs < Coupler::Test::UnitTest
       def test_jobs
         job_1 = Factory(:resource_job)
         job_2 = Factory(:scenario_job)

@@ -1,8 +1,6 @@
 require 'helper'
 
-class TestImport < Test::Unit::TestCase
-  include Coupler
-  include Coupler::Models
+class TestImport < Coupler::Test::IntegrationTest
 
   test "import!" do
     project = Project.create(:name => "foo")

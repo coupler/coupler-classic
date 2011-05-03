@@ -1,8 +1,8 @@
-require File.dirname(__FILE__) + '/../../helper'
+require 'helper'
 
 module Coupler
   module Models
-    class TestConnection < Test::Unit::TestCase
+    class TestConnection < Coupler::Test::UnitTest
       test "sequel model" do
         assert_equal ::Sequel::Model, Connection.superclass
         assert_equal :connections, Connection.table_name
@@ -12,7 +12,7 @@ module Coupler
         assert_respond_to Connection.new, :resources
       end
 
-      %w{mysql h2}.each do |adapter|
+      each_adapter do |adapter, _|
         adapter_test(adapter, "requires name") do
           connection = new_connection(adapter, :name => nil)
           assert !connection.valid?

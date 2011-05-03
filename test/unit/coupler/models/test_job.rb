@@ -2,7 +2,7 @@ require 'helper'
 
 module Coupler
   module Models
-    class TestJob < Test::Unit::TestCase
+    class TestJob < Coupler::Test::UnitTest
       def new_job(attribs = {})
         j = Job.new(attribs)
         if attribs[:resource]

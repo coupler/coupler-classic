@@ -1,8 +1,8 @@
-require File.dirname(__FILE__) + '/../../helper'
+require 'helper'
 
 module Coupler
   module Extensions
-    class TestMatchers < Test::Unit::TestCase
+    class TestMatchers < Coupler::Test::UnitTest
       def setup
         super
         @project = Factory(:project)

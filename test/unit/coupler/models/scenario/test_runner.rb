@@ -1,9 +1,9 @@
-require File.dirname(__FILE__) + '/../../../helper'
+require 'helper'
 
 module Coupler
   module Models
     class Scenario
-      class TestRunner < Test::Unit::TestCase
+      class TestRunner < Coupler::Test::UnitTest
         class << self
           def startup
             super

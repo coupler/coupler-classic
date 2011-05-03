@@ -2,7 +2,7 @@ require 'helper'
 
 module Coupler
   module Models
-    class TestCommonModel < Test::Unit::TestCase
+    class TestCommonModel < Coupler::Test::UnitTest
       def self.startup
         super
         db = Coupler::Database.instance

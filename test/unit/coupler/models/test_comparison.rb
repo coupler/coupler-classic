@@ -2,7 +2,7 @@ require 'helper'
 
 module Coupler
   module Models
-    class TestComparison < Test::Unit::TestCase
+    class TestComparison < Coupler::Test::UnitTest
       def sequel_expr(*args)
         if args.length == 1
           obj = args[0]

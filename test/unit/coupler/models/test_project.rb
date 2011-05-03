@@ -2,7 +2,7 @@ require 'helper'
 
 module Coupler
   module Models
-    class TestProject < Test::Unit::TestCase
+    class TestProject < Coupler::Test::UnitTest
       test "sequel model" do
         assert_equal ::Sequel::Model, Project.superclass
         assert_equal :projects, Project.table_name

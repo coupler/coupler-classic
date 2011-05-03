@@ -1,8 +1,8 @@
-require File.dirname(__FILE__) + '/../../helper'
+require 'helper'
 
 module Coupler
   module Extensions
-    class TestProjects < Test::Unit::TestCase
+    class TestProjects < Coupler::Test::UnitTest
       def test_projects
         get "/projects"
         assert last_response.ok?

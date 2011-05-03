@@ -1,7 +1,7 @@
 require 'helper'
 
 module Coupler
-  class TestLogger < Test::Unit::TestCase
+  class TestLogger < Coupler::Test::UnitTest
     def test_delegation
       logger = Coupler::Logger.instance
       assert_kind_of ::Logger, logger.__getobj__

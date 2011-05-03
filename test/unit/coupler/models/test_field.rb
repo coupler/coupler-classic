@@ -2,7 +2,7 @@ require 'helper'
 
 module Coupler
   module Models
-    class TestField < Test::Unit::TestCase
+    class TestField < Coupler::Test::UnitTest
       def new_field(attrs = {})
         f = Field.new({
           :name => 'foo',

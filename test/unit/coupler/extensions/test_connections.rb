@@ -1,8 +1,8 @@
-require File.dirname(__FILE__) + '/../../helper'
+require 'helper'
 
 module Coupler
   module Extensions
-    class TestConnections < Test::Unit::TestCase
+    class TestConnections < Coupler::Test::UnitTest
       def test_index
         connection = Factory(:connection)
         get "/connections"

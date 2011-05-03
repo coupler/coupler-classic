@@ -2,7 +2,7 @@ require 'helper'
 
 module Coupler
   module Models
-    class TestResult < Test::Unit::TestCase
+    class TestResult < Coupler::Test::UnitTest
       def new_result(attribs = {})
         values = {
           :scenario => @scenario

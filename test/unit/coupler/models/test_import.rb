@@ -2,7 +2,7 @@ require 'helper'
 
 module Coupler
   module Models
-    class TestImport < Test::Unit::TestCase
+    class TestImport < Coupler::Test::UnitTest
       def new_import(attribs = {})
         values = {
           :data => fixture_file_upload('people.csv'),

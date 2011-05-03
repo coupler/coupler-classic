@@ -1,7 +1,7 @@
 require 'helper'
 
 module Coupler
-  class TestHelpers < Test::Unit::TestCase
+  class TestHelpers < Coupler::Test::UnitTest
     include ::Coupler::Helpers
 
     def test_error_messages_for

@@ -1,8 +1,8 @@
-require File.dirname(__FILE__) + '/../../helper'
+require 'helper'
 
 module Coupler
   module Models
-    class TestTransformer < Test::Unit::TestCase
+    class TestTransformer < Coupler::Test::UnitTest
       def test_sequel_model
         assert_equal ::Sequel::Model, Transformer.superclass
         assert_equal :transformers, Transformer.table_name

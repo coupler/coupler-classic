@@ -1,8 +1,6 @@
 require 'helper'
 
-class TestResult < Test::Unit::TestCase
-  include Coupler
-  include Coupler::Models
+class TestRunningScenarios < Coupler::Test::IntegrationTest
 
   def self.startup
     super
@@ -106,7 +104,12 @@ class TestResult < Test::Unit::TestCase
           'operator' => 'equals'
         }]
       })
-      scenario.run!
+      count = 0
+      scenario.run! { |n| count += n }
+      assert_not_nil scenario.last_run_at
+      assert_equal 1, scenario.run_count
+      assert_equal 1, scenario.results_dataset.count
+
       result = scenario.results_dataset.first
       csv = result.to_csv
 

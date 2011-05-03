@@ -2,7 +2,7 @@ require 'helper'
 
 module Coupler
   module Models
-    class TestResource < Test::Unit::TestCase
+    class TestResource < Coupler::Test::UnitTest
       def setup
         super
         @local_database = stub('project database')

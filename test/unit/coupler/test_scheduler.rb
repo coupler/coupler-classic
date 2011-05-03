@@ -1,7 +1,7 @@
 require 'helper'
 
 module Coupler
-  class TestScheduler < Test::Unit::TestCase
+  class TestScheduler < Coupler::Test::UnitTest
     test "schedule transform job" do
       resource = mock('resource')
       Models::Job.expects(:create).with({

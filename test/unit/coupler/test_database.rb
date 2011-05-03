@@ -1,7 +1,7 @@
 require 'helper'
 
 module Coupler
-  class TestDatabase < Test::Unit::TestCase
+  class TestDatabase < Coupler::Test::UnitTest
     def setup
       super
       @database = Coupler::Database.instance
