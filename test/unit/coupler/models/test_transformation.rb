@@ -3,238 +3,187 @@ require 'helper'
 module Coupler
   module Models
     class TestTransformation < Coupler::Test::UnitTest
-      def test_sequel_model
+      def new_transformation(attribs = {})
+        values = {
+          :transformer => @transformer,
+          :resource => @resource,
+          :source_field => @source_field
+        }.update(attribs)
+        t = Transformation.new(values)
+        if values[:transformer]
+          t.stubs(:transformer_dataset).returns(stub({:all => [values[:transformer]]}))
+        end
+        if values[:source_field]
+          t.stubs(:source_field_dataset).returns(stub({:all => [values[:source_field]]}))
+          if values[:resource]
+            values[:resource].stubs(:fields_dataset).returns(stub('fields dataset') {
+              stubs(:[]).with(:id => values[:source_field].id).returns(values[:source_field])
+            })
+          end
+        end
+        if values[:result_field]
+          t.stubs(:result_field_dataset).returns(stub({:all => [values[:result_field]]}))
+        end
+        if values[:resource]
+          t.stubs(:resource_dataset).returns(stub({:all => [values[:resource]]}))
+          values[:resource].stubs(:fields_dataset).returns(stub('fields dataset') {
+            stubs(:[]).returns(nil)
+            if values[:source_field]
+              stubs(:[]).with(:id => values[:source_field].id).returns(values[:source_field])
+            end
+            if values[:result_field]
+              stubs(:[]).with(:id => values[:result_field].id).returns(values[:result_field])
+            end
+          })
+        end
+        t
+      end
+
+      def setup
+        super
+        @resource = stub('resource', :pk => 3, :id => 3, :associations => {}, :refresh_fields! => nil)
+        @transformer = stub('transformer', {
+          :pk => 1, :id => 1, :associations => {},
+          :allowed_types => %w{string}, :name => "foobar"
+        })
+        @source_field = stub('source_field', {
+          :pk => 7, :id => 7, :associations => {},
+          :final_type => 'string', :name => 'first_name'
+        })
+        @result_field = stub('result_field', {
+          :pk => 8, :id => 8, :associations => {},
+          :final_type => 'string', :name => 'new_first_name'
+        })
+      end
+
+      test "sequel model" do
         assert_equal ::Sequel::Model, Transformation.superclass
         assert_equal :transformations, Transformation.table_name
       end
 
-      def test_many_to_one_resource
+      test "many to one resource" do
         assert_respond_to Transformation.new, :resource
       end
 
-      def test_many_to_one_source_field
+      test "many to one source field" do
         assert_respond_to Transformation.new, :source_field
       end
 
-      def test_many_to_one_result_field
+      test "many to one result field" do
         assert_respond_to Transformation.new, :result_field
       end
 
-      def test_requires_resource_id
-        transformation = Factory.build(:transformation, :resource => nil)
+      test "requires resource id" do
+        transformation = new_transformation(:resource => nil)
         assert !transformation.valid?
       end
 
-      def test_requires_existing_transformer_or_nested_attributes
-        transformation = Factory.build(:transformation, :transformer => nil)
+      test "requires existing transformer or nested attributes" do
+        transformation = new_transformation(:transformer => nil)
         assert !transformation.valid?
       end
 
-      def test_requires_correct_field_type
-        transformer = Factory(:transformer, :allowed_types => %w{integer})
-        resource = Factory(:resource)
-        field = resource.fields_dataset.first
-        transformation = Factory.build(:transformation, :transformer => transformer, :source_field => field)
+      test "requires correct field type" do
+        @source_field.stubs(:final_type).returns('integer')
+        transformation = new_transformation
         assert !transformation.valid?
       end
 
-      def test_uses_local_db_type_to_determine_field_type
-        string_to_int = Factory(:transformer, :allowed_types => %w{string}, :code => "value.length", :result_type => "integer")
-        int_to_string = Factory(:transformer, :allowed_types => %w{integer}, :code => "value.to_s", :result_type => "string")
-        resource = Factory(:resource)
-        field = resource.fields_dataset[:name => 'first_name']
-        xformation_1 = Factory(:transformation, :transformer => string_to_int, :source_field => field, :resource => resource)
-        xformation_2 = Factory.build(:transformation, :transformer => int_to_string, :source_field => field, :resource => resource)
-        assert xformation_2.valid?, xformation_2.errors.full_messages.join("; ")
-      end
-
-      def test_requires_existing_source_field
-        transformation = Factory.build(:transformation, :source_field => nil, :source_field_id => 1337)
+      test "requires existing source field" do
+        transformation = new_transformation(:source_field => nil, :source_field_id => 1337)
         assert !transformation.valid?
       end
 
-      def test_result_field_same_as_source_field_by_default
-        resource = Factory(:resource)
-        field = resource.fields_dataset.first
-        transformation = Factory(:transformation, :source_field => field, :resource => resource)
-        assert_equal field.id, transformation.result_field_id
+      test "result field same as source field by default" do
+        transformation = new_transformation.save!
+        assert_equal transformation.result_field_id, @source_field.id
       end
 
-      def test_accepts_nested_attributes_for_result_field
-        resource = Factory(:resource)
-        field = resource.fields_dataset[:name => "first_name"]
-        transformer = Factory(:transformer, :code => %{value}, :result_type => 'same')
-
-        count = resource.fields_dataset.count
-        transformation = Factory(:transformation, {
-          :resource => resource,
-          :source_field => field,
-          :result_field_attributes => { :name => 'new_first_name' }
-        })
-        assert_equal count + 1, resource.fields_dataset.count
-
-        result_field = transformation.result_field.refresh
-        assert_equal field[:type], result_field[:type]
-        assert_equal field[:db_type], result_field[:db_type]
-        assert result_field[:is_generated]
-      end
-
-      def test_requires_existing_result_field_or_nested_attributes
-        transformation = Factory.build(:transformation, :result_field_id => 1337)
+      test "requires existing result field or nested attributes" do
+        transformation = new_transformation(:result_field_id => 1337)
         assert !transformation.valid?
       end
 
-      def test_accepts_nested_attributes_for_transformer
-        count = Transformer.count
-        transformation = Factory(:transformation, {
-          :transformer => nil,
-          :transformer_attributes => Factory.attributes_for(:transformer)
-        })
-        assert_equal count + 1, Transformer.count
+      test "accepts nested attributes for transformer" do
+        assert_respond_to Transformation.new, :transformer_attributes=
       end
 
-      def test_handles_bad_transformer_attributes_on_save
-        transformation = Factory.build(:transformation, {
-          :transformer => nil,
-          :transformer_attributes => Factory.attributes_for(:transformer, :allowed_types => nil)
-        })
-        assert !transformation.valid?
-      end
-
-      def test_transform_with_same_source_and_result_field
-        transformer = Factory(:transformer)
-        resource = Factory(:resource)
-        transformation = Factory(:transformation, {
-          :transformer => transformer,
-          :resource => resource,
-          :source_field => resource.fields_dataset[:name => 'first_name']
-        })
+      test "transform with same source and result field" do
+        transformation = new_transformation(:result_field => @source_field).save!
 
         data = {:id => 1, :first_name => "Peter"}
         expected = stub("result")
-        transformation.transformer.expects(:transform).with(data, { :in => :first_name, :out => :first_name }).returns(expected)
+        @transformer.expects(:transform).with(data, { :in => :first_name, :out => :first_name }).returns(expected)
 
         assert_equal expected, transformation.transform(data)
       end
 
-      def test_transform_with_differing_source_and_result_field
-        transformer = Factory(:transformer)
-        resource = Factory(:resource)
-        transformation = Factory(:transformation, {
-          :transformer => transformer,
-          :resource => resource,
-          :source_field => resource.fields_dataset[:name => 'first_name'],
-          :result_field_attributes => { :name => 'first_name_2' }
-        })
+      test "transform with differing source and result field" do
+        transformation = new_transformation(:result_field => @result_field)
 
         data = {:id => 1, :first_name => "Peter"}
         expected = stub("result")
-        transformation.transformer.expects(:transform).with(data, { :in => :first_name, :out => :first_name_2 }).returns(expected)
+        transformation.transformer.expects(:transform).with(data, { :in => :first_name, :out => :new_first_name }).returns(expected)
 
         assert_equal expected, transformation.transform(data)
       end
 
-      def test_field_changes
-        transformer = Factory(:transformer)
-        resource = Factory(:resource)
-        field = resource.fields_dataset.first
-        transformation = Factory(:transformation, {
-          :transformer => transformer, :resource => resource,
-          :source_field => field
-        })
-
+      test "field changes" do
+        transformation = new_transformation.save!
         result = stub('result')
-        transformation.transformer.expects(:field_changes).with(transformation.source_field).returns(result)
+        @transformer.expects(:field_changes).with(@source_field).returns(result)
         assert_equal result, transformation.field_changes
       end
 
-      def test_updates_resource_fields_on_save
-        transformer = Factory.build(:transformer)
-        resource = Factory.build(:resource)
-        Timecop.freeze(Time.now - 1000) do
-          transformer.save
-          resource.save
-        end
-        field = resource.fields_dataset.first
-        time = field.updated_at
-        transformation = Factory(:transformation, :resource => resource, :transformer => transformer, :source_field => field)
-        field.refresh
-        assert field.updated_at > time, "#{field.updated_at} isn't more recent than #{time}"
+      test "updates resource fields on save" do
+        transformation = new_transformation
+        @resource.expects(:refresh_fields!)
+        transformation.save!
       end
 
-      def test_updates_resource_fields_on_destroy
-        pend
-      end
+      #def test_updates_resource_fields_on_destroy
+        #pend
+      #end
 
-      def test_deletes_orphaned_result_field_on_destroy
-        resource = Factory(:resource)
-        source_field = resource.fields_dataset[:name => "first_name"]
-        transformation = Factory(:transformation, {
-          :resource => resource,
-          :source_field => source_field,
-          :result_field_attributes => { :name => 'new_first_name' }
-        })
-        result_field = transformation.result_field
+      test "deletes orphaned result field on destroy" do
+        @result_field.stubs(:is_generated).returns(true)
+        @result_field.stubs(:scenarios_dataset).returns(stub(:count => 0))
+        transformation = new_transformation(:result_field => @result_field).save!
+        Transformation.expects(:filter).with(:result_field_id => 8).returns(mock(:count => 0))
+        @result_field.expects(:destroy)
         transformation.destroy
-        assert_nil Field[:id => result_field.id]
       end
 
-      def test_does_not_delete_result_field_in_use_by_other_transformation
-        resource = Factory(:resource)
-        source_field = resource.fields_dataset[:name => "first_name"]
-        transformation_1 = Factory(:transformation, {
-          :resource => resource,
-          :source_field => source_field,
-          :result_field_attributes => { :name => 'new_first_name' }
-        })
-        transformation_2 = Factory(:transformation, {
-          :resource => resource,
-          :source_field => transformation_1.result_field
-        })
-        result_field = transformation_1.result_field
-        transformation_2.destroy
-        assert Field[:id => result_field.id]
+      test "does not delete result field in use by other transformation" do
+        @result_field.stubs(:is_generated).returns(true)
+        @result_field.stubs(:scenarios_dataset).returns(stub(:count => 0))
+        transformation = new_transformation(:result_field => @result_field).save!
+        Transformation.expects(:filter).with(:result_field_id => 8).returns(mock(:count => 1))
+        @result_field.expects(:destroy).never
+        transformation.destroy
       end
 
-      def test_prevents_deletion_if_result_field_is_in_use_by_scenario
-        project = Factory(:project)
-        resource = Factory(:resource, :project => project)
-        source_field = resource.fields_dataset[:name => "first_name"]
-        transformation = Factory(:transformation, {
-          :resource => resource,
-          :source_field => source_field,
-          :result_field_attributes => { :name => 'new_first_name' }
-        })
-        result_field = transformation.result_field
-        scenario = Factory(:scenario, :project => project, :resource_1 => resource)
-        matcher = Factory(:matcher, {
-          :comparisons_attributes => [
-            {:lhs_type => 'field', :raw_lhs_value => source_field.id, :rhs_type => 'field', :raw_rhs_value => result_field.id, :operator => 'equals'},
-          ],
-          :scenario => scenario
-        })
+      test "prevents deletion if result field is in use by scenario" do
+        @result_field.stubs(:is_generated).returns(true)
+        @result_field.stubs(:scenarios_dataset).returns(stub(:count => 1))
+        transformation = new_transformation(:result_field => @result_field).save!
         assert !transformation.destroy
       end
 
-      def test_prevents_deletion_unless_in_last_position
-        # FIXME: this is temporary, but I don't want to program the
-        # complex logic to enable deletion from the middle of a
-        # transformation stack
-        resource = Factory(:resource)
-        transformation_1 = Factory(:transformation, :resource => resource)
-        transformation_2 = Factory(:transformation, :resource => resource)
-        transformation_1.destroy
+      test "prevents deletion unless in last position" do
+        transformation_1 = new_transformation(:position => 1).save!
+        transformation_2 = new_transformation(:position => 2).save!
+        assert !transformation_1.destroy
         assert_not_nil Transformation[:id => transformation_1.id]
       end
 
-      def test_sets_position_by_resource
-        transformer = Factory(:transformer)
-        resource_1 = Factory(:resource)
-        resource_2 = Factory(:resource)
-        opts = { :transformer => transformer, :resource => resource_1 }
-        xformation_1 = Factory(:transformation, opts)
-        xformation_2 = Factory(:transformation, opts)
-        xformation_3 = Factory(:transformation, opts.merge(:resource => resource_2))
+      test "sets position by resource" do
+        resource_1 = stub('resource', :pk => 1, :id => 1, :associations => {}, :refresh_fields! => nil)
+        resource_2 = stub('resource', :pk => 2, :id => 2, :associations => {}, :refresh_fields! => nil)
+
+        xformation_1 = new_transformation(:resource => resource_1).save!
+        xformation_2 = new_transformation(:resource => resource_1).save!
+        xformation_3 = new_transformation(:resource => resource_2).save!
         assert_equal 1, xformation_1.position
         assert_equal 2, xformation_2.position
         assert_equal 1, xformation_3.position
