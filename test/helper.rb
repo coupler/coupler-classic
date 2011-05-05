@@ -33,6 +33,7 @@ require 'coupler'
 
 Coupler::Base.set(:sessions, false) # workaround
 Coupler::Base.set(:environment, :test)
+Coupler::Database.instance.migrate!
 
 module Coupler
   module Test

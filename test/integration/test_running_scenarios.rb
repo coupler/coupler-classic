@@ -70,6 +70,43 @@ class TestRunningScenarios < Coupler::Test::IntegrationTest
           | 53          | ditto       | ditto       |
           +-------------+-------------+-------------+
         EOF
+
+        db.create_table!(:resource_1) do
+          primary_key :id
+          String :ssn, :index => true
+          String :dob, :index => true
+          Integer :foo, :index => true
+          Integer :bar, :index => true
+          Integer :age, :index => true
+          Integer :height, :index => true
+          index [:id, :ssn]
+          index [:id, :ssn, :dob]
+          index [:id, :foo, :bar]
+          index [:id, :age]
+        end
+        rows = Array.new(11000) do |i|
+          [
+            i < 10500 ? "1234567%02d"  % (i / 350) : "9876%05d" % i,
+            i < 10500 ? "2000-01-%02d" % (i / 525) : nil,
+            i < 1000 ? ((x = i / 125) == 2 ? 123 : x) : nil,
+            i < 1000 ? i % 10 : nil,
+            i % 20 + 25,
+            i % 50 + 125,
+          ]
+        end
+        db[:resource_1].import([:ssn, :dob, :foo, :bar, :age, :height], rows)
+
+        db.create_table!(:resource_2) do
+          primary_key :id
+          String :SocialSecurityNumber
+          index [:id, :SocialSecurityNumber]
+        end
+        rows = Array.new(21000) do |i|
+          [
+            i < 10500 ? "1234567%02d" % (i % 30) : "9876%05d" % i,
+          ]
+        end
+        db[:resource_2].import([:SocialSecurityNumber], rows)
       end
     end
   end
@@ -104,8 +141,7 @@ class TestRunningScenarios < Coupler::Test::IntegrationTest
           'operator' => 'equals'
         }]
       })
-      count = 0
-      scenario.run! { |n| count += n }
+      scenario.run!
       assert_not_nil scenario.last_run_at
       assert_equal 1, scenario.run_count
       assert_equal 1, scenario.results_dataset.count
@@ -135,6 +171,209 @@ class TestRunningScenarios < Coupler::Test::IntegrationTest
       csv = result.to_csv
 
       # FIXME: add some actual csv tests you lazy bastard
+    end
+
+    adapter_test(adapter, "self linkage with one comparison") do
+      conn = new_connection(adapter, :name => :"#{adapter} connection").save!
+      resource = Resource.create(:name => 'resource_1', :table_name => 'resource_1', :project => @project, :connection => conn)
+      scenario = Scenario.create(:name => 'foo', :resource_1 => resource, :project => @project)
+      field = resource.fields_dataset[:name => 'ssn']
+      matcher = Matcher.create({
+        :scenario => scenario, :comparisons_attributes => [{
+          'lhs_type' => 'field', 'raw_lhs_value' => field.id, 'lhs_which' => 1,
+          'rhs_type' => 'field', 'raw_rhs_value' => field.id, 'rhs_which' => 2,
+          'operator' => 'equals'
+        }]
+      })
+      scenario.run!
+
+      groups = {}
+      scenario.local_database do |db|
+        assert db.tables.include?(:groups_records_1)
+        ds = db[:groups_records_1]
+        assert_equal 10500, ds.count
+        counts = ds.group_and_count(:group_id).all
+        assert_equal 30, counts.length
+        assert counts.all? { |g| g[:count] == 350 }
+        assert ds.group_and_count(:record_id).all? { |r| r[:count] == 1 }
+        ds.each do |row|
+          record_id = groups[row[:group_id]]
+          if record_id
+            assert_equal (record_id - 1) / 350, (row[:record_id].to_i - 1) / 350, "Record #{row[:record_id]} should not have been in the same group as Record #{record_id}."
+          else
+            groups[row[:group_id]] = row[:record_id].to_i
+          end
+        end
+      end
+    end
+
+    adapter_test(adapter, "self linkage with two comparisons") do
+      conn = new_connection(adapter, :name => :"#{adapter} connection").save!
+      resource = Resource.create(:name => 'resource_1', :table_name => 'resource_1', :project => @project, :connection => conn)
+      scenario = Scenario.create(:name => 'foo', :resource_1 => resource, :project => @project)
+      field_1 = resource.fields_dataset[:name => 'ssn']
+      field_2 = resource.fields_dataset[:name => 'dob']
+      matcher = Matcher.create({
+        :scenario => scenario, :comparisons_attributes => [
+          {
+            'lhs_type' => 'field', 'raw_lhs_value' => field_1.id, 'lhs_which' => 1,
+            'rhs_type' => 'field', 'raw_rhs_value' => field_1.id, 'rhs_which' => 2,
+            'operator' => 'equals'
+          },
+          {
+            'lhs_type' => 'field', 'raw_lhs_value' => field_2.id, 'lhs_which' => 1,
+            'rhs_type' => 'field', 'raw_rhs_value' => field_2.id, 'rhs_which' => 2,
+            'operator' => 'equals'
+          },
+        ]
+      })
+      scenario.run!
+
+      groups = {}
+      scenario.local_database do |db|
+        assert db.tables.include?(:groups_records_1)
+        ds = db[:groups_records_1]
+        assert_equal 10500, ds.count
+
+        counts = ds.group_and_count(:group_id)
+        assert_equal 20, counts.having(:count => 175).count
+        assert_equal 20, counts.having(:count => 350).count
+        assert ds.group_and_count(:record_id).all? { |r| r[:count] == 1 }
+        ds.each do |row|
+          record_id = groups[row[:group_id]]
+          if record_id
+            assert_equal (record_id - 1) / 350, (row[:record_id].to_i - 1) / 350, "Record #{row[:record_id]} should not have been in the same group as Record #{record_id}."
+            assert_equal (record_id - 1) / 525, (row[:record_id].to_i - 1) / 525, "Record #{row[:record_id]} should not have been in the same group as Record #{record_id}."
+          else
+            groups[row[:group_id]] = row[:record_id].to_i
+          end
+        end
+      end
+    end
+
+    adapter_test(adapter, "self linkage with cross match") do
+      conn = new_connection(adapter, :name => :"#{adapter} connection").save!
+      resource = Resource.create(:name => 'resource_1', :table_name => 'resource_1', :project => @project, :connection => conn)
+      scenario = Scenario.create(:name => 'foo', :resource_1 => resource, :project => @project)
+      field_1 = resource.fields_dataset[:name => 'foo']
+      field_2 = resource.fields_dataset[:name => 'bar']
+      matcher = Matcher.create({
+        :scenario => scenario, :comparisons_attributes => [
+          {
+            'lhs_type' => 'field', 'raw_lhs_value' => field_1.id, 'lhs_which' => 1,
+            'rhs_type' => 'field', 'raw_rhs_value' => field_2.id, 'rhs_which' => 2,
+            'operator' => 'equals'
+          },
+        ]
+      })
+      scenario.run!
+
+      groups = {}
+      scenario.local_database do |db|
+        assert db.tables.include?(:groups_records_1)
+        join_ds = db[:groups_records_1]
+        # Breakdown of groups_records_1
+        # - Values that should match each other: 0, 1, 3, 4, 5, 6, 7
+        # - For each value, there are 125 records that should match in foo
+        #   Subtotal: 875
+        # - For each value, there are 100 records that should match in bar
+        #   Subtotal: 700
+        # * Expected Total: 1575
+        assert_equal 1575, join_ds.count
+
+        assert db.tables.include?(:groups_1)
+        group_ds = db[:groups_1]
+        assert_equal 7, group_ds.count
+        group_ds.each do |group_row|
+          assert_equal 125, group_row[:"resource_1_count"], "Row counts didn't match"
+          assert_equal 100, group_row[:"resource_2_count"], "Row counts didn't match"
+        end
+
+        assert_equal 0, join_ds.group_and_count(:group_id).having(:count => 1).count
+      end
+    end
+
+    adapter_test(adapter, "self linkage with blocking") do
+      conn = new_connection(adapter, :name => :"#{adapter} connection").save!
+      resource = Resource.create(:name => 'resource_1', :table_name => 'resource_1', :project => @project, :connection => conn)
+      scenario = Scenario.create(:name => 'foo', :resource_1 => resource, :project => @project)
+      field_1 = resource.fields_dataset[:name => 'age']
+      field_2 = resource.fields_dataset[:name => 'height']
+      matcher = Matcher.create({
+        :scenario => scenario, :comparisons_attributes => [
+          {
+            'lhs_type' => 'field', 'raw_lhs_value' => field_1.id, 'lhs_which' => 1,
+            'rhs_type' => 'field', 'raw_rhs_value' => field_1.id, 'rhs_which' => 2,
+            'operator' => 'equals'
+          },
+          {
+            'lhs_type' => 'field', 'raw_lhs_value' => field_1.id, 'lhs_which' => 1,
+            'rhs_type' => 'integer', 'raw_rhs_value' => 30,
+            'operator' => 'greater_than'
+          },
+          {
+            'lhs_type' => 'field', 'raw_lhs_value' => field_2.id, 'lhs_which' => 1,
+            'rhs_type' => 'integer', 'raw_rhs_value' => 150,
+            'operator' => 'greater_than'
+          },
+        ]
+      })
+      scenario.run!
+
+      groups = {}
+      scenario.local_database do |db|
+        assert db.tables.include?(:groups_records_1)
+        ds = db[:groups_records_1]
+        assert ds.group_and_count(:record_id).all? { |r| r[:count] == 1 }
+        ds.each do |row|
+          index = row[:record_id].to_i - 1
+          assert index % 20 > 5,  "#{row[:record_id]}'s age is too small"
+          assert index % 50 > 25, "#{row[:record_id]}'s height is too small"
+
+          record_id = groups[row[:group_id]]
+          if record_id
+            assert_equal (record_id - 1) % 20 + 25, (row[:record_id].to_i - 1) % 20 + 25, "Record #{row[:record_id]} should not have been in the same group as Record #{record_id}."
+          else
+            groups[row[:group_id]] = row[:record_id].to_i
+          end
+        end
+      end
+    end
+
+    adapter_test(adapter, "dual linkage with one comparison") do
+      conn = new_connection(adapter, :name => :"#{adapter} connection").save!
+      resource_1 = Resource.create(:name => 'resource_1', :table_name => 'resource_1', :project => @project, :connection => conn)
+      resource_2 = Resource.create(:name => 'resource_2', :table_name => 'resource_2', :project => @project, :connection => conn)
+      scenario = Scenario.create(:name => 'foo', :resource_1 => resource_1, :resource_2 => resource_2, :project => @project)
+      field_1 = resource_1.fields_dataset[:name => 'ssn']
+      field_2 = resource_2.fields_dataset[:name => 'SocialSecurityNumber']
+      assert field_1, "ssn field couldn't be found: #{resource_1.fields_dataset.collect(&:name).inspect}"
+      assert field_2, "socialsecuritynumber field couldn't be found: #{resource_2.fields_dataset.collect(&:name).inspect}"
+      matcher = Matcher.create({
+        :scenario => scenario, :comparisons_attributes => [{
+          'lhs_type' => 'field', 'raw_lhs_value' => field_1.id, 'lhs_which' => 1,
+          'rhs_type' => 'field', 'raw_rhs_value' => field_2.id, 'rhs_which' => 2,
+          'operator' => 'equals'
+        }]
+      })
+      scenario.run!
+
+      groups = {}
+      scenario.local_database do |db|
+        assert db.tables.include?(:groups_records_1)
+        ds = db[:groups_records_1]
+        assert_equal 22000, ds.count
+
+        counts = ds.group_and_count(:group_id).all
+        assert_equal 530, counts.length
+        counts = counts.inject({}) { |h, r| h[r[:count]] ||= 0; h[r[:count]] += 1; h }
+        assert_equal 30, counts[700]
+        assert_equal 500, counts[2]
+        assert ds.group_and_count(:record_id, :which).all? { |r| r[:count] == 1 }
+
+        ds = db[:groups_1]
+        assert_equal 530, ds.count
+      end
     end
   end
 end
