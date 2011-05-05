@@ -34,7 +34,7 @@ module Coupler
       env = Base.settings.environment
       begin
         Base.set :environment, :production
-        expected = "jdbc:h2:#{File.join(Base.settings.data_path, 'db', 'production', 'ponies')}"
+        expected = "jdbc:h2:#{File.join(Base.settings.data_path, 'db', 'production', 'ponies')};IGNORECASE=TRUE"
         assert_equal expected, Base.connection_string("ponies")
       ensure
         Base.set :environment, env

@@ -7,6 +7,24 @@ Rake::TestTask.new(:test) do |test|
 end
 task :test => ['environment:test', 'db:purge', 'db:migrate', 'db:fake']
 
+namespace :test do
+  Rake::TestTask.new(:unit) do |test|
+    test.libs << 'lib' << 'test'
+    test.pattern = 'test/unit/**/test_*.rb'
+    #test.verbose = true
+    test.ruby_opts = %w{--debug}
+  end
+  task :unit => ['environment:test', 'db:purge', 'db:migrate', 'db:fake']
+
+  Rake::TestTask.new(:integration) do |test|
+    test.libs << 'lib' << 'test'
+    test.pattern = 'test/integration/**/test_*.rb'
+    #test.verbose = true
+    test.ruby_opts = %w{--debug}
+  end
+  task :integration => ['environment:test', 'db:purge', 'db:migrate', 'db:fake']
+end
+
 begin
   require 'rcov/rcovtask'
   Rcov::RcovTask.new do |test|
