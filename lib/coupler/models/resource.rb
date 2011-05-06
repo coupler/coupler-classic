@@ -234,7 +234,7 @@ module Coupler
           validates_unique [:name, :project_id], [:slug, :project_id]
           validates_presence [:table_name]
 
-          if errors.on(:table_name).nil?
+          if import.nil? && errors.on(:table_name).nil?
             source_database do |db|
               sym = self.table_name.to_sym
               if !db.tables.include?(sym)

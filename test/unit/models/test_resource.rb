@@ -516,7 +516,9 @@ module Coupler
         assert_equal "People", resource.name
         assert_equal @project, resource.project
         assert_equal "import_123", resource.table_name
+        assert resource.valid?
 
+        # import.import! would happen here
         @local_database.stubs({
           :tables => [:import_123],
           :schema => [

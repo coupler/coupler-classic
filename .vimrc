@@ -3,8 +3,12 @@ function! s:AlternateFile()
   let head = fnamemodify(fn, ':h')
   let tail = fnamemodify(fn, ':t')
 
-  if match(head, '^lib') >= 0
+  if match(head, '^lib/coupler/extensions') >= 0
+    return substitute(head, '^lib/coupler', 'test/integration', '').'/test_'.tail
+  elseif match(head, '^lib') >= 0
     return substitute(head, '^lib/coupler', 'test/unit', '').'/test_'.tail
+  elseif match(head, '^test/integration/extensions') >= 0
+    return substitute(head, '^test/integration', 'lib/coupler', '').'/'.substitute(tail, '^test_', '', '')
   elseif match(head, '^test') >= 0
     return substitute(head, '^test/unit', 'lib/coupler', '').'/'.substitute(tail, '^test_', '', '')
   endif

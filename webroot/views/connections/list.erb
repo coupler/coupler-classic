@@ -9,6 +9,7 @@
       <th>Host</th>
       <th>Port</th>
       <th>Username</th>
+      <th>Database</th>
       <th></th>
     </tr>
   </thead>
@@ -20,6 +21,7 @@
       <td><%= connection.host %></td>
       <td><%= connection.port %></td>
       <td><%= connection.username %></td>
+      <td><%= connection.database_name %></td>
       <td>
         <%- if connection.deletable? -%>
           <%= delete_link("<span class='ui-icon ui-icon-trash'></span>", "/connections/#{connection.id}") %>

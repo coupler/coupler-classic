@@ -22,20 +22,55 @@ module Coupler
         end
       end.parse!(argv)
 
-      Scheduler.instance.start
-      Database.instance.migrate!
+      puts "Migrating database..."
+      Coupler::Database.instance.migrate!
 
-      if irb
-        at_exit { shutdown }
-        require "irb"
-        IRB.start
-      else
-        Base.run! { |_| shutdown }
+      puts "Starting scheduler..."
+      Coupler::Scheduler.instance.start
+
+      puts "Starting web server..."
+      handler = Rack::Handler.get('mongrel')
+      settings = Coupler::Base.settings
+
+      # See the Rack::Handler::Mongrel.run! method
+      # NOTE: I don't want to join the server immediately, which is why I'm
+      #       doing this by hand.
+      @web_server = Mongrel::HttpServer.new(settings.bind, settings.port, 950, 0, 60)
+      @web_server.register('/', handler.new(Coupler::Base))
+      success = false
+      begin
+        @web_thread = @web_server.run
+        success = true
+      rescue Errno::EADDRINUSE => e
+        Scheduler.instance.shutdown
+        puts "Can't start web server, port already in use. Aborting..."
+      end
+
+      if success
+        Coupler::Base.set(:running, true)
+        trap("INT") do
+          shutdown
+        end
+
+        puts <<'EOF'
+                             ___
+                            /\_ \
+  ___    ___   __  __  _____\//\ \      __   _ __
+ /'___\ / __`\/\ \/\ \/\ '__`\\ \ \   /'__`\/\`'__\
+/\ \__//\ \L\ \ \ \_\ \ \ \L\ \\_\ \_/\  __/\ \ \/
+\ \____\ \____/\ \____/\ \ ,__//\____\ \____\\ \_\
+ \/____/\/___/  \/___/  \ \ \/ \/____/\/____/ \/_/
+                         \ \_\
+                          \/_/
+EOF
+        @web_thread.join
       end
     end
 
     def shutdown
+      puts "Shutting down..."
       Scheduler.instance.shutdown
+      @web_server.stop
     end
   end
 end
