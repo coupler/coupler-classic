@@ -2,7 +2,6 @@ require 'helper'
 
 module TestExtensions
   class TestConnections < Coupler::Test::IntegrationTest
-
     def setup
       super
       @connections = []

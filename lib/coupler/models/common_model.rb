@@ -2,6 +2,14 @@ module Coupler
   module Models
     module CommonModel
       module ClassMethods
+        def create!(*args)
+          obj = create(*args)
+          if obj.new?
+            raise "couldn't save: " + errors.full_messages.join("; ")
+          end
+          obj
+        end
+
         def recently_accessed
           col = columns.include?(:last_accessed_at) ? :last_accessed_at : :updated_at
           order(col.desc).limit(3).all
