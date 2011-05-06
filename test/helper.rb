@@ -98,8 +98,12 @@ module Coupler
       end
 
       # connection helpers
-      def self.each_adapter
-        @@test_config.each_pair { |k, v| yield(k, v) }
+      def self.each_adapter(&block)
+        @@test_config.each_pair { |k, v| block.call(k, v) }
+      end
+
+      def each_adapter(&block)
+        self.class.each_adapter(&block)
       end
 
       def self.adapter_test(adapter, description, &block)

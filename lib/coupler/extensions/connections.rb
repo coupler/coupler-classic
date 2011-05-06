@@ -1,25 +1,27 @@
 module Coupler
   module Extensions
     module Connections
+      include Models
+
       def self.registered(app)
         app.get "/connections" do
-          @connections = Models::Connection.all
+          @connections = Connection.all
           erb :'connections/index'
         end
 
         app.get "/connections/new" do
-          @connection = Models::Connection.new
+          @connection = Connection.new
           erb :'connections/new'
         end
 
         app.get "/connections/:id" do
-          @connection = Models::Connection[:id => params[:id]]
+          @connection = Connection[:id => params[:id]]
           @resources = @connection.resources
           erb :'connections/show'
         end
 
         app.post "/connections" do
-          @connection = Models::Connection.new(params[:connection])
+          @connection = Connection.new(params[:connection])
 
           if @connection.save
             if session[:first_use]
@@ -40,7 +42,7 @@ module Coupler
         end
 
         app.delete "/connections/:id" do
-          @connection = Models::Connection[params[:id]]
+          @connection = Connection[params[:id]]
           if @connection.destroy
             flash[:notice] = "Connection was successfully deleted."
           else

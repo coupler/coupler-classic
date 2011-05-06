@@ -4,9 +4,9 @@ function! s:AlternateFile()
   let tail = fnamemodify(fn, ':t')
 
   if match(head, '^lib') >= 0
-    return substitute(head, '^lib', 'test/unit', '').'/test_'.tail
+    return substitute(head, '^lib/coupler', 'test/unit', '').'/test_'.tail
   elseif match(head, '^test') >= 0
-    return substitute(head, '^test/unit', 'lib', '').'/'.substitute(tail, '^test_', '', '')
+    return substitute(head, '^test/unit', 'lib/coupler', '').'/'.substitute(tail, '^test_', '', '')
   endif
   return ''
 endfunction
