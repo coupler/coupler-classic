@@ -1,95 +1,113 @@
 require 'helper'
 
-module Coupler
-  module Extensions
-    class TestTransformations < Coupler::Test::UnitTest
-      def setup
-        super
-        @project = Factory(:project)
-        @resource = Factory(:resource, :project => @project)
-        @transformer = Factory(:transformer)
+module TestExtensions
+  class TestTransformations < Coupler::Test::IntegrationTest
+    def self.startup
+      super
+      conn = new_connection('h2', :name => 'foo')
+      conn.database do |db|
+        db.create_table!(:foo) do
+          primary_key :id
+          String :foo
+          String :bar
+        end
+        db[:foo].insert({:foo => 'foo', :bar => 'bar'})
+        db[:foo].insert({:foo => 'bar', :bar => 'foo'})
       end
+    end
 
-      def test_new
-        get "/projects/#{@project.id}/resources/#{@resource.id}/transformations/new"
-        assert last_response.ok?
-      end
+    def setup
+      super
+      @project = Project.create(:name => 'foo')
+      @connection = new_connection('h2', :name => 'h2 connection').save!
+      @resource = Resource.create(:name => 'foo', :project => @project, :connection => @connection, :table_name => 'foo')
+      @transformer = Transformer.create(:name => 'noop', :code => 'value', :allowed_types => %w{string integer datetime}, :result_type => 'same')
+    end
 
-      def test_new_with_non_existant_project
-        get "/projects/8675309/resources/#{@resource.id}/transformations/new"
-        assert last_response.redirect?
-        assert_equal "http://example.org/projects", last_response['location']
-        follow_redirect!
-        assert_match /The project you were looking for doesn't exist/, last_response.body
-      end
+    test "new" do
+      get "/projects/#{@project.id}/resources/#{@resource.id}/transformations/new"
+      assert last_response.ok?
+    end
 
-      def test_new_with_non_existant_resource
-        get "/projects/#{@project.id}/resources/8675309/transformations/new"
-        assert last_response.redirect?
-        assert_equal "http://example.org/projects/#{@project.id}/resources", last_response['location']
-        follow_redirect!
-        assert_match /The resource you were looking for doesn't exist/, last_response.body
-      end
+    test "new with non existant project" do
+      get "/projects/8675309/resources/#{@resource.id}/transformations/new"
+      assert last_response.redirect?
+      assert_equal "http://example.org/projects", last_response['location']
+      follow_redirect!
+      assert_match /The project you were looking for doesn't exist/, last_response.body
+    end
 
-      def test_successfully_creating_transformation
-        attribs = Factory.attributes_for(:transformation, {
-          :transformer_id => @transformer.id,
-          :source_field_id => @resource.fields.first.id
-        })
-        post("/projects/#{@project.id}/resources/#{@resource.id}/transformations", { 'transformation' => attribs })
-        transformation = @resource.transformations_dataset.first
-        assert transformation
+    test "new with non existant resource" do
+      get "/projects/#{@project.id}/resources/8675309/transformations/new"
+      assert last_response.redirect?
+      assert_equal "http://example.org/projects/#{@project.id}/resources", last_response['location']
+      follow_redirect!
+      assert_match /The resource you were looking for doesn't exist/, last_response.body
+    end
 
-        assert last_response.redirect?, "Wasn't redirected"
-        follow_redirect!
-        assert_equal "http://example.org/projects/#{@project.id}/resources/#{@resource.id}", last_request.url
-      end
+    test "successfully creating transformation" do
+      field = @resource.fields_dataset[:name => 'foo']
+      attribs = {
+        :transformer_id => @transformer.id.to_s,
+        :source_field_id => field.id.to_s
+      }
+      post("/projects/#{@project.id}/resources/#{@resource.id}/transformations", { 'transformation' => attribs })
+      transformation = @resource.transformations_dataset.first
+      assert transformation
 
-      def test_delete
-        transformation = Factory(:transformation, :resource => @resource)
-        delete "/projects/#{@project.id}/resources/#{@resource.id}/transformations/#{transformation.id}"
-        assert_equal 0, Models::Transformation.filter(:id => transformation.id).count
+      assert last_response.redirect?, "Wasn't redirected"
+      assert_equal "http://example.org/projects/#{@project.id}/resources/#{@resource.id}", last_response['location']
+    end
 
-        assert last_response.redirect?, "Wasn't redirected"
-        follow_redirect!
-        assert_equal "http://example.org/projects/#{@project.id}/resources/#{@resource.id}", last_request.url
-      end
+    test "delete" do
+      field = @resource.fields_dataset[:name => 'foo']
+      transformation = Transformation.create!(:resource => @resource, :transformer => @transformer, :source_field => field)
+      delete "/projects/#{@project.id}/resources/#{@resource.id}/transformations/#{transformation.id}"
+      assert_equal 0, Transformation.filter(:id => transformation.id).count
 
-      def test_delete_with_non_existant_transformation
-        delete "/projects/#{@project.id}/resources/#{@resource.id}/transformations/8675309"
-        assert last_response.redirect?
-        assert_equal "http://example.org/projects/#{@project.id}/resources/#{@resource.id}/transformations", last_response['location']
-        follow_redirect!
-        assert_match /The transformation you were looking for doesn't exist/, last_response.body
-      end
+      assert last_response.redirect?, "Wasn't redirected"
+      assert_equal "http://example.org/projects/#{@project.id}/resources/#{@resource.id}", last_response['location']
+    end
 
-      def test_for
-        field = @resource.fields.first
-        t12n = Factory(:transformation, :resource => @resource, :source_field => field, :transformer => @transformer)
+    test "delete with non existant transformation" do
+      delete "/projects/#{@project.id}/resources/#{@resource.id}/transformations/8675309"
+      assert last_response.redirect?
+      assert_equal "http://example.org/projects/#{@project.id}/resources/#{@resource.id}/transformations", last_response['location']
+      follow_redirect!
+      assert_match /The transformation you were looking for doesn't exist/, last_response.body
+    end
 
-        get "/projects/#{@project.id}/resources/#{@resource.id}/transformations/for/#{field.name}"
-        assert_match /#{@transformer.name}/, last_response.body
-      end
+    test "for" do
+      field = @resource.fields_dataset[:name => 'foo']
+      t12n = Transformation.create!(:resource => @resource, :source_field => field, :transformer => @transformer)
 
-      def test_for_with_non_existant_field
-        get "/projects/#{@project.id}/resources/#{@resource.id}/transformations/for/gobbledegook"
-        assert last_response.ok?
-        assert_equal '', last_response.body
-      end
+      get "/projects/#{@project.id}/resources/#{@resource.id}/transformations/for/foo"
+      assert_match /noop/, last_response.body
+    end
 
-      def test_index
-        field = @resource.fields.first
-        t12n = Factory(:transformation, :resource => @resource, :source_field => field)
-        get "/projects/#{@project.id}/resources/#{@resource.id}/transformations"
-        assert last_response.ok?
-      end
+    test "for with non existant field" do
+      get "/projects/#{@project.id}/resources/#{@resource.id}/transformations/for/gobbledegook"
+      assert last_response.ok?
+      assert_equal '', last_response.body
+    end
 
-      def test_preview
-        field = @resource.fields_dataset[:name => 'first_name']
-        params = { :transformer_id => @transformer.id, :source_field_id => field.id, :result_field_id => field.id }
-        post "/projects/#{@project.id}/resources/#{@resource.id}/transformations/preview", :transformation => params
-        assert last_response.ok?, "OMG #{last_response.body}"
-      end
+    test "index" do
+      field = @resource.fields_dataset[:name => 'foo']
+      t12n = Transformation.create!(:resource => @resource, :source_field => field, :transformer => @transformer)
+
+      get "/projects/#{@project.id}/resources/#{@resource.id}/transformations"
+      assert last_response.ok?
+    end
+
+    test "preview" do
+      field = @resource.fields_dataset[:name => 'foo']
+      params = {
+        :transformer_id => @transformer.id.to_s,
+        :source_field_id => field.id.to_s,
+        :result_field_id => field.id.to_s
+      }
+      post "/projects/#{@project.id}/resources/#{@resource.id}/transformations/preview", :transformation => params
+      assert last_response.ok?, last_response.body
     end
   end
 end

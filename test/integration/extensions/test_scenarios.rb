@@ -78,11 +78,11 @@ module TestExtensions
       assert Job.filter(:name => 'run_scenario', :scenario_id => scenario.id, :status => 'scheduled').count == 1
     end
 
-    ##def test_progress
-      ##scenario = Factory(:scenario, :project => @project, :completed => 100, :total => 1000)
-      ##get "/projects/#{@project.id}/scenarios/#{scenario.id}/progress"
-      ##assert last_response.ok?
-      ##assert_equal "10", last_response.body
-    ##end
+    #def test_progress
+      #scenario = Factory(:scenario, :project => @project, :completed => 100, :total => 1000)
+      #get "/projects/#{@project.id}/scenarios/#{scenario.id}/progress"
+      #assert last_response.ok?
+      #assert_equal "10", last_response.body
+    #end
   end
 end
