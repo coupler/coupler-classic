@@ -1,92 +1,94 @@
 require 'helper'
 
-module Coupler
-  module Extensions
-    class TestResults < Coupler::Test::UnitTest
-      class << self
-        def startup
-          super
-          load_table_set(:basic_cross_linkage)
+module TestExtensions
+  class TestResults < Coupler::Test::IntegrationTest
+    def self.startup
+      super
+      conn = new_connection('h2', :name => 'foo')
+      conn.database do |db|
+        db.create_table!(:foo) do
+          primary_key :id
+          String :foo
+          String :bar
         end
-
-        def shutdown
-          unload_table_set(:basic_cross_linkage)
-          super
-        end
+        db[:foo].insert({:foo => 'foo', :bar => 'bar'})
+        db[:foo].insert({:foo => 'bar', :bar => 'foo'})
       end
+    end
 
-      def setup
-        super
-        @project = Factory(:project)
-        @resource = Factory(:resource, :database_name => 'coupler_test_data', :table_name => 'records', :project => @project)
-        @scenario = Factory(:scenario, :project => @project, :resource_1 => @resource)
-        @matcher = Factory(:matcher, {
-          :scenario => @scenario,
-          :comparisons_attributes => [{
-            'lhs_type' => 'field', 'raw_lhs_value' => @resource.fields_dataset[:name => 'uno_col'].id, 'lhs_which' => 1,
-            'rhs_type' => 'field', 'raw_rhs_value' => @resource.fields_dataset[:name => 'dos_col'].id, 'rhs_which' => 2,
-            'operator' => 'equals'
-          }]
-        })
-        @scenario.run!
-        @result = @scenario.results_dataset.first
-      end
+    def setup
+      super
+      @project = Project.create!(:name => 'foo')
+      @connection = new_connection('h2', :name => 'h2 connection').save!
+      @resource = Resource.create!(:name => 'foo', :table_name => 'foo', :project => @project, :connection => @connection)
+      @scenario = Scenario.create!(:name => 'foo', :resource_1 => @resource, :project => @project)
+      foo = @resource.fields_dataset[:name => 'foo']
+      bar = @resource.fields_dataset[:name => 'bar']
+      @matcher = Matcher.create!({
+        :scenario => @scenario,
+        :comparisons_attributes => [{
+          'lhs_type' => 'field', 'raw_lhs_value' => foo.id, 'lhs_which' => 1,
+          'rhs_type' => 'field', 'raw_rhs_value' => bar.id, 'rhs_which' => 2,
+          'operator' => 'equals'
+        }]
+      })
+      @scenario.run!
+      @result = @scenario.results_dataset.first
+    end
 
-      def test_index
-        get "/projects/#{@project.id}/scenarios/#{@scenario.id}/results"
-        assert last_response.ok?
-      end
+    test "index" do
+      get "/projects/#{@project.id}/scenarios/#{@scenario.id}/results"
+      assert last_response.ok?
+    end
 
-      def test_index_with_non_existant_project
-        get "/projects/8675309/scenarios/#{@scenario.id}/results"
-        assert last_response.redirect?
-        assert_equal "http://example.org/projects", last_response['location']
-        follow_redirect!
-        assert_match /The project you were looking for doesn't exist/, last_response.body
-      end
+    test "index with non existant project" do
+      get "/projects/8675309/scenarios/#{@scenario.id}/results"
+      assert last_response.redirect?
+      assert_equal "http://example.org/projects", last_response['location']
+      follow_redirect!
+      assert_match /The project you were looking for doesn't exist/, last_response.body
+    end
 
-      def test_index_with_non_existant_scenario
-        get "/projects/#{@project.id}/scenarios/8675309/results"
-        assert last_response.redirect?
-        assert_equal "http://example.org/projects/#{@project.id}/scenarios", last_response['location']
-        follow_redirect!
-        assert_match /The scenario you were looking for doesn't exist/, last_response.body
-      end
+    test "index with non existant scenario" do
+      get "/projects/#{@project.id}/scenarios/8675309/results"
+      assert last_response.redirect?
+      assert_equal "http://example.org/projects/#{@project.id}/scenarios", last_response['location']
+      follow_redirect!
+      assert_match /The scenario you were looking for doesn't exist/, last_response.body
+    end
 
-      def test_show
-        get "/projects/#{@project.id}/scenarios/#{@scenario.id}/results/#{@result.id}"
-        assert last_response.ok?
-      end
+    test "show" do
+      get "/projects/#{@project.id}/scenarios/#{@scenario.id}/results/#{@result.id}"
+      assert last_response.ok?
+    end
 
-      def test_details
-        group_id = nil
-        @result.groups_dataset { |ds| group_id = ds.get(:id) }
-        get "/projects/#{@project.id}/scenarios/#{@scenario.id}/results/#{@result.id}/details/#{group_id}"
-        assert last_response.ok?
-      end
+    test "details" do
+      group_id = nil
+      @result.groups_dataset { |ds| group_id = ds.get(:id) }
+      get "/projects/#{@project.id}/scenarios/#{@scenario.id}/results/#{@result.id}/details/#{group_id}"
+      assert last_response.ok?
+    end
 
-      def test_show_sends_csv
-        Models::Result.any_instance.expects(:to_csv).returns("foo,bar\n1,2")
-        get "/projects/#{@project.id}/scenarios/#{@scenario.id}/results/#{@result.id}.csv"
-        assert_equal %{attachment; filename="#{@scenario.slug}-run-#{@result.created_at.strftime('%Y%m%d-%H%M')}.csv"}, last_response['Content-Disposition']
+    test "show sends csv" do
+      get "/projects/#{@project.id}/scenarios/#{@scenario.id}/results/#{@result.id}.csv"
+      assert_equal %{attachment; filename="#{@scenario.slug}-run-#{@result.created_at.strftime('%Y%m%d-%H%M')}.csv"}, last_response['Content-Disposition']
 
-        body = last_response.body
-        #if md = body.match(/^(.+?)\n\n/m)
-          #metadata = md[1]
-          #body = body[md.end(0)..-1]
-        #else
-          #flunk "No metadata found"
-        #end
-        assert_equal "foo,bar\n1,2", body
-      end
+      body = last_response.body
+      p body
+      regexp = Regexp.new(<<'EOF', Regexp::MULTILINE)
+^id,foo,bar,coupler_group_id
+1,foo,bar,(\d+)
+2,bar,foo,\1$
+EOF
+      assert_match regexp, body
+    end
 
-      def test_show_with_non_existant_result
-        get "/projects/#{@project.id}/scenarios/#{@scenario.id}/results/8675309"
-        assert last_response.redirect?
-        assert_equal "http://example.org/projects/#{@project.id}/scenarios/#{@scenario.id}/results", last_response['location']
-        follow_redirect!
-        assert_match /The result you were looking for doesn't exist/, last_response.body
-      end
+    test "show with non existant result" do
+      get "/projects/#{@project.id}/scenarios/#{@scenario.id}/results/8675309"
+      assert last_response.redirect?
+      assert_equal "http://example.org/projects/#{@project.id}/scenarios/#{@scenario.id}/results", last_response['location']
+      follow_redirect!
+      assert_match /The result you were looking for doesn't exist/, last_response.body
     end
   end
 end
