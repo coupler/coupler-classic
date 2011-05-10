@@ -19,6 +19,7 @@ require 'json'
 require 'fastercsv'
 require 'carrierwave'
 require 'mvn:com.h2database:h2'
+require 'mongrel'
 require 'jdbc/mysql'  # FIXME: lazy load this
 
 require File.dirname(__FILE__) + "/coupler/logger"

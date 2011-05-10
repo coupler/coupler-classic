@@ -4,49 +4,73 @@ module Coupler
   class TestRunner < Coupler::Test::UnitTest
     def setup
       super
-      #@server = stub("server", :is_running? => true, :start => nil)
-      #Server.stubs(:instance).returns(@server)
       @scheduler = stub("scheduler", :is_started? => true, :start => nil)
       Scheduler.stubs(:instance).returns(@scheduler)
       @database = stub("database", :migrate! => nil)
       Database.stubs(:instance).returns(@database)
-      Base.stubs(:run!)
+      @app = stub('rack app')
+      @handler = stub('rack handler', :new => @app)
+      Rack::Handler.stubs(:get).returns(@handler)
+      @thread = stub('mongrel thread', :join => nil)
+      @mongrel = stub('mongrel', :register => nil, :run => @thread)
+      Mongrel::HttpServer.stubs(:new).returns(@mongrel)
+      @settings = stub('settings', :bind => '0.0.0.0', :port => 123)
+      Base.stubs(:set => nil, :settings => @settings)
     end
 
-    def test_starts_scheduler
-      @scheduler.stubs(:is_started?).returns(false)
+    def capture_stdout
+      begin
+        out = StringIO.new
+        $stdout = out
+        yield
+        return out
+      ensure
+        $stdout = STDOUT
+      end
+    end
+
+    test "starts scheduler" do
       @scheduler.expects(:start)
-      Runner.new([])
+      capture_stdout { Runner.new([]) }
     end
 
-    def test_stops_scheduler_if_started
-      @scheduler.stubs(:is_started?).returns(false)
+    test "starts web server" do
+      Mongrel::HttpServer.expects(:new).with('0.0.0.0', 123, 950, 0, 60).returns(@mongrel)
+      @handler.expects(:new).with(Coupler::Base).returns(@app)
+      @mongrel.expects(:register).with('/', @app)
+      @mongrel.expects(:run).returns(@thread)
+      Coupler::Base.expects(:set).with(:running, true)
+      @thread.expects(:join)
+      capture_stdout { Runner.new([]) }
+    end
+
+    test "shutting down" do
       @scheduler.expects(:shutdown)
-      Base.expects(:run!).yields(stub())
-      Runner.new([])
+      @mongrel.expects(:stop)
+      capture_stdout { r = Runner.new([]); r.shutdown }
     end
 
-    def test_migrates_the_database
+    test "migrates the database" do
       @database.expects(:migrate!)
-      Runner.new([])
+      capture_stdout { Runner.new([]) }
     end
 
-    def test_sets_web_port
+    test "sets web port" do
       argv = %w{--port=37222}
       Base.expects(:set).with(:port, 37222)
-      Runner.new(argv)
+      capture_stdout { Runner.new(argv) }
     end
 
-    def test_sets_data_path
+    test "sets data path" do
       argv = %w{--dir=/tmp/coupler}
       Base.expects(:set).with(:data_path, '/tmp/coupler')
-      Runner.new(argv)
+      capture_stdout { Runner.new(argv) }
     end
 
-    def test_sets_environment
+    test "sets environment" do
       argv = %w{--environment=development}
       Base.expects(:set).with(:environment, :development)
-      Runner.new(argv)
+      capture_stdout { Runner.new(argv) }
     end
   end
 end

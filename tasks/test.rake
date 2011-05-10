@@ -1,11 +1,7 @@
 require 'rake/testtask'
-Rake::TestTask.new(:test) do |test|
-  test.libs << 'lib' << 'test'
-  test.pattern = 'test/**/test_*.rb'
-  #test.verbose = true
-  test.ruby_opts = %w{--debug}
-end
-task :test => ['environment:test', 'db:purge', 'db:migrate', 'db:fake']
+
+desc "Run all tests"
+task :test => ['test:unit', 'test:integration']
 
 namespace :test do
   Rake::TestTask.new(:unit) do |test|
