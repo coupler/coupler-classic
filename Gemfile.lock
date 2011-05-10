@@ -12,6 +12,10 @@ GEM
     gem_plugin (0.2.3)
     git (1.2.5)
     jdbc-mysql (5.1.13)
+    jeweler (1.6.0)
+      bundler (~> 1.0.0)
+      git (>= 1.2.5)
+      rake
     json (1.5.1-java)
     mocha (0.9.12)
     mongrel (1.1.5-java)
@@ -51,6 +55,7 @@ DEPENDENCIES
   forgery
   git
   jdbc-mysql
+  jeweler
   json
   mocha
   mongrel

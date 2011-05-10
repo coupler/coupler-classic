@@ -6,11 +6,12 @@ gem 'json'
 gem 'fastercsv'
 gem 'carrierwave'
 gem 'mongrel'
-gem 'mvn:com.h2database:h2'
 gem 'jdbc-mysql'
+gem 'mvn:com.h2database:h2'
 
 group :development do
   gem 'rake'
+  gem 'jeweler'
   gem 'forgery', :require => false
   gem 'test-unit', '2.2.0', :require => 'test/unit'
   gem 'mocha'

@@ -1,14 +1,6 @@
-#!/usr/bin/env jruby
-$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', 'lib')
-require 'coupler/server'
+require 'rubygems'
 
-server = Coupler::Server.instance
-server.start
+$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), "..", "lib"))
+require 'coupler'
 
-begin
-  Signal.trap("INT") { server.shutdown }
-  require 'coupler'
-  Coupler::Base.run!
-ensure
-  server.shutdown
-end
+Coupler::Runner.new
