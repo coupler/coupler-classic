@@ -26,7 +26,8 @@ module TestExtensions
           :data_cache => cached_import.data_cache,
           :primary_key_name => cached_import.primary_key_name,
           :field_names => cached_import.field_names,
-          :field_types => cached_import.field_types
+          :field_types => cached_import.field_types,
+          :has_headers => true
         }
       })
       assert last_response.redirect?, "Wasn't a redirect"
@@ -42,7 +43,8 @@ module TestExtensions
           :data_cache => cached_import.data_cache,
           :primary_key_name => cached_import.primary_key_name,
           :field_names => nil,
-          :field_types => cached_import.field_types
+          :field_types => cached_import.field_types,
+          :has_headers => true
         }
       })
       assert last_response.ok?
@@ -65,7 +67,8 @@ module TestExtensions
           :data_cache => cached_import.data_cache,
           :primary_key_name => cached_import.primary_key_name,
           :field_names => cached_import.field_names,
-          :field_types => cached_import.field_types
+          :field_types => cached_import.field_types,
+          :has_headers => true
         }
       })
       assert last_response.redirect?, "Wasn't redirected"

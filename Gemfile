@@ -12,7 +12,7 @@ gem 'jdbc-mysql'
 group :development do
   gem 'rake'
   gem 'forgery', :require => false
-  gem 'test-unit', :require => 'test/unit'
+  gem 'test-unit', '2.2.0', :require => 'test/unit'
   gem 'mocha'
   gem 'rack-test', :require => 'rack/test'
   gem 'nokogiri'

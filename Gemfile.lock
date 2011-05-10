@@ -1,13 +1,13 @@
 GEM
   remote: http://rubygems.org/
   specs:
-    activesupport (3.0.5)
+    activesupport (3.0.7)
     carrierwave (0.5.3)
       activesupport (~> 3.0)
     columnize (0.3.2)
     factory_girl (1.3.3)
     fastercsv (1.5.4)
-    forgery (0.3.7)
+    forgery (0.3.8)
       nokogiri (~> 1.4)
     gem_plugin (0.2.3)
     git (1.2.5)
@@ -22,22 +22,22 @@ GEM
     rack (1.2.2)
     rack-flash (0.1.1)
       rack
-    rack-test (0.5.7)
+    rack-test (0.6.0)
       rack (>= 1.0)
     rake (0.8.7)
     ruby-debug (0.10.4)
       columnize (>= 0.1)
       ruby-debug-base (~> 0.10.4.0)
     ruby-debug-base (0.10.4-java)
-    sequel (3.22.0)
-    sinatra (1.2.1)
+    sequel (3.23.0)
+    sinatra (1.2.6)
       rack (~> 1.1)
       tilt (>= 1.2.2, < 2.0)
     table_maker (0.0.2)
       sequel
     test-unit (2.2.0)
     thor (0.14.6)
-    tilt (1.2.2)
+    tilt (1.3)
     timecop (0.3.5)
     weakling (0.0.4-java)
 
@@ -63,6 +63,6 @@ DEPENDENCIES
   sequel
   sinatra
   table_maker
-  test-unit
+  test-unit (= 2.2.0)
   thor
   timecop
