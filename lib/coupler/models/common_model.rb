@@ -3,11 +3,7 @@ module Coupler
     module CommonModel
       module ClassMethods
         def create!(*args)
-          obj = create(*args)
-          if obj.new?
-            raise "couldn't save: " + errors.full_messages.join("; ")
-          end
-          obj
+          new(*args).save!
         end
 
         def recently_accessed
