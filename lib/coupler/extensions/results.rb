@@ -27,7 +27,7 @@ module Coupler
           raise ScenarioNotFound  unless @scenario
 
           id, format = params[:id].split('.')
-          @result = @scenario.results_dataset[:id => params[:id]]
+          @result = @scenario.results_dataset[:id => id]
           raise ResultNotFound    unless @result
 
           if format == 'csv'

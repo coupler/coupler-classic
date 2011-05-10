@@ -15,6 +15,8 @@ module Coupler
       private
         def validate
           super
+          # use comparisons instead of comparisons_dataset, because the
+          # comparisons aren't created yet
           result = comparisons.any? do |comparison|
             comparison.lhs_type == "field" && comparison.rhs_type == "field"
           end

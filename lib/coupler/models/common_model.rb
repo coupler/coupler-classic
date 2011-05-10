@@ -2,6 +2,10 @@ module Coupler
   module Models
     module CommonModel
       module ClassMethods
+        def create!(*args)
+          new(*args).save!
+        end
+
         def recently_accessed
           col = columns.include?(:last_accessed_at) ? :last_accessed_at : :updated_at
           order(col.desc).limit(3).all
@@ -88,6 +92,12 @@ module Coupler
         if !save(*args)
           raise "couldn't save: " + errors.full_messages.join("; ")
         end
+        self
+      end
+
+      def touch!
+        @skip_new_version = true
+        update(:last_accessed_at => Time.now)
       end
     end
   end

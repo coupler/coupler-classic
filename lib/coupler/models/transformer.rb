@@ -61,12 +61,13 @@ module Coupler
           if result_type != 'same'
             hash[:type] = result_type.to_sym
 
-            # TODO: don't hardcode this
-            hash[:db_type] = case result_type
-                             when 'integer'  then 'int(11)'
-                             when 'string'   then 'varchar(255)'
-                             when 'datetime' then 'datetime'
-                             end
+            # FIXME: don't use db_type anymore
+            hash[:db_type] =
+              case result_type
+              when 'integer'  then 'int(11)'
+              when 'string'   then 'varchar(255)'
+              when 'datetime' then 'datetime'
+              end
           end
           result
         end

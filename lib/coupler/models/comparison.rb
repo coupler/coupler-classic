@@ -32,9 +32,9 @@ module Coupler
           result = field.name
           resource_name = field.resource.name
           if self[:"#{name}_which"]
-            resource_name << %{<span class="sup">#{self[:"#{name}_which"]}</span>}
+            resource_name += %{<span class="sup">#{self[:"#{name}_which"]}</span>}
           end
-          result << " (#{resource_name})"
+          result += " (#{resource_name})"
         else
           lhs_rhs_value(name).inspect
         end
@@ -142,7 +142,7 @@ module Coupler
           super
           validates_presence [:raw_lhs_value, :raw_rhs_value]
           validates_includes TYPES, [:lhs_type, :rhs_type]
-          validates_includes OPERATORS, :operator
+          validates_includes OPERATORS.keys, :operator
           validates_includes [1, 2], :lhs_which   if lhs_type == 'field'
           validates_includes [1, 2], :rhs_which   if rhs_type == 'field'
 

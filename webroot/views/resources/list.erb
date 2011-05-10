@@ -18,7 +18,6 @@
         <td colspan="3" class='centered'>(imported)</td>
       <%- else -%>
         <% unless @hide_connection %><td><%= resource.connection.name %></td><% end %>
-        <td><%= resource.database_name %></td>
         <td><%= resource.table_name %></td>
       <%- end -%>
     </tr>

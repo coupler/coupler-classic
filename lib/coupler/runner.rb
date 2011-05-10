@@ -6,11 +6,8 @@ module Coupler
         opts.on("-p", "--port PORT", "Web server port") do |port|
           Base.set(:port, port.to_i)
         end
-        opts.on("-d", "--dport PORT", "Database server port") do |port|
-          Config.set(:database, :port, port.to_i)
-        end
         opts.on("--dir DIR", "Directory to use for Coupler's data") do |dir|
-          Config.set(:data_path, dir)
+          Base.set(:data_path, dir)
         end
         opts.on("-e", "--environment ENVIRONMENT", "Set the environment") do |env|
           case env
@@ -25,35 +22,55 @@ module Coupler
         end
       end.parse!(argv)
 
-      if !Server.instance.is_running?
-        @stop_server = true
-        Server.instance.start
+      puts "Migrating database..."
+      Coupler::Database.instance.migrate!
+
+      puts "Starting scheduler..."
+      Coupler::Scheduler.instance.start
+
+      puts "Starting web server..."
+      handler = Rack::Handler.get('mongrel')
+      settings = Coupler::Base.settings
+
+      # See the Rack::Handler::Mongrel.run! method
+      # NOTE: I don't want to join the server immediately, which is why I'm
+      #       doing this by hand.
+      @web_server = Mongrel::HttpServer.new(settings.bind, settings.port, 950, 0, 60)
+      @web_server.register('/', handler.new(Coupler::Base))
+      success = false
+      begin
+        @web_thread = @web_server.run
+        success = true
+      rescue Errno::EADDRINUSE => e
+        Scheduler.instance.shutdown
+        puts "Can't start web server, port already in use. Aborting..."
       end
 
-      if !Scheduler.instance.is_started?
-        @stop_scheduler = true
-        Scheduler.instance.start
-      end
+      if success
+        Coupler::Base.set(:running, true)
+        trap("INT") do
+          shutdown
+        end
 
-      Database.instance.migrate!
-
-      if irb
-        at_exit { shutdown }
-        require "irb"
-        IRB.start
-      else
-        Base.run! { |_| shutdown }
+        puts <<'EOF'
+                             ___
+                            /\_ \
+  ___    ___   __  __  _____\//\ \      __   _ __
+ /'___\ / __`\/\ \/\ \/\ '__`\\ \ \   /'__`\/\`'__\
+/\ \__//\ \L\ \ \ \_\ \ \ \L\ \\_\ \_/\  __/\ \ \/
+\ \____\ \____/\ \____/\ \ ,__//\____\ \____\\ \_\
+ \/____/\/___/  \/___/  \ \ \/ \/____/\/____/ \/_/
+                         \ \_\
+                          \/_/
+EOF
+        @web_thread.join
       end
     end
 
     def shutdown
-      if @stop_scheduler
-        Scheduler.instance.shutdown
-      end
-
-      if @stop_server
-        Server.instance.shutdown
-      end
+      puts "Shutting down..."
+      Scheduler.instance.shutdown
+      @web_server.stop
     end
   end
 end

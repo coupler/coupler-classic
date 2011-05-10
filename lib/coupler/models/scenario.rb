@@ -75,10 +75,7 @@ module Coupler
       private
 
         def local_connection_string
-          Config.connection_string(:"scenario_#{id}", {
-            :create_database => true,
-            :zero_date_time_behavior => :convert_to_null
-          })
+          Base.connection_string("scenario_#{id}")
         end
 
         def before_validation

@@ -13,17 +13,9 @@ module Coupler
         }, &block)
       end
 
-      def touch!
-        @skip_new_version = true
-        update(:last_accessed_at => Time.now)
-      end
-
       private
         def local_connection_string
-          Config.connection_string(:"project_#{id}", {
-            :create_database => true,
-            :zero_date_time_behavior => :convert_to_null
-          })
+          Base.connection_string("project_#{id}")
         end
 
         def before_validation
@@ -39,9 +31,7 @@ module Coupler
 
         def after_destroy
           super
-          Sequel.connect(Config.connection_string("information_schema")) do |db|
-            db.run("DROP DATABASE IF EXISTS project_#{id}")
-          end
+          FileUtils.rm(Dir[Base.db_path("project_#{id}")+".*"], :force => true)
           resources_dataset.each { |r| r.delete_versions_on_destroy = self.delete_versions_on_destroy; r.destroy }
           scenarios_dataset.each { |s| s.delete_versions_on_destroy = self.delete_versions_on_destroy; s.destroy }
         end

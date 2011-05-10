@@ -1,11 +1,11 @@
 module Coupler
   class DataUploader < CarrierWave::Uploader::Base
     def store_dir
-      Coupler::Config.get(:upload_path)
+      Base.settings.upload_path
     end
 
     def cache_dir
-      File.join(Coupler::Config.get(:upload_path), 'tmp')
+      File.join(store_dir, 'tmp')
     end
 
     def filename

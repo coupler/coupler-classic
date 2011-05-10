@@ -31,7 +31,7 @@ module Coupler
       alias :original_result_field_attributes :result_field_attributes=
       def result_field_attributes=(h)
         @staged_result_field = self.original_result_field_attributes(h.merge({
-          :is_generated => 1
+          :is_generated => true
         }))
       end
 
@@ -98,9 +98,8 @@ module Coupler
         def before_destroy
           # Prevent all but the last transformation from being destroyed
           #
-          # FIXME: This is probably temporary, since I'm putting off
-          # programming the complex logic required to enable deletion from the
-          # middle of a transformation stack.
+          # TODO: I'm putting off programming the complex logic required to
+          # enable deletion from the middle of a transformation stack.
           #
           super
           deletable?

@@ -19,7 +19,6 @@ module Coupler
               else
                 redirect("/projects/#{@project.id}/imports/#{@import.id}/edit")
               end
-              return
             end
           end
           erb(:'imports/new')

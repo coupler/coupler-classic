@@ -62,7 +62,8 @@ module Coupler
                 case field_types[i]
                 when 'integer' then Integer
                 when 'string' then String
-                end
+                end,
+              :null => !(name == primary_key_name)
             }
           end
           column_names << :dup_key_count
@@ -202,11 +203,13 @@ module Coupler
         def validate
           super
 
-          # don't allow import to have the same name as an already existing resource
-          if project.resources_dataset.filter(:name => name).count > 0
-            errors.add(:name, "is already taken")
+          validates_presence :project_id
+          if project_id
+            # don't allow import to have the same name as an already existing resource
+            if project.resources_dataset.filter(:name => name).count > 0
+              errors.add(:name, "is already taken")
+            end
           end
-
           validates_presence [:field_names, :primary_key_name]
           if field_names.is_a?(Array)
             validates_includes field_names, [:primary_key_name]

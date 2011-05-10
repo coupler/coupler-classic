@@ -9,18 +9,14 @@ module Coupler
       @mutex = Mutex.new
       @progress = progress
       @pending = 0
-
-      # Subtracting 4 at the end accounts for the query packet header (I think)
-      @max_allowed_packet = dataset.
-        db["SHOW VARIABLES LIKE ?", 'max_allowed_packet'].
-        first[:Value].to_i - 4
+      @max_query_size = 1_048_576
     end
 
     def add(row)
       fragment = " " + @dataset.literal(row.is_a?(Hash) ? row.values_at(*@columns) : row) + ","
       @mutex.synchronize do
         init_query  if @query.nil?
-        if (@query.length + fragment.length) > @max_allowed_packet
+        if (@query.length + fragment.length) > @max_query_size
           flush(false)
           init_query
         end
@@ -45,7 +41,7 @@ module Coupler
 
     private
       def init_query
-        @query = String.alloc(@max_allowed_packet)
+        @query = String.alloc(@max_query_size)
         @query << @dataset.insert_sql(@columns, Sequel::LiteralString.new('VALUES'))
       end
   end

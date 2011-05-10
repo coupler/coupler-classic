@@ -1,19 +1,22 @@
 GEM
   remote: http://rubygems.org/
   specs:
-    activesupport (3.0.6)
+    activesupport (3.0.5)
     carrierwave (0.5.3)
       activesupport (~> 3.0)
+    columnize (0.3.2)
     factory_girl (1.3.3)
     fastercsv (1.5.4)
     forgery (0.3.7)
       nokogiri (~> 1.4)
     gem_plugin (0.2.3)
     git (1.2.5)
+    jdbc-mysql (5.1.13)
     json (1.5.1-java)
     mocha (0.9.12)
     mongrel (1.1.5-java)
       gem_plugin (>= 0.2.3)
+    mvn:com.h2database:h2 (1.3.153-java)
     nokogiri (1.4.4.2-java)
       weakling (>= 0.0.3)
     rack (1.2.2)
@@ -22,8 +25,12 @@ GEM
     rack-test (0.5.7)
       rack (>= 1.0)
     rake (0.8.7)
+    ruby-debug (0.10.4)
+      columnize (>= 0.1)
+      ruby-debug-base (~> 0.10.4.0)
+    ruby-debug-base (0.10.4-java)
     sequel (3.22.0)
-    sinatra (1.2.2)
+    sinatra (1.2.1)
       rack (~> 1.1)
       tilt (>= 1.2.2, < 2.0)
     table_maker (0.0.2)
@@ -43,13 +50,16 @@ DEPENDENCIES
   fastercsv
   forgery
   git
+  jdbc-mysql
   json
   mocha
   mongrel
+  mvn:com.h2database:h2
   nokogiri
   rack-flash
   rack-test
   rake
+  ruby-debug
   sequel
   sinatra
   table_maker
