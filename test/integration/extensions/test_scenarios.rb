@@ -1,77 +1,88 @@
 require 'helper'
 
-module Coupler
-  module Extensions
-    class TestScenarios < Coupler::Test::UnitTest
-      def setup
-        super
-        @project = Factory(:project)
-      end
-
-      def test_index
-        scenario = Factory(:scenario, :project => @project)
-        get "/projects/#{@project.id}/scenarios"
-        assert last_response.ok?
-      end
-
-      def test_index_of_non_existant_project
-        get "/projects/8675309/scenarios"
-        assert last_response.redirect?
-        assert_equal "http://example.org/projects", last_response['location']
-        follow_redirect!
-        assert_match /The project you were looking for doesn't exist/, last_response.body
-      end
-
-      def test_show
-        scenario = Factory(:scenario, :project => @project)
-        get "/projects/#{@project.id}/scenarios/#{scenario.id}"
-        assert last_response.ok?
-      end
-
-      def test_new
-        get "/projects/#{@project.id}/scenarios/new"
-        assert last_response.ok?
-      end
-
-      def test_successfully_creating_scenario
-        resource = Factory(:resource, :project => @project)
-        attribs = Factory.attributes_for(:scenario)
-        post "/projects/#{@project.id}/scenarios", { 'scenario' => attribs.merge('resource_ids' => [resource.id]) }
-        scenario = Models::Scenario[:name => attribs[:name], :project_id => @project.id]
-        assert scenario
-        assert_equal [resource], scenario.resources
-
-        assert last_response.redirect?, "Wasn't redirected"
-        follow_redirect!
-        assert_equal "http://example.org/projects/#{@project.id}/scenarios/#{scenario.id}", last_request.url
-      end
-
-      def test_failing_to_create_scenario
-        post "/projects/#{@project.id}/scenarios", {
-          'scenario' => Factory.attributes_for(:scenario, :name => nil)
-        }
-        assert last_response.ok?
-        assert_match /Name is not present/, last_response.body
-      end
-
-      def test_run_scenario
-        scenario = stub("scenario", :new? => false, :name => "foo", :slug => "foo", :id => 1)
-        @scheduler = mock("scheduler") do
-          expects(:schedule_run_scenario_job).with(scenario)
+module TestExtensions
+  class TestScenarios < Coupler::Test::IntegrationTest
+    def self.startup
+      super
+      conn = new_connection('h2', :name => 'foo')
+      conn.database do |db|
+        db.create_table!(:foo) do
+          primary_key :id
+          String :foo
+          String :bar
         end
-        Scheduler.stubs(:instance).returns(@scheduler)
-        Models::Project.stubs(:[]).returns(@project)
-        @project.stubs(:scenarios_dataset).returns(stub("scenarios dataset", :[] => scenario))
-        get "/projects/#{@project.id}/scenarios/123/run"
-        assert last_response.redirect?, "Wasn't redirected"
+        db[:foo].insert({:foo => 'foo', :bar => 'bar'})
+        db[:foo].insert({:foo => 'bar', :bar => 'foo'})
       end
-
-      #def test_progress
-        #scenario = Factory(:scenario, :project => @project, :completed => 100, :total => 1000)
-        #get "/projects/#{@project.id}/scenarios/#{scenario.id}/progress"
-        #assert last_response.ok?
-        #assert_equal "10", last_response.body
-      #end
     end
+
+    def setup
+      super
+      @project = Project.create(:name => 'foo')
+      @connection = new_connection('h2', :name => 'h2 connection').save!
+      @resource = Resource.create(:name => 'foo', :project => @project, :connection => @connection, :table_name => 'foo')
+    end
+
+    test "index" do
+      scenario = Scenario.create(:name => 'foo', :resource_1 => @resource, :project => @project)
+      get "/projects/#{@project.id}/scenarios"
+      assert last_response.ok?
+    end
+
+    test "index of non existant project" do
+      get "/projects/8675309/scenarios"
+      assert last_response.redirect?
+      assert_equal "http://example.org/projects", last_response['location']
+      follow_redirect!
+      assert_match /The project you were looking for doesn't exist/, last_response.body
+    end
+
+    test "show" do
+      scenario = Scenario.create(:name => 'foo', :resource_1 => @resource, :project => @project)
+      get "/projects/#{@project.id}/scenarios/#{scenario.id}"
+      assert last_response.ok?
+    end
+
+    test "new" do
+      get "/projects/#{@project.id}/scenarios/new"
+      assert last_response.ok?
+    end
+
+    test "successfully creating scenario" do
+      attribs = {
+        'name' => 'foo',
+        'resource_ids' => [@resource.id.to_s]
+      }
+      post "/projects/#{@project.id}/scenarios", { 'scenario' => attribs }
+      scenario = Scenario[:name => 'foo', :project_id => @project.id]
+      assert scenario
+      assert_equal [@resource], scenario.resources
+
+      assert last_response.redirect?, "Wasn't redirected"
+      assert_equal "http://example.org/projects/#{@project.id}/scenarios/#{scenario.id}", last_response['location']
+    end
+
+    test "failing to create scenario" do
+      post "/projects/#{@project.id}/scenarios", {
+        'scenario' => { 'name' => nil, 'resource_ids' => [@resource.id.to_s] }
+      }
+      assert last_response.ok?
+      assert_match /Name is not present/, last_response.body
+    end
+
+    test "run scenario" do
+      scenario = Scenario.create(:name => 'foo', :resource_1 => @resource, :project => @project)
+      get "/projects/#{@project.id}/scenarios/#{scenario.id}/run"
+      assert last_response.redirect?, "Wasn't redirected"
+      assert_equal "http://example.org/projects/#{@project[:id]}/scenarios/#{scenario[:id]}", last_response['location']
+      assert Job.filter(:name => 'run_scenario', :scenario_id => scenario.id, :status => 'scheduled').count == 1
+    end
+
+    ##def test_progress
+      ##scenario = Factory(:scenario, :project => @project, :completed => 100, :total => 1000)
+      ##get "/projects/#{@project.id}/scenarios/#{scenario.id}/progress"
+      ##assert last_response.ok?
+      ##assert_equal "10", last_response.body
+    ##end
   end
 end
