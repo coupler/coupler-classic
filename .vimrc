@@ -37,4 +37,4 @@ command! AS :call s:Alternate('S')
 command! AV :call s:Alternate('V')
 command! AT :call s:Alternate('T')
 
-let @a='OHv^yV/^"end\cu^xxxxlllli "€kD$a" do:s/_/ /g'
+let @a='OHv/defhyV/^"end\cu^xxxxlllli "€kD$a" do:s/_/ /g'
