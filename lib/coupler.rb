@@ -1,6 +1,7 @@
 require 'java'
 require 'jruby/core_ext'
 
+require 'rbconfig'
 require 'fileutils'
 require 'erb'
 require 'delegate'

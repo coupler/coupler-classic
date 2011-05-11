@@ -40,7 +40,6 @@ module Coupler
       @mongrel.expects(:register).with('/', @app)
       @mongrel.expects(:run).returns(@thread)
       Coupler::Base.expects(:set).with(:running, true)
-      @thread.expects(:join)
       capture_stdout { Runner.new([]) }
     end
 
@@ -71,6 +70,21 @@ module Coupler
       argv = %w{--environment=development}
       Base.expects(:set).with(:environment, :development)
       capture_stdout { Runner.new(argv) }
+    end
+
+    test "joining web server" do
+      r = nil
+      capture_stdout { r = Runner.new([]) }
+      @thread.expects(:join)
+      r.join
+    end
+
+    test "message proc" do
+      messages = []
+      Runner.new([]) do |msg|
+        messages << msg
+      end
+      assert !messages.empty?
     end
   end
 end

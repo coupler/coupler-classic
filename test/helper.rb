@@ -29,6 +29,7 @@ require 'table_sets'
 
 $LOAD_PATH.unshift(File.join(dir, '..', 'lib'))
 ENV['COUPLER_ENV'] = 'test'
+ENV['COUPLER_HOME'] = File.expand_path(File.join(dir, '..'))
 require 'coupler'
 
 Coupler::Base.set(:sessions, false) # workaround

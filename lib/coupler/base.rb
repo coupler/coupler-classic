@@ -16,21 +16,39 @@ module Coupler
     set :connection_string, lambda { |dbname| "jdbc:h2:#{db_path(dbname)};IGNORECASE=TRUE" }
     set :upload_path, lambda { File.join(data_path, 'uploads', environment.to_s) }
     set :log_path, lambda { File.join(data_path, 'log') }
-    enable :sessions
-
-    data_path = inst_dir
-    if ENV['APPDATA']
-      # Windows
-      data_path = File.join(ENV['APPDATA'], "coupler")
-    elsif !File.writable?(data_path)
-      if ENV['HOME']
-        dir = File.join(ENV['HOME'], ".coupler")
-      else
-        raise "don't know where to put data!"
+    set(:data_path, lambda {
+      # NOTE: Unfortunately, this code is in two places. Coupler can
+      # be run with or without the launcher, and the launcher needs
+      # to know about Coupler's data path before it runs Coupler.
+      dir =
+        if ENV['COUPLER_HOME']
+          ENV['COUPLER_HOME']
+        else
+          case Config::CONFIG['host_os']
+          when /mswin|windows/i
+            # Windows
+            File.join(ENV['APPDATA'], "coupler")
+          else
+            if ENV['HOME']
+              File.join(ENV['HOME'], ".coupler")
+            else
+              raise "Can't figure out where Coupler lives! Try setting the COUPLER_HOME environment variable"
+            end
+          end
+        end
+      if !File.exist?(dir)
+        begin
+          Dir.mkdir(dir)
+        rescue SystemCallError
+          raise "Can't create Coupler directory (#{dir})! Is the parent directory accessible?"
+        end
       end
-    end
-    Dir.mkdir(data_path)  if !File.exist?(data_path)
-    set :data_path, data_path
+      if !File.writable?(dir)
+        raise "Coupler directory (#{dir}) is not writable!"
+      end
+      File.expand_path(dir)
+    })
+    enable :sessions
 
     use Rack::Flash
     register Extensions::Connections

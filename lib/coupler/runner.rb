@@ -1,6 +1,7 @@
 module Coupler
   class Runner
-    def initialize(argv = ARGV)
+    def initialize(argv = ARGV, &block)
+      @msg_proc = block
       irb = false
       OptionParser.new do |opts|
         opts.on("-p", "--port PORT", "Web server port") do |port|
@@ -22,13 +23,13 @@ module Coupler
         end
       end.parse!(argv)
 
-      puts "Migrating database..."
+      say "Migrating database..."
       Coupler::Database.instance.migrate!
 
-      puts "Starting scheduler..."
+      say "Starting scheduler..."
       Coupler::Scheduler.instance.start
 
-      puts "Starting web server..."
+      say "Starting web server..."
       handler = Rack::Handler.get('mongrel')
       settings = Coupler::Base.settings
 
@@ -43,7 +44,7 @@ module Coupler
         success = true
       rescue Errno::EADDRINUSE => e
         Scheduler.instance.shutdown
-        puts "Can't start web server, port already in use. Aborting..."
+        say "Can't start web server, port already in use. Aborting..."
       end
 
       if success
@@ -52,25 +53,37 @@ module Coupler
           shutdown
         end
 
-        puts <<'EOF'
-                             ___
-                            /\_ \
-  ___    ___   __  __  _____\//\ \      __   _ __
- /'___\ / __`\/\ \/\ \/\ '__`\\ \ \   /'__`\/\`'__\
-/\ \__//\ \L\ \ \ \_\ \ \ \L\ \\_\ \_/\  __/\ \ \/
-\ \____\ \____/\ \____/\ \ ,__//\____\ \____\\ \_\
- \/____/\/___/  \/___/  \ \ \/ \/____/\/____/ \/_/
-                         \ \_\
-                          \/_/
-EOF
-        @web_thread.join
+#        say <<'EOF'
+#                             ___
+#                            /\_ \
+#  ___    ___   __  __  _____\//\ \      __   _ __
+# /'___\ / __`\/\ \/\ \/\ '__`\\ \ \   /'__`\/\`'__\
+#/\ \__//\ \L\ \ \ \_\ \ \ \L\ \\_\ \_/\  __/\ \ \/
+#\ \____\ \____/\ \____/\ \ ,__//\____\ \____\\ \_\
+# \/____/\/___/  \/___/  \ \ \/ \/____/\/____/ \/_/
+#                         \ \_\
+#                          \/_/
+#EOF
       end
     end
 
     def shutdown
-      puts "Shutting down..."
+      say "Shutting down..."
       Scheduler.instance.shutdown
       @web_server.stop
     end
+
+    def join
+      @web_thread.join
+    end
+
+    private
+      def say(msg)
+        if @msg_proc
+          @msg_proc.call(msg)
+        else
+          puts msg
+        end
+      end
   end
 end
