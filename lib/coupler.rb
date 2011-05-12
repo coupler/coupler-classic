@@ -19,9 +19,9 @@ require 'sequel/extensions/migration'
 require 'json'
 require 'fastercsv'
 require 'carrierwave'
-require 'mvn:com.h2database:h2'
 require 'mongrel'
-require 'jdbc/mysql'  # FIXME: lazy load this
+#require 'jdbc/mysql'  # Sequel should load this when it needs to.
+require File.dirname(__FILE__) + '/../vendor/h2-1.3.154.jar'
 
 require File.dirname(__FILE__) + "/coupler/logger"
 require File.dirname(__FILE__) + "/coupler/database"

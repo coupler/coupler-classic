@@ -10,6 +10,6 @@ test.rb
 foo.rb
 nbproject
 profile
-src/edu/vanderbilt/coupler/*.class
 build
 output.txt
+vendor/cache

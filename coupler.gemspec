@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jeremy Stephens"]
-  s.date = %q{2011-05-11}
+  s.date = %q{2011-05-12}
   s.default_executable = %q{coupler}
   s.description = %q{Coupler is a (JRuby) desktop application designed to link datasets together}
   s.email = %q{jeremy.f.stephens@vanderbilt.edu}
@@ -34,6 +34,7 @@ Gem::Specification.new do |s|
     "TODO",
     "VERSION",
     "bin/coupler",
+    "coupler.gemspec",
     "db/.gitignore",
     "db/migrate/001_initial_schema.rb",
     "db/migrate/002_stub.rb",
@@ -175,7 +176,7 @@ Gem::Specification.new do |s|
     "test/unit/test_runner.rb",
     "test/unit/test_scheduler.rb",
     "uploads/.gitignore",
-    "vendor/java/.gitignore",
+    "vendor/h2-1.3.154.jar",
     "webroot/public/css/960.css",
     "webroot/public/css/dataTables.css",
     "webroot/public/css/jquery-ui.css",
@@ -297,7 +298,6 @@ Gem::Specification.new do |s|
       s.add_runtime_dependency(%q<carrierwave>, [">= 0"])
       s.add_runtime_dependency(%q<mongrel>, [">= 0"])
       s.add_runtime_dependency(%q<jdbc-mysql>, [">= 0"])
-      s.add_runtime_dependency(%q<mvn:com.h2database:h2>, [">= 0"])
       s.add_development_dependency(%q<rake>, [">= 0"])
       s.add_development_dependency(%q<jeweler>, [">= 0"])
       s.add_development_dependency(%q<forgery>, [">= 0"])
@@ -321,7 +321,6 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<carrierwave>, [">= 0"])
       s.add_dependency(%q<mongrel>, [">= 0"])
       s.add_dependency(%q<jdbc-mysql>, [">= 0"])
-      s.add_dependency(%q<mvn:com.h2database:h2>, [">= 0"])
       s.add_dependency(%q<rake>, [">= 0"])
       s.add_dependency(%q<jeweler>, [">= 0"])
       s.add_dependency(%q<forgery>, [">= 0"])
@@ -346,7 +345,6 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<carrierwave>, [">= 0"])
     s.add_dependency(%q<mongrel>, [">= 0"])
     s.add_dependency(%q<jdbc-mysql>, [">= 0"])
-    s.add_dependency(%q<mvn:com.h2database:h2>, [">= 0"])
     s.add_dependency(%q<rake>, [">= 0"])
     s.add_dependency(%q<jeweler>, [">= 0"])
     s.add_dependency(%q<forgery>, [">= 0"])

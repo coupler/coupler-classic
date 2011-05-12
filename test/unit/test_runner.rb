@@ -16,6 +16,7 @@ module Coupler
       Mongrel::HttpServer.stubs(:new).returns(@mongrel)
       @settings = stub('settings', :bind => '0.0.0.0', :port => 123)
       Base.stubs(:set => nil, :settings => @settings)
+      Runner.any_instance.stubs(:trap)
     end
 
     def capture_stdout
@@ -85,6 +86,20 @@ module Coupler
         messages << msg
       end
       assert !messages.empty?
+    end
+
+    test "traps INT" do
+      capture_stdout do
+        Runner.any_instance.expects(:trap).with("INT")
+        r = Runner.new([])
+      end
+    end
+
+    test "doesn't trap INT" do
+      capture_stdout do
+        Runner.any_instance.expects(:trap).with("INT").never
+        r = Runner.new([], :trap => false)
+      end
     end
   end
 end

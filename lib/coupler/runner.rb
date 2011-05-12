@@ -1,6 +1,6 @@
 module Coupler
   class Runner
-    def initialize(argv = ARGV, &block)
+    def initialize(argv = ARGV, options = {}, &block)
       @msg_proc = block
       irb = false
       OptionParser.new do |opts|
@@ -22,6 +22,8 @@ module Coupler
           irb = true
         end
       end.parse!(argv)
+
+      say "Starting up Coupler..."
 
       say "Migrating database..."
       Coupler::Database.instance.migrate!
@@ -49,8 +51,11 @@ module Coupler
 
       if success
         Coupler::Base.set(:running, true)
-        trap("INT") do
-          shutdown
+        say "Web server is up and running on http://#{settings.bind}:#{settings.port}"
+        if !options.has_key?(:trap) || options[:trap]
+          trap("INT") do
+            shutdown
+          end
         end
 
 #        say <<'EOF'

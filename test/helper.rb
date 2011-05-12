@@ -27,9 +27,11 @@ dir = File.dirname(__FILE__)
 $LOAD_PATH.unshift(dir)
 require 'table_sets'
 
-$LOAD_PATH.unshift(File.join(dir, '..', 'lib'))
+# set here and in the rake environment task
 ENV['COUPLER_ENV'] = 'test'
 ENV['COUPLER_HOME'] = File.expand_path(File.join(dir, '..'))
+
+$LOAD_PATH.unshift(File.join(dir, '..', 'lib'))
 require 'coupler'
 
 Coupler::Base.set(:sessions, false) # workaround

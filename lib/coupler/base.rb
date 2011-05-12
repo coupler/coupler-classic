@@ -11,7 +11,7 @@ module Coupler
     set :dump_errors, true
     set :logging, Proc.new { !test? }
     set :methodoverride, true
-    set :host, '127.0.0.1'
+    set :bind, '127.0.0.1'
     set :db_path, lambda { |dbname| File.join(data_path, 'db', environment.to_s, dbname) }
     set :connection_string, lambda { |dbname| "jdbc:h2:#{db_path(dbname)};IGNORECASE=TRUE" }
     set :upload_path, lambda { File.join(data_path, 'uploads', environment.to_s) }

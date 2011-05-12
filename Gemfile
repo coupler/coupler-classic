@@ -7,7 +7,6 @@ gem 'fastercsv'
 gem 'carrierwave'
 gem 'mongrel'
 gem 'jdbc-mysql'
-gem 'mvn:com.h2database:h2'
 
 group :development do
   gem 'rake'
