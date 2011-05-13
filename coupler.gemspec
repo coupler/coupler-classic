@@ -5,12 +5,12 @@
 
 Gem::Specification.new do |s|
   s.name = %q{coupler}
-  s.version = "0.0.1"
+  s.version = "0.0.3"
   s.platform = %q{java}
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jeremy Stephens"]
-  s.date = %q{2011-05-12}
+  s.date = %q{2011-05-13}
   s.default_executable = %q{coupler}
   s.description = %q{Coupler is a (JRuby) desktop application designed to link datasets together}
   s.email = %q{jeremy.f.stephens@vanderbilt.edu}
@@ -119,8 +119,6 @@ Gem::Specification.new do |s|
     "misc/jruby-json.license",
     "misc/rack-flash.license",
     "script/dbconsole.rb",
-    "src/edu/vanderbilt/coupler/Main.java",
-    "src/edu/vanderbilt/coupler/jruby.properties",
     "tasks/annotations.rake",
     "tasks/db.rake",
     "tasks/environment.rake",

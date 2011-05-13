@@ -53,9 +53,15 @@
           <input id="password" name="resource[connection_attributes][password]" type="password" />
         </td>
       </tr>
+      <tr>
+        <td class="left"><label for="database_name" class="strong">Database</label></td>
+        <td>
+          <input id="database_name" name="resource[connection_attributes][database_name]" type="text" value="<%= @resource.connection.database_name %>" />
+        </td>
+      </tr>
     </table>
     <%- end -%>
-    <h2>Database</h2>
+    <h2>Resource information</h2>
     <table class="form">
       <tr<%= cycle("", ' class="alt"') %>>
         <td class="left"><label for="name" class="strong">Name</label></td>
