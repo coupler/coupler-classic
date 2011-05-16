@@ -79,6 +79,10 @@ module Coupler
         assert_respond_to Resource.new, :scheduled_jobs
       end
 
+      test "jobified" do
+        assert Resource.ancestors.include?(Jobify)
+      end
+
       test "nested attributes for connection" do
         assert_respond_to Resource.new, :connection_attributes=
       end

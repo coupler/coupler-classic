@@ -75,4 +75,36 @@ class TestImport < Coupler::Test::IntegrationTest
       assert db.schema(:"import_#{import.id}").assoc(:id)[1][:primary_key]
     end
   end
+
+  test "handling bad integers" do
+    tempfile = Tempfile.new('coupler-import')
+    tempfile.write("id,foo,bar,baz\n1,2,3,4\n2,3,4,5\n3,4,5,6\n4,junk,,''\n5,,,\n")
+    tempfile.close
+
+    project = Project.create(:name => "foo")
+    import = Import.new({:data => file_upload(tempfile.path), :project => project })
+    import.field_types = %w{integer integer integer integer}
+    import.save!
+    import.import!
+
+    import.dataset do |ds|
+      row = ds[:id => 4]
+      assert_nil row[:foo]
+      assert_nil row[:bar]
+      assert_nil row[:baz]
+
+      row = ds[:id => 5]
+      assert_nil row[:foo]
+      assert_nil row[:bar]
+      assert_nil row[:baz]
+    end
+  end
+
+  test "handling bad dates" do
+    pend
+  end
+
+  test "handling variable row length" do
+    pend
+  end
 end

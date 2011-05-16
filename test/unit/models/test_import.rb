@@ -125,6 +125,10 @@ module Coupler
         assert_equal "id", import.primary_key_name
         assert import.has_headers
       end
+
+      test "jobified" do
+        assert Import.ancestors.include?(Jobify)
+      end
     end
   end
 end

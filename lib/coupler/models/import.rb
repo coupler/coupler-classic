@@ -2,6 +2,7 @@ module Coupler
   module Models
     class Import < Sequel::Model
       include CommonModel
+      include Jobify
 
       # NOTE: yoinked from FasterCSV
       # A Regexp used to find and convert some common Date formats.
@@ -82,6 +83,11 @@ module Coupler
               # skip header if necessary
               skip = false
               next
+            end
+
+            # convert values
+            row.each_with_index do |value, i|
+              row[i] = coerce(value, field_types[i])
             end
 
             key = row[primary_key_index]
@@ -231,6 +237,20 @@ module Coupler
                 duplicates.inject("") { |s, (k, v)| s + "#{k} x #{v}, " }.chomp(", ")
               errors.add(:field_names, message)
             end
+          end
+        end
+
+        def coerce(value, type)
+          return nil  if value.nil?
+
+          case type
+          when "integer"
+            chr = value[0]
+            return nil  if chr.nil?
+            ord = chr.ord
+            (ord.nil? || ord < 48 || ord > 57) ? nil : value.to_i
+          else
+            value
           end
         end
     end
