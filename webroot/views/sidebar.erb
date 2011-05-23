@@ -97,6 +97,8 @@
             <a href="/jobs">Transform: <%= job.resource.name %></a>
           <%- elsif job.scenario -%>
             <a href="/jobs">Run: <%= job.scenario.name %></a>
+          <%- elsif job.import -%>
+            <a href="/jobs">Import: <%= job.import.name %></a>
           <%- end -%>
         </li>
       <%- end -%>

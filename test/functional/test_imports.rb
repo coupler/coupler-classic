@@ -33,8 +33,10 @@ module CouplerFunctionalTests
       find('label[for="resource-type-csv"]').click
       attach_file('data', fixture_path('people.csv'))
 
+      job_count = Job.count
       click_button('Begin Importing')
-      assert_match %r{^/projects/#{@project[:id]}/resources/\d+$}, page.current_path
+      assert_match %r{^/projects/#{@project[:id]}$}, page.current_path
+      assert_equal job_count + 1, Job.count
     end
 
     attribute(:javascript, true)

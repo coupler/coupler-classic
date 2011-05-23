@@ -49,7 +49,7 @@ module Coupler
         @preview
       end
 
-      def import!
+      def import!(&progress)
         project.local_database do |db|
           column_info = []
           column_names = []
@@ -78,7 +78,9 @@ module Coupler
           buffer = ImportBuffer.new(column_names, ds)
           skip = has_headers
           primary_key_index = field_names.index(primary_key_name)
-          FasterCSV.foreach(data.file.file) do |row|
+          io = File.open(data.file.file, 'rb')
+          csv = FasterCSV.new(io)
+          csv.each do |row|
             if skip
               # skip header if necessary
               skip = false
@@ -96,6 +98,10 @@ module Coupler
             self.has_duplicate_keys = true if num > 1
 
             buffer.add(row)
+
+            if block_given?
+              yield io.pos
+            end
           end
           buffer.flush
 

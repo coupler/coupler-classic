@@ -25,6 +25,7 @@ module Coupler
     register Extensions::Jobs
     register Extensions::Transformers
     register Extensions::Imports
+    register Extensions::Notifications
     register Extensions::Exceptions
 
     helpers do

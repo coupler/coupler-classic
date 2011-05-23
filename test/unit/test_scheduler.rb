@@ -24,6 +24,17 @@ module CouplerUnitTests
       Scheduler.instance.schedule_run_scenario_job(scenario)
     end
 
+    test "schedule import job" do
+      import = mock('import')
+      Models::Job.expects(:create).with({
+        :name => "import",
+        :import => import,
+        :status => "scheduled"
+      })
+
+      Scheduler.instance.schedule_import_job(import)
+    end
+
     test "run_jobs executes first scheduled job" do
       running_dataset = mock('dataset')
       scheduled_dataset = mock('dataset')

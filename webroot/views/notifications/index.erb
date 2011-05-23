@@ -1,0 +1,16 @@
+<%- @breadcrumbs = ["Notifications"] -%>
+<%- if @notifications.empty? -%>
+<p>There are currently no notifications.</p>
+<%- else -%>
+<ul class="notifications">
+  <%- @notifications.each do |notification| -%>
+    <li class="notification">
+      <% if notification.url %>
+        <a href="<%= notification.url %>"><%= notification.message %></a>
+      <% else %>
+        <%= notification.message %>
+      <% end %>
+    </li>
+  <%- end -%>
+</ul>
+<%- end -%>

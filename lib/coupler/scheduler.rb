@@ -23,6 +23,14 @@ module Coupler
       })
     end
 
+    def schedule_import_job(import)
+      Models::Job.create({
+        :name => "import",
+        :import => import,
+        :status => "scheduled"
+      })
+    end
+
     def run_jobs
       @mutex.synchronize do
         count = Models::Job.filter(:status => 'running').count

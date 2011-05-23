@@ -16,6 +16,7 @@ module Coupler
     autoload :Scenario,       File.dirname(__FILE__) + "/models/scenario"
     autoload :Transformation, File.dirname(__FILE__) + "/models/transformation"
     autoload :Transformer,    File.dirname(__FILE__) + "/models/transformer"
+    autoload :Notification,   File.dirname(__FILE__) + "/models/notification"
   end
 end
 

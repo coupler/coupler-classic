@@ -9,19 +9,12 @@ module Coupler
 
         app.post "/projects/:project_id/imports" do
           @import = Models::Import.new(params[:import].merge(:project_id => @project.id))
-
           if @import.save
-            @resource = Models::Resource.new(:import => @import)
-            if @resource.valid?
-              if @import.import!
-                @resource.save
-                redirect("/projects/#{@project.id}/resources/#{@resource.id}")
-              else
-                redirect("/projects/#{@project.id}/imports/#{@import.id}/edit")
-              end
-            end
+            Scheduler.instance.schedule_import_job(@import)
+            redirect("/projects/#{@project.id}")
+          else
+            erb(:'imports/new')
           end
-          erb(:'imports/new')
         end
 
         app.get "/projects/:project_id/imports/:id/edit" do

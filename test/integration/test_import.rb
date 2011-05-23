@@ -5,7 +5,13 @@ class TestImport < Coupler::Test::IntegrationTest
   test "import!" do
     project = Project.create(:name => "foo")
     import = Import.create(:data => fixture_file_upload("people.csv"), :project => project)
-    import.import!
+
+    total = import.data.file.size
+    completed = 0
+    import.import! do |pos|
+      assert pos > completed
+      completed = pos
+    end
     assert_not_nil import.occurred_at
 
     project.local_database do |db|
@@ -19,6 +25,23 @@ class TestImport < Coupler::Test::IntegrationTest
 
       ds = db[name]
       assert_equal 50, ds.count
+    end
+  end
+
+  test "import job" do
+    project = Project.create(:name => "foo")
+
+    tempfile = Tempfile.new('coupler-import')
+    tempfile.write("id,foo,bar\n1,2,3\n4,5,6\n7,8,9\n2,3,4\n5,6,7\n8,9,0\n")
+    tempfile.close
+    import = Import.create(:data => file_upload(tempfile.path), :project => project)
+
+    job = Job.create(:name => 'import', :import => import, :status => "scheduled")
+    job.execute
+
+    project.local_database do |db|
+      name = :"import_#{import.id}"
+      assert db.tables.include?(name)
     end
   end
 

@@ -18,6 +18,9 @@ module CouplerUnitTests
         super
         @resource = stub('resource', :pk => 456, :id => 456, :associations => {})
         @scenario = stub('scenario', :pk => 456, :id => 456, :associations => {})
+        @import = stub('import', :pk => 123, :id => 123, :associations => {}, :project_id => 1)
+        @notification = stub('notification')
+        Coupler::Models::Notification.stubs(:create).returns(@notification)
       end
 
       test "sequel model" do
@@ -31,6 +34,10 @@ module CouplerUnitTests
 
       test "belongs to scenario" do
         assert_respond_to Job.new, :scenario
+      end
+
+      test "belongs to import" do
+        assert_respond_to Job.new, :import
       end
 
       test "percent completed" do
@@ -111,6 +118,31 @@ module CouplerUnitTests
         Timecop.freeze(now - 1) { job_3 = new_job(:name => "run_scenario", :scenario => @scenario).save! }
         Timecop.freeze(now    ) { job_4 = new_job(:name => "run_scenario", :scenario => @scenario).save! }
         assert_equal [job_4, job_3, job_2], Job.recently_accessed
+      end
+
+      test "import job" do
+        job = new_job(:name => 'import', :import => @import).save!
+
+        now = Time.now
+        seq = sequence("update")
+        @import.expects(:data).returns(mock(:file => mock(:size => 12345)))
+        job.expects(:update).with(:status => 'running', :total => 12345, :started_at => now).in_sequence(seq)
+        @import.expects(:import!).returns(true).in_sequence(seq)
+        job.expects(:update).with(:status => 'done', :completed_at => now).in_sequence(seq)
+        Timecop.freeze(now) { job.execute }
+      end
+
+      test "import job with more interaction needed" do
+        job = new_job(:name => 'import', :import => @import).save!
+
+        now = Time.now
+        seq = sequence("update")
+        @import.expects(:data).returns(mock(:file => mock(:size => 12345)))
+        job.expects(:update).with(:status => 'running', :total => 12345, :started_at => now).in_sequence(seq)
+        @import.expects(:import!).returns(false).in_sequence(seq)
+        Notification.expects(:create).with(:message => "Import finished, but with errors", :url => "/projects/1/imports/123/edit").returns(@notification)
+        job.expects(:update).with(:status => 'done', :completed_at => now).in_sequence(seq)
+        Timecop.freeze(now) { job.execute }
       end
     end
   end

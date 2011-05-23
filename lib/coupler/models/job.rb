@@ -5,6 +5,7 @@ module Coupler
 
       many_to_one :resource
       many_to_one :scenario
+      many_to_one :import
 
       def percent_completed
         total > 0 ? completed * 100 / total : 0
@@ -25,6 +26,31 @@ module Coupler
           block = lambda do
             scenario.run!
           end
+
+        when 'import'
+          update(:status => 'running', :started_at => Time.now, :total => import.data.file.size)
+
+          new_status = 'failed'
+          begin
+            last = Time.now # don't slam the database
+            result = import.import! do |pos|
+              now = Time.now
+              if now - last >= 1
+                last = now
+                update(:completed => pos)
+              end
+            end
+            if !result
+              Notification.create({
+                :message => "Import finished, but with errors",
+                :url => "/projects/#{import.project_id}/imports/#{import.id}/edit"
+              })
+            end
+            new_status = 'done'
+          ensure
+            update(:status => new_status, :completed_at => Time.now)
+          end
+
         end
 
         begin
