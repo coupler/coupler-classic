@@ -30,7 +30,18 @@ module Coupler
         result = super
         if new?
           self.project = import.project
-          self.name = import.name
+          n = 1
+          name = import.name
+          loop do
+            ds = Resource.filter(:name => name, :project_id => import.project_id)
+            if ds.count > 0
+              n += 1
+              name = "#{import.name} #{n}"
+            else
+              break
+            end
+          end
+          self.name = name
           self.table_name = "import_#{import.id}"
         end
         result

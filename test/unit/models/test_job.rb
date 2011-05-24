@@ -128,7 +128,9 @@ module CouplerUnitTests
         @import.expects(:data).returns(mock(:file => mock(:size => 12345)))
         job.expects(:update).with(:status => 'running', :total => 12345, :started_at => now).in_sequence(seq)
         @import.expects(:import!).returns(true).in_sequence(seq)
+        Resource.expects(:create).with(:import => @import).returns(@resource).in_sequence(seq)
         job.expects(:update).with(:status => 'done', :completed_at => now).in_sequence(seq)
+        Notification.expects(:create).with(:message => "Import finished successfully", :url => "/projects/1/resources/456").returns(@notification)
         Timecop.freeze(now) { job.execute }
       end
 

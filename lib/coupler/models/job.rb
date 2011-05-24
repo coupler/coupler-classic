@@ -40,7 +40,13 @@ module Coupler
                 update(:completed => pos)
               end
             end
-            if !result
+            if result
+              resource = Resource.create(:import => import)
+              Notification.create({
+                :message => "Import finished successfully",
+                :url => "/projects/#{import.project_id}/resources/#{resource.id}"
+              })
+            else
               Notification.create({
                 :message => "Import finished, but with errors",
                 :url => "/projects/#{import.project_id}/imports/#{import.id}/edit"

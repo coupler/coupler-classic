@@ -514,7 +514,7 @@ module CouplerUnitTests
       test "creating resource via import" do
         import = stub("import", {
           :id => 123, :pk => 123, :project => @project,
-          :name => "People"
+          :name => "People", :project_id => @project.id
         })
         resource = Resource.new(:import => import)
         assert_equal "People", resource.name
@@ -522,7 +522,7 @@ module CouplerUnitTests
         assert_equal "import_123", resource.table_name
         assert resource.valid?
 
-        # import.import! would happen here
+        # import.import! would happen before saving the resource
         @local_database.stubs({
           :tables => [:import_123],
           :schema => [
@@ -534,6 +534,19 @@ module CouplerUnitTests
         resource.save!
         assert_equal "id", resource.primary_key_name
         assert_equal "integer", resource.primary_key_type
+      end
+
+      test "creating resource via import with duplicate name" do
+        resource_1 = new_resource(:name => "People").save!
+        import = stub("import", {
+          :id => 123, :pk => 123, :project => @project,
+          :name => "People", :project_id => @project.id
+        })
+        resource = Resource.new(:import => import)
+        assert_equal "People 2", resource.name
+        assert_equal @project, resource.project
+        assert_equal "import_123", resource.table_name
+        assert resource.valid?
       end
 
       test "source_dataset count" do
