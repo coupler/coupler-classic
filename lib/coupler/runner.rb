@@ -51,7 +51,7 @@ module Coupler
 
       if success
         Coupler::Base.set(:running, true)
-        say "Web server is up and running on http://#{settings.bind}:#{settings.port}"
+        puts "Web server is up and running on http://#{settings.bind}:#{settings.port}"
         if !options.has_key?(:trap) || options[:trap]
           trap("INT") do
             shutdown

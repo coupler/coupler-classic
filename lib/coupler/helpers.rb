@@ -117,5 +117,13 @@ module Coupler
     def cycle(even, odd)
       (@_cycle = !@_cycle) ? even : odd
     end
+
+    def field_type(resource, field)
+      result = field.final_type
+      if !resource.import_id
+        result += " (#{field.final_db_type})"
+      end
+      result
+    end
   end
 end

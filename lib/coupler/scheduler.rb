@@ -37,7 +37,7 @@ module Coupler
       if !is_started?
         @loop = Thread.new do
           loop do
-            sleep 30
+            sleep 10
             run_jobs
           end
         end

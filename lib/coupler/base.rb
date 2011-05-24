@@ -50,6 +50,10 @@ module Coupler
     })
     enable :sessions
 
+    configure do
+      Models.load_all
+    end
+
     use Rack::Flash
     register Extensions::Connections
     register Extensions::Projects

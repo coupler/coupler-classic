@@ -27,7 +27,7 @@
       </tr>
       <tr id="field-info" class="hidden">
         <td class="col1">Current Type:</td>
-        <td><span id='field-type'></span> (<span id='field-db-type'></span>)</td>
+        <td><span id='field-type'></span><%= " (<span id='field-db-type'></span>)" if !@resource.import_id %></td>
       </tr>
     </table>
   </div>

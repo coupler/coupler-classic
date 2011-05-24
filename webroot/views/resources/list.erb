@@ -6,14 +6,13 @@
     <tr>
       <th>Name</th>
       <% unless @hide_connection %><th>Connection</th><% end %>
-      <th>Database</th>
       <th>Table</th>
     </tr>
   </thead>
   <tbody>
   <% @resources.each_with_index do |resource, i| %>
     <tr<%= ' class="alt"' if i % 2 == 1 %>>
-      <td><a href="/projects/<%= @project.id %>/resources/<%= resource.id %>"><%= resource.name %></a></td>
+      <td><a href="/projects/<%= resource.project_id %>/resources/<%= resource.id %>"><%= resource.name %></a></td>
       <%- if resource.import_id -%>
         <td colspan="3" class='centered'>(imported)</td>
       <%- else -%>

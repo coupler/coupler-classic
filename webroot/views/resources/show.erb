@@ -13,7 +13,7 @@
   <%- @fields.each do |field| -%>
     <tr>
       <td<%= ' class="altered-field"' if field.is_generated %>><%= field.name %></td>
-      <td<%= ' class="altered-field"' if field.local_db_type %>><%= field.final_db_type %></td>
+      <td<%= ' class="altered-field"' if field.local_type %>><%= field_type(@resource, field) %></td>
     </tr>
   <%- end -%>
   </tbody>
@@ -66,7 +66,10 @@
 <script type="text/javascript">
   var intervalId;
   $(function() {
-    $('#fields').dataTable({bJQueryUI: true, aaSorting: [], aoColumns: [null, null] });
+    $('#fields').dataTable({
+      bJQueryUI: true, aaSorting: [],
+      bAutoWidth: false, aoColumns: [{sWidth: "50%"}, {sWidth: "50%"}]
+    });
   <%- if @job && @job.status == 'running' -%>
     $('#progressbar').progressbar({value: <%= @job.percent_completed %>});
     setInterval(function() {

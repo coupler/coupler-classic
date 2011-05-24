@@ -12,6 +12,14 @@ module Coupler
       :Transformation, :Scenario, :Matcher, :Job, :Result, :Comparison,
       :Import
     ]
+
+    def self.load_all
+      Database.instance
+      NAMES.each do |name|
+        require File.dirname(__FILE__) + "/models/#{name.to_s.downcase}"
+      end
+    end
+
     def self.const_missing(name)
       name = name.to_sym
       if NAMES.include?(name)
