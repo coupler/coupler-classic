@@ -183,6 +183,16 @@ module Coupler
       #def test_should_handle_empty_values
         #pend
       #end
+
+      test "doesn't escape backslashes too much" do
+        code = %{value =~ /\d/ ? "YES" : "NO"}
+        transformer = new_transformer({
+          :allowed_types => %w{string},
+          :result_type => 'string', :code => code
+        }).save!
+        t = Transformer[:id => transformer.id]
+        assert_equal code, t.code
+      end
     end
   end
 end

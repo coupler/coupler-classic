@@ -31,9 +31,10 @@ module Coupler
           field = lhs_rhs_value(name)
           result = field.name
           resource_name = field.resource.name
-          if self[:"#{name}_which"]
-            resource_name += %{<span class="sup">#{self[:"#{name}_which"]}</span>}
-          end
+          # FIXME: revisit this!
+          #if self[:"#{name}_which"]
+            #resource_name += %{<span class="sup">#{self[:"#{name}_which"]}</span>}
+          #end
           result += " (#{resource_name})"
         else
           lhs_rhs_value(name).inspect
@@ -147,7 +148,7 @@ module Coupler
           validates_includes [1, 2], :rhs_which   if rhs_type == 'field'
 
           if lhs_type == 'field' && rhs_type == 'field' && (lhs_field = lhs_value) && (rhs_field = rhs_value)
-            if lhs_field[:type] != rhs_field[:type]
+            if lhs_field[:final_type] != rhs_field[:final_type]
               errors.add(:base, "Comparing fields of different types is currently disallowed.")
             end
             if lhs_which != rhs_which && operator != 'equals'

@@ -3,7 +3,7 @@ module Coupler
     class Transformer < Sequel::Model
       include CommonModel
 
-      plugin :serialization, :marshal, :allowed_types
+      plugin :serialization, :marshal, :allowed_types, :code
 
       TYPES = %w{string integer datetime}
       EXAMPLES = {

@@ -559,7 +559,7 @@ module Coupler
 
       test "blocking?" do
         field = stub("field", :name => 'first_name') {
-          stubs(:[]).with(:type).returns('string')
+          stubs(:[]).with(:final_type).returns('string')
         }
         Field.stubs(:[]).with(:id => 1).returns(field)
         comparison = new_comparison({
@@ -572,11 +572,11 @@ module Coupler
 
       test "cross_match?" do
         field_1 = stub("field 1", :id => 1, :name => 'ssn_1', :resource_id => 1) {
-          stubs(:[]).with(:type).returns('string')
+          stubs(:[]).with(:final_type).returns('string')
         }
         Field.stubs(:[]).with(:id => 1).returns(field_1)
         field_2 = stub("field 2", :id => 2, :name => 'ssn_2', :resource_id => 1) {
-          stubs(:[]).with(:type).returns('string')
+          stubs(:[]).with(:final_type).returns('string')
         }
         Field.stubs(:[]).with(:id => 2).returns(field_2)
         comparison = new_comparison({
@@ -589,11 +589,11 @@ module Coupler
 
       test "does not allow two fields of different types" do
         field_1 = stub("field 1", :name => 'first_name') {
-          stubs(:[]).with(:type).returns('string')
+          stubs(:[]).with(:final_type).returns('string')
         }
         Field.stubs(:[]).with(:id => 1).returns(field_1)
         field_2 = stub("field 2", :name => 'age') {
-          stubs(:[]).with(:type).returns('integer')
+          stubs(:[]).with(:final_type).returns('integer')
         }
         Field.stubs(:[]).with(:id => 2).returns(field_2)
         comparison = new_comparison({
@@ -605,7 +605,7 @@ module Coupler
       end
 
       test "does not allow non-equality comparisons for fields" do
-        field = stub("field", :name => 'first_name') { stubs(:[]).with(:type).returns('string') }
+        field = stub("field", :name => 'first_name') { stubs(:[]).with(:final_type).returns('string') }
         Field.stubs(:[]).with(:id => 1).returns(field)
         comparison = new_comparison({
           :lhs_type => 'field', :raw_lhs_value => 1, :lhs_which => 1,
