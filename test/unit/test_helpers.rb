@@ -1,6 +1,6 @@
 require 'helper'
 
-module Coupler
+module CouplerUnitTests
   class TestHelpers < Coupler::Test::UnitTest
     include ::Coupler::Helpers
 
@@ -50,7 +50,7 @@ module Coupler
       result = form_tag_for(obj, :base_url => "/projects")
       assert_equal %{<form action="/projects" method="post">}, result
 
-      obj = Factory(:project)
+      obj = Project.create(:name => 'foo')
       result = form_tag_for(obj, :base_url => "/projects")
       assert_equal %{<form action="/projects/#{obj.id}" method="post"><div style="display: none;"><input type="hidden" name="_method" value="put" /></div>}, result
     end

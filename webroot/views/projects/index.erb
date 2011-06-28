@@ -55,24 +55,32 @@
   $(function() {
     $('#delete-project-dialog').dialog({
       autoOpen: false,
-      buttons: {
-        "Yes": function() {
-          if ($('#confirm-1').is(':visible')) {
-            $('#nuke-choice').toggle($('#nuke').is(':checked'));
-            $('#confirm-1').hide();
-            $('#confirm-2').show();
-          }
-          else {
-            $('#delete-form').submit();
+      buttons: [
+        {
+          id: "yes-button",
+          text: "Yes",
+          click: function() {
+            if ($('#confirm-1').is(':visible')) {
+              $('#nuke-choice').toggle($('#nuke').is(':checked'));
+              $('#confirm-1').hide();
+              $('#confirm-2').show();
+            }
+            else {
+              $('#delete-form').submit();
+            }
           }
         },
-        "No": function() {
-          $('#delete-project-dialog').dialog('close');
-          $('#nuke').attr('checked', false)
-          $('#confirm-1').show();
-          $('#confirm-2').hide();
+        {
+          id: "no-button",
+          text: "No",
+          click: function() {
+            $('#delete-project-dialog').dialog('close');
+            $('#nuke').attr('checked', false)
+            $('#confirm-1').show();
+            $('#confirm-2').hide();
+          },
         }
-      },
+      ],
       modal: true
     });
     $('button.edit-project').button({icons: { primary: 'ui-icon-pencil' }});

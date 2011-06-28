@@ -1,6 +1,6 @@
 require 'helper'
 
-module Coupler
+module CouplerUnitTests
   class TestRunner < Coupler::Test::UnitTest
     def setup
       super

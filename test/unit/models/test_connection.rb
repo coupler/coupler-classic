@@ -1,7 +1,7 @@
 require 'helper'
 
-module Coupler
-  module Models
+module CouplerUnitTests
+  module ModelTests
     class TestConnection < Coupler::Test::UnitTest
       test "sequel model" do
         assert_equal ::Sequel::Model, Connection.superclass

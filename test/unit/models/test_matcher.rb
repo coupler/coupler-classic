@@ -1,7 +1,7 @@
 require 'helper'
 
-module Coupler
-  module Models
+module CouplerUnitTests
+  module ModelTests
     class TestMatcher < Coupler::Test::UnitTest
       def new_matcher(attribs = {})
         values = {

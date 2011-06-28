@@ -12,6 +12,8 @@ require 'mocha'
 require 'rack/test'
 require 'rack/flash'
 require 'rack/flash/test'
+require 'capybara'
+require 'capybara/dsl'
 require 'nokogiri'
 require 'timecop'
 require 'tempfile'
@@ -25,7 +27,6 @@ require 'ruby-debug'
 
 dir = File.dirname(__FILE__)
 $LOAD_PATH.unshift(dir)
-require 'table_sets'
 
 # set here and in the rake environment task
 ENV['COUPLER_ENV'] = 'test'
@@ -38,15 +39,18 @@ Coupler::Base.set(:sessions, false) # workaround
 Coupler::Base.set(:environment, :test)
 Coupler::Database.instance.migrate!
 
+#Capybara.register_driver :selenium_chrome do |app|
+  #Capybara::Driver::Selenium.new(app, :browser => :chrome)
+#end
+Capybara.javascript_driver = :selenium
+Capybara.app = Coupler::Base
+
 module Coupler
   module Test
     class Base < ::Test::Unit::TestCase
-      include Rack::Test::Methods
+      include Coupler
+      include Coupler::Models
       @@test_config = YAML.load(ERB.new(File.read(File.join(File.dirname(__FILE__), 'config.yml'))).result(binding))
-
-      def app
-        Coupler::Base
-      end
 
       def setup
         #@_original_connection_count = connection_count
@@ -56,13 +60,6 @@ module Coupler
           @_database[name].delete
         end
       end
-
-      #def run(*args, &block)
-        #Sequel::Model.db.transaction do
-          #super
-          #raise Sequel::Error::Rollback
-        #end
-      #end
 
       def teardown
         if @_tmpdirs
@@ -124,10 +121,27 @@ module Coupler
     end
 
     class UnitTest < Base; end
+    class IntegrationTest < Base; end
 
-    class IntegrationTest < Base
-      include Coupler
-      include Coupler::Models
+    class FunctionalTest < Base
+      include Capybara::DSL
+
+      def app
+        Coupler::Base
+      end
+
+      def teardown
+        super
+        Capybara.reset_sessions!
+        Capybara.use_default_driver
+      end
+
+      def setup
+        if self.class.get_attribute(@method_name, :javascript)
+          Capybara.current_driver = Capybara.javascript_driver
+        end
+        super
+      end
     end
   end
 end
@@ -154,6 +168,3 @@ class Array
     end
   end
 end
-
-require 'factory_girl'
-Factory.find_definitions

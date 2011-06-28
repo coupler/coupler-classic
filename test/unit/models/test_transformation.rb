@@ -1,7 +1,7 @@
 require 'helper'
 
-module Coupler
-  module Models
+module CouplerUnitTests
+  module ModelTests
     class TestTransformation < Coupler::Test::UnitTest
       def new_transformation(attribs = {})
         values = {

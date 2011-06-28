@@ -1,7 +1,7 @@
 module Coupler
   module Helpers
     def error_messages_for(object)
-      return ""   if object.errors.empty?
+      return ""   if object.nil? || object.errors.empty?
 
       retval = "<div class='errors'><h3>Errors detected:</h3><ul>"
       object.errors.each do |(attr, messages)|

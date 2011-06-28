@@ -19,6 +19,14 @@ namespace :test do
     test.ruby_opts = %w{--debug}
   end
   task :integration => ['environment:test', 'db:purge', 'db:migrate', 'db:fake']
+
+  Rake::TestTask.new(:functional) do |test|
+    test.libs << 'lib' << 'test'
+    test.pattern = 'test/functional/**/test_*.rb'
+    #test.verbose = true
+    test.ruby_opts = %w{--debug}
+  end
+  task :functional => ['environment:test', 'db:purge', 'db:migrate', 'db:fake']
 end
 
 begin

@@ -1,7 +1,7 @@
 require 'helper'
 
-module Coupler
-  module Models
+module CouplerUnitTests
+  module ModelTests
     class TestCommonModel < Coupler::Test::UnitTest
       def self.startup
         super

@@ -8,12 +8,14 @@ module Coupler
         end
 
         app.get "/jobs/count" do
-          Models::Job.filter(:completed_at => nil).count.to_s
+          content_type :json
+          [200, [Models::Job.filter(:completed_at => nil).count.to_json]]
         end
 
         app.get "/jobs/:id/progress" do
+          content_type :text
           @job = Models::Job[:id => params[:id]]
-          { :completed => @job.completed, :total => @job.total }.to_json
+          [200, [{ :completed => @job.completed, :total => @job.total }.to_json]]
         end
       end
     end

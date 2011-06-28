@@ -1,7 +1,7 @@
 require 'helper'
 
-module TestExtensions
-  class TestJobs < Coupler::Test::IntegrationTest
+module CouplerFunctionalTests
+  class TestJobs < Coupler::Test::FunctionalTest
     def self.startup
       super
       conn = new_connection('h2', :name => 'foo')
@@ -27,25 +27,34 @@ module TestExtensions
       })
     end
 
+    attribute(:javascript, true)
     test "jobs" do
-      job = Job.create!(:name => 'transform', :status => 'scheduled', :resource => @resource)
-      get "/jobs"
-      assert last_response.ok?
+      visit "/projects/#{@project.id}/resources/#{@resource.id}"
+      click_button "Transform now"
+      a = page.driver.browser.switch_to.alert
+      a.accept
+
+      visit "/jobs"
+      assert page.has_selector?("table.list tbody tr")
     end
 
+    # Using Rack::Test directly here for JSON tests
     test "count" do
       scheduled_job = Job.create!(:name => 'transform', :status => 'scheduled', :resource => @resource)
       completed_job = Job.create!(:name => 'transform', :status => 'done', :resource => @resource, :completed_at => Time.now)
-      get "/jobs/count"
-      assert last_response.ok?
-      assert_equal "1", last_response.body
+      page.driver.get "/jobs/count"
+      assert_equal "1", page.driver.response.body
     end
 
     test "progress" do
-      job = Job.create!(:name => 'transform', :status => 'scheduled', :resource => @resource, :total => 200, :completed => 54)
-      get "/jobs/#{job.id}/progress"
-      assert last_response.ok?
-      result = JSON.parse(last_response.body)
+      visit "/projects/#{@project.id}/resources/#{@resource.id}"
+      click_button "Transform now"
+      assert_equal "/projects/#{@project.id}/resources/#{@resource.id}", page.current_path
+
+      job = @resource.scheduled_jobs.first
+      job.update(:total => 200, :completed => 54)
+      page.driver.get "/jobs/#{job.id}/progress"
+      result = JSON.parse(page.driver.response.body)
       assert_equal({'total' => 200, 'completed' => 54}, result)
     end
   end

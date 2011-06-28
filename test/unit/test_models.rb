@@ -1,6 +1,6 @@
 require 'helper'
 
-module Coupler
+module CouplerUnitTests
   class TestModels < Coupler::Test::UnitTest
     def test_lazy_loading_accepts_strings
       assert_nothing_raised do

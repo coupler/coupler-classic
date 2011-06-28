@@ -1,7 +1,7 @@
 require 'helper'
 
-module Coupler
-  module Models
+module CouplerUnitTests
+  module ModelTests
     class TestScenario < Coupler::Test::UnitTest
       def setup
         super

@@ -1,7 +1,7 @@
 require 'helper'
 
-module Coupler
-  module Models
+module CouplerUnitTests
+  module ModelTests
     class TestImport < Coupler::Test::UnitTest
       def new_import(attribs = {})
         values = {
@@ -67,6 +67,11 @@ module Coupler
         assert !import.has_headers
       end
 
+      test "requires name" do
+        import = new_import(:name => nil)
+        assert !import.valid?
+      end
+
       test "requires field names" do
         import = new_import(:data => fixture_file_upload('no-headers.csv'))
         assert_nil import.field_names
@@ -97,8 +102,8 @@ module Coupler
 
       test "requires unused resource name" do
         import = new_import
-        @project.resources_dataset.stubs(:count).returns(1)
-        assert !import.valid?
+        import.expects(:validates_unique).with([:project_id, :name]).returns(false)
+        import.valid?
       end
 
       test "dataset" do

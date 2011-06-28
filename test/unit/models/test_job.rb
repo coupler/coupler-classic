@@ -1,7 +1,7 @@
 require 'helper'
 
-module Coupler
-  module Models
+module CouplerUnitTests
+  module ModelTests
     class TestJob < Coupler::Test::UnitTest
       def new_job(attribs = {})
         j = Job.new(attribs)

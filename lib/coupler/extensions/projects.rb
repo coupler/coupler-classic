@@ -45,7 +45,7 @@ module Coupler
           @project.set(params[:project])
           if @project.valid?
             @project.save
-            redirect '/projects'
+            redirect "/projects/#{@project.id}"
           else
             erb 'projects/form'.to_sym
           end

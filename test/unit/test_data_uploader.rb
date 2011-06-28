@@ -1,6 +1,6 @@
 require 'helper'
 
-module Coupler
+module CouplerUnitTests
   class TestDataUploader < Coupler::Test::UnitTest
     def test_carrierwave_subclass
       assert_equal CarrierWave::Uploader::Base, DataUploader.superclass

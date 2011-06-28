@@ -1,7 +1,7 @@
 require 'helper'
 
-module Coupler
-  module Models
+module CouplerUnitTests
+  module ModelTests
     class TestResult < Coupler::Test::UnitTest
       def new_result(attribs = {})
         values = {

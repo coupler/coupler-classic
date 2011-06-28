@@ -1,7 +1,7 @@
 require 'helper'
 
-module Coupler
-  module Models
+module CouplerUnitTests
+  module ModelTests
     class TestField < Coupler::Test::UnitTest
       def new_field(attrs = {})
         f = Field.new({

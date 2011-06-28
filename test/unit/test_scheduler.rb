@@ -1,6 +1,6 @@
 require 'helper'
 
-module Coupler
+module CouplerUnitTests
   class TestScheduler < Coupler::Test::UnitTest
     test "schedule transform job" do
       resource = mock('resource')

@@ -209,14 +209,10 @@ module Coupler
         def validate
           super
 
-          validates_presence :project_id
-          if project_id
-            # don't allow import to have the same name as an already existing resource
-            if project.resources_dataset.filter(:name => name).count > 0
-              errors.add(:name, "is already taken")
-            end
+          validates_presence [:project_id, :name, :field_names, :primary_key_name]
+          if name && project_id
+            validates_unique [:project_id, :name]
           end
-          validates_presence [:field_names, :primary_key_name]
           if field_names.is_a?(Array)
             validates_includes field_names, [:primary_key_name]
 

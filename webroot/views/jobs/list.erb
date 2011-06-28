@@ -1,24 +1,28 @@
 <table class="list">
-  <tr>
-    <th>Type</th>
-    <th>Status</th>
-    <% if show_target %><th>Target</th><% end %>
-    <th>Created</th>
-  </tr>
-  <% jobs.each_with_index do |job, i| %>
-  <tr<%= cycle("", " class='alt'") %>>
-    <td><%= job.name %></td>
-    <td><%= job.status %></td>
-    <%- if show_target -%>
-      <%- if job.resource -%>
-        <td><a href="/projects/<%= job.resource.project.id %>/resources/<%= job.resource.id %>"><%= job.resource.name %></a></td>
-      <%- elsif job.scenario -%>
-        <td><a href="/projects/<%= job.scenario.project.id %>/scenarios/<%= job.scenario.id %>"><%= job.scenario.name %></a></td>
-      <%- else -%>
-        <td>N/A</td>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Status</th>
+      <% if show_target %><th>Target</th><% end %>
+      <th>Created</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% jobs.each_with_index do |job, i| %>
+    <tr<%= cycle("", " class='alt'") %>>
+      <td><%= job.name %></td>
+      <td><%= job.status %></td>
+      <%- if show_target -%>
+        <%- if job.resource -%>
+          <td><a href="/projects/<%= job.resource.project.id %>/resources/<%= job.resource.id %>"><%= job.resource.name %></a></td>
+        <%- elsif job.scenario -%>
+          <td><a href="/projects/<%= job.scenario.project.id %>/scenarios/<%= job.scenario.id %>"><%= job.scenario.name %></a></td>
+        <%- else -%>
+          <td>N/A</td>
+        <%- end -%>
       <%- end -%>
-    <%- end -%>
-    <td><%= timeago(job.created_at) %></td>
-  </tr>
-  <% end %>
+      <td><%= timeago(job.created_at) %></td>
+    </tr>
+    <% end %>
+  </tbody>
 </table>

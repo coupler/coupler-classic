@@ -2,6 +2,8 @@
 <%- add_javascript('jquery.dataTables.min.js') -%>
 <%- add_stylesheet('dataTables.css') -%>
 
+<%= error_messages_for @import %>
+<%= error_messages_for @resource %>
 <form action="/projects/<%= @project.id %>/imports" method="post">
   <input type="hidden" name="import[data_cache]" value="<%= @import.data_cache %>" />
   <p>

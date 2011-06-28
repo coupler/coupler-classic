@@ -1,6 +1,6 @@
 require 'helper'
 
-module Coupler
+module CouplerUnitTests
   class TestLogger < Coupler::Test::UnitTest
     def test_delegation
       logger = Coupler::Logger.instance

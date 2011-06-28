@@ -1,7 +1,7 @@
 require 'helper'
 
-module Coupler
-  module Models
+module CouplerUnitTests
+  module ModelTests
     class TestComparison < Coupler::Test::UnitTest
       def sequel_expr(*args)
         if args.length == 1

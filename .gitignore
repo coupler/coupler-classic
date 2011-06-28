@@ -4,6 +4,7 @@ coverage
 rdoc
 pkg
 webrat.log
+chromedriver.log
 Session.vim
 **/.hg
 test.rb

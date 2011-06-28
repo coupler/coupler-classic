@@ -37,7 +37,12 @@ class TestTransformation < Coupler::Test::IntegrationTest
 
     adapter_test(adapter, "accepts nested attributes for result field") do
       adapter_setup(adapter)
-      transformer = Factory(:transformer, :code => %{value}, :result_type => 'same')
+      transformer = Transformer.create({
+        :name => "noop",
+        :code => %{value},
+        :allowed_types => %w{string integer datetime},
+        :result_type => 'same'
+      })
       field = @resource.fields_dataset[:name => 'first_name']
       transformation = Transformation.create({
         :transformer => transformer,
