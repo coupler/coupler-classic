@@ -21,6 +21,7 @@ GEM
       nokogiri (~> 1.4)
     gem_plugin (0.2.3)
     git (1.2.5)
+    jdbc-h2 (1.3.154)
     jdbc-mysql (5.1.13)
     jeweler (1.6.2)
       bundler (~> 1.0)
@@ -75,6 +76,7 @@ DEPENDENCIES
   fastercsv
   forgery
   git
+  jdbc-h2
   jdbc-mysql
   jeweler
   jruby-openssl

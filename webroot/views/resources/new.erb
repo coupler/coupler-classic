@@ -23,8 +23,8 @@
         <td class="left"><label for="adapter" class="strong">Type</label></td>
         <td>
           <select id="adapter" name="resource[connection_attributes][adapter]">
-          <%- Coupler::Models::Connection::ADAPTERS.each do |(value, label)| -%>
-            <option value="<%= value %>"<%= ' selected="selected"' if @resource.connection.adapter == value %>><%= label %></option>
+          <%- Coupler::Models::Connection::ADAPTERS.each do |options| -%>
+            <option value="<%= options[:name] %>"<%= ' selected="selected"' if @resource.connection.adapter == options[:name] %>><%= options[:label] %></option>
           <%- end -%>
           </select>
         </td>

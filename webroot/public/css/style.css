@@ -226,12 +226,14 @@ table.form td {
   padding: 0.3em 0 0.3em 1em;
 }
 table.form td.left {
-  vertical-align: top;
   padding: 0.3em 1em;
 }
 table.form th.header {
   text-align: left;
   border-bottom: 1px solid #eee;
+}
+.connection-form .left {
+  width: 5em;
 }
 
 table.list th {

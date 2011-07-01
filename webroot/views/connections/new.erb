@@ -1,6 +1,6 @@
 <% @breadcrumbs = [@connection] %>
 <%= error_messages_for @connection %>
-<form method="post" action="/connections">
+<form method="post" action="/connections" class="connection-form">
   <table class="form">
     <tr>
       <td class="left"><label for="name">Name</label></td>
@@ -12,8 +12,8 @@
       <td class="left"><label for="adapter">Type</label></td>
       <td>
         <select id="adapter" name="connection[adapter]">
-          <% Coupler::Models::Connection::ADAPTERS.each do |(value, label)| %>
-            <option value="<%= value %>"<%= ' selected="selected"' if @connection.adapter == value %>><%= label %></option>
+          <% Coupler::Models::Connection::ADAPTERS.each do |options| %>
+            <option value="<%= options[:name] %>"<%= ' selected="selected"' if @connection.adapter == options[:name] %>><%= options[:label] %></option>
           <% end %>
         </select>
       </td>
@@ -48,8 +48,46 @@
         <input id="database_name" name="connection[database_name]" type="text" value="<%= @connection.database_name %>" />
       </td>
     </tr>
+    <tr>
+      <td class="left"><label for="path">Path</label></td>
+      <td>
+        <input id="path" name="connection[path]" type="text" value="<%= @connection.path %>" />
+      </td>
+    </tr>
   </table>
   <p>
     <input type="submit" value="Submit" /> or <a href="/connections">Cancel</a>
   </p>
 </form>
+<script type="text/javascript">
+  var ignoredAttribs = <%= Coupler::Models::Connection::ADAPTERS.inject({}) { |m, o| m[o[:name]] = o[:ignored_attributes]; m }.to_json %>
+  function adapterSelected(fade) {
+    var ignored = ignoredAttribs[$(this).val()];
+    var enable = $([]);
+    var disable = $([]);
+    $("[name^=connection\\[]").each(function() {
+      var obj = $(this);
+      var row = obj.closest('tr');
+      if ($.inArray(obj.attr('id'), ignored) == -1) {
+        enable = enable.add(row);
+      } else {
+        disable = disable.add(row);
+      }
+    });
+    if (typeof(fade) == 'undefined' || fade) {
+      disable.fadeOut(function() {
+        disable.find('input, select, textarea').attr('disabled', true);
+        enable.find('input, select, textarea').attr('disabled', false);
+        enable.fadeIn();
+      });
+    } else {
+      disable.hide().find('input, select, textarea').attr('disabled', true);
+      enable.find('input, select, textarea').attr('disabled', false).show();
+    }
+  }
+
+  $(function() {
+    var a = $('#adapter').change(adapterSelected);
+    adapterSelected.call(a[0], false);
+  });
+</script>

@@ -3,7 +3,16 @@ module Coupler
     class Connection < Sequel::Model
       include CommonModel
 
-      ADAPTERS = [%w{mysql MySQL h2 H2}]
+      ADAPTERS = [
+        {
+          :name => "mysql", :label => "MySQL",
+          :ignored_attributes => %w{path}
+        },
+        {
+          :name => "h2", :label => "H2",
+          :ignored_attributes => %w{host port username password database_name}
+        }
+      ]
 
       one_to_many :resources
 

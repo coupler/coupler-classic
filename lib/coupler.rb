@@ -21,7 +21,7 @@ require 'fastercsv'
 require 'carrierwave'
 require 'mongrel'
 #require 'jdbc/mysql'  # Sequel should load this when it needs to.
-require File.dirname(__FILE__) + '/../vendor/h2-1.3.154.jar'
+#require 'jdbc/h2'     # Sequel should load this when it needs to.
 
 require File.dirname(__FILE__) + "/coupler/logger"
 require File.dirname(__FILE__) + "/coupler/database"

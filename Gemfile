@@ -7,6 +7,7 @@ gem 'fastercsv'
 gem 'carrierwave'
 gem 'mongrel'
 gem 'jdbc-mysql', :require => 'jdbc/mysql'
+gem 'jdbc-h2', :require => 'jdbc/h2'
 
 group :development do
   gem 'rake'

@@ -27,20 +27,24 @@ module CouplerFunctionalTests
       end
     end
 
-    test "successfully creating connection" do
-      attributes = @configs['mysql'].merge(:name => 'foo')
+    each_adapter do |adapter, config|
+      attribute(:javascript, true)
+      test "successfully creating #{adapter} connection" do
+        attributes = config.merge(:name => 'foo')
 
-      visit "/connections/new"
-      select 'MySQL', :from => "connection[adapter]"
-      attributes.each_pair do |name, value|
-        fill_in "connection[#{name}]", :with => value
+        visit "/connections/new"
+        find("#adapter").find("option[value='#{adapter}']").select_option
+        sleep 1 # wait for animations
+        attributes.each_pair do |name, value|
+          fill_in "connection[#{name}]", :with => value
+        end
+        click_button "Submit"
+
+        connection = Connection[:name => 'foo']
+        assert connection
+
+        assert_equal "/connections", page.current_path
       end
-      click_button "Submit"
-
-      connection = Connection[:name => 'foo']
-      assert connection
-
-      assert_equal "/connections", page.current_path
     end
 
     test "failing to create connection" do
