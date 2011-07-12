@@ -5,12 +5,12 @@
 
 Gem::Specification.new do |s|
   s.name = %q{coupler}
-  s.version = "0.0.3"
+  s.version = "0.0.5"
   s.platform = %q{java}
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jeremy Stephens"]
-  s.date = %q{2011-05-13}
+  s.date = %q{2011-07-12}
   s.default_executable = %q{coupler}
   s.description = %q{Coupler is a (JRuby) desktop application designed to link datasets together}
   s.email = %q{jeremy.f.stephens@vanderbilt.edu}
@@ -58,6 +58,7 @@ Gem::Specification.new do |s|
     "db/migrate/020_rename_import_columns.rb",
     "db/migrate/021_add_fields_to_connections.rb",
     "db/migrate/022_remove_database_name_from_resources.rb",
+    "db/migrate/023_add_import_jobs.rb",
     "features/connections.feature",
     "features/matchers.feature",
     "features/projects.feature",
@@ -77,7 +78,6 @@ Gem::Specification.new do |s|
     "gfx/icon.svg",
     "lib/coupler.rb",
     "lib/coupler/base.rb",
-    "lib/coupler/config.rb",
     "lib/coupler/data_uploader.rb",
     "lib/coupler/database.rb",
     "lib/coupler/extensions.rb",
@@ -129,23 +129,22 @@ Gem::Specification.new do |s|
     "tasks/vendor.rake",
     "test/README.txt",
     "test/config.yml",
-    "test/coupler/models/test_import.rb",
-    "test/factories.rb",
     "test/fixtures/duplicate-keys.csv",
     "test/fixtures/no-headers.csv",
     "test/fixtures/people.csv",
     "test/fixtures/varying-row-size.csv",
+    "test/functional/test_base.rb",
+    "test/functional/test_connections.rb",
+    "test/functional/test_imports.rb",
+    "test/functional/test_jobs.rb",
+    "test/functional/test_matchers.rb",
+    "test/functional/test_projects.rb",
+    "test/functional/test_resources.rb",
+    "test/functional/test_results.rb",
+    "test/functional/test_scenarios.rb",
+    "test/functional/test_transformations.rb",
+    "test/functional/test_transformers.rb",
     "test/helper.rb",
-    "test/integration/extensions/test_connections.rb",
-    "test/integration/extensions/test_imports.rb",
-    "test/integration/extensions/test_jobs.rb",
-    "test/integration/extensions/test_matchers.rb",
-    "test/integration/extensions/test_projects.rb",
-    "test/integration/extensions/test_resources.rb",
-    "test/integration/extensions/test_results.rb",
-    "test/integration/extensions/test_scenarios.rb",
-    "test/integration/extensions/test_transformations.rb",
-    "test/integration/extensions/test_transformers.rb",
     "test/integration/test_field.rb",
     "test/integration/test_import.rb",
     "test/integration/test_running_scenarios.rb",
@@ -169,12 +168,12 @@ Gem::Specification.new do |s|
     "test/unit/test_data_uploader.rb",
     "test/unit/test_database.rb",
     "test/unit/test_helpers.rb",
+    "test/unit/test_import_buffer.rb",
     "test/unit/test_logger.rb",
     "test/unit/test_models.rb",
     "test/unit/test_runner.rb",
     "test/unit/test_scheduler.rb",
     "uploads/.gitignore",
-    "vendor/h2-1.3.154.jar",
     "webroot/public/css/960.css",
     "webroot/public/css/dataTables.css",
     "webroot/public/css/jquery-ui.css",
@@ -296,20 +295,21 @@ Gem::Specification.new do |s|
       s.add_runtime_dependency(%q<carrierwave>, [">= 0"])
       s.add_runtime_dependency(%q<mongrel>, [">= 0"])
       s.add_runtime_dependency(%q<jdbc-mysql>, [">= 0"])
+      s.add_runtime_dependency(%q<jdbc-h2>, [">= 0"])
       s.add_development_dependency(%q<rake>, [">= 0"])
       s.add_development_dependency(%q<jeweler>, [">= 0"])
       s.add_development_dependency(%q<forgery>, [">= 0"])
       s.add_development_dependency(%q<test-unit>, ["= 2.2.0"])
       s.add_development_dependency(%q<mocha>, [">= 0"])
-      s.add_development_dependency(%q<rack-test>, [">= 0"])
       s.add_development_dependency(%q<nokogiri>, [">= 0"])
       s.add_development_dependency(%q<timecop>, [">= 0"])
-      s.add_development_dependency(%q<factory_girl>, [">= 0"])
       s.add_development_dependency(%q<git>, [">= 0"])
       s.add_development_dependency(%q<thor>, [">= 0"])
       s.add_development_dependency(%q<rake>, [">= 0"])
       s.add_development_dependency(%q<table_maker>, [">= 0"])
       s.add_development_dependency(%q<ruby-debug>, [">= 0"])
+      s.add_development_dependency(%q<capybara>, [">= 0"])
+      s.add_development_dependency(%q<jruby-openssl>, [">= 0"])
     else
       s.add_dependency(%q<sinatra>, [">= 0"])
       s.add_dependency(%q<sequel>, [">= 0"])
@@ -319,20 +319,21 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<carrierwave>, [">= 0"])
       s.add_dependency(%q<mongrel>, [">= 0"])
       s.add_dependency(%q<jdbc-mysql>, [">= 0"])
+      s.add_dependency(%q<jdbc-h2>, [">= 0"])
       s.add_dependency(%q<rake>, [">= 0"])
       s.add_dependency(%q<jeweler>, [">= 0"])
       s.add_dependency(%q<forgery>, [">= 0"])
       s.add_dependency(%q<test-unit>, ["= 2.2.0"])
       s.add_dependency(%q<mocha>, [">= 0"])
-      s.add_dependency(%q<rack-test>, [">= 0"])
       s.add_dependency(%q<nokogiri>, [">= 0"])
       s.add_dependency(%q<timecop>, [">= 0"])
-      s.add_dependency(%q<factory_girl>, [">= 0"])
       s.add_dependency(%q<git>, [">= 0"])
       s.add_dependency(%q<thor>, [">= 0"])
       s.add_dependency(%q<rake>, [">= 0"])
       s.add_dependency(%q<table_maker>, [">= 0"])
       s.add_dependency(%q<ruby-debug>, [">= 0"])
+      s.add_dependency(%q<capybara>, [">= 0"])
+      s.add_dependency(%q<jruby-openssl>, [">= 0"])
     end
   else
     s.add_dependency(%q<sinatra>, [">= 0"])
@@ -343,20 +344,21 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<carrierwave>, [">= 0"])
     s.add_dependency(%q<mongrel>, [">= 0"])
     s.add_dependency(%q<jdbc-mysql>, [">= 0"])
+    s.add_dependency(%q<jdbc-h2>, [">= 0"])
     s.add_dependency(%q<rake>, [">= 0"])
     s.add_dependency(%q<jeweler>, [">= 0"])
     s.add_dependency(%q<forgery>, [">= 0"])
     s.add_dependency(%q<test-unit>, ["= 2.2.0"])
     s.add_dependency(%q<mocha>, [">= 0"])
-    s.add_dependency(%q<rack-test>, [">= 0"])
     s.add_dependency(%q<nokogiri>, [">= 0"])
     s.add_dependency(%q<timecop>, [">= 0"])
-    s.add_dependency(%q<factory_girl>, [">= 0"])
     s.add_dependency(%q<git>, [">= 0"])
     s.add_dependency(%q<thor>, [">= 0"])
     s.add_dependency(%q<rake>, [">= 0"])
     s.add_dependency(%q<table_maker>, [">= 0"])
     s.add_dependency(%q<ruby-debug>, [">= 0"])
+    s.add_dependency(%q<capybara>, [">= 0"])
+    s.add_dependency(%q<jruby-openssl>, [">= 0"])
   end
 end
 
