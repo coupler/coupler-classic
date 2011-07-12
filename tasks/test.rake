@@ -1,7 +1,17 @@
 require 'rake/testtask'
 
 desc "Run all tests"
-task :test => ['test:unit', 'test:integration']
+task :test do
+  errors = %w(test:unit test:functional test:integration).collect do |task|
+    begin
+      Rake::Task[task].invoke
+      nil
+    rescue => e
+      task
+    end
+  end.compact
+  abort "Errors running #{errors * ', '}!" if errors.any?
+end
 
 namespace :test do
   Rake::TestTask.new(:unit) do |test|
