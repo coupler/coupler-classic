@@ -10,20 +10,22 @@ GEM
       rack-test (>= 0.5.4)
       selenium-webdriver (~> 0.2.0)
       xpath (~> 0.1.4)
-    carrierwave (0.5.4)
+    carrierwave (0.5.6)
       activesupport (~> 3.0)
+    carrierwave-sequel (0.1.0)
+      carrierwave
+      sequel
     childprocess (0.1.9)
       ffi (~> 1.0.6)
-    columnize (0.3.3)
     fastercsv (1.5.4)
     ffi (1.0.9-java)
-    forgery (0.3.8)
+    forgery (0.3.10)
       nokogiri (~> 1.4)
     gem_plugin (0.2.3)
     git (1.2.5)
     jdbc-h2 (1.3.154)
     jdbc-mysql (5.1.13)
-    jeweler (1.6.2)
+    jeweler (1.6.4)
       bundler (~> 1.0)
       git (>= 1.2.5)
       rake
@@ -35,25 +37,20 @@ GEM
     mocha (0.9.12)
     mongrel (1.1.5-java)
       gem_plugin (>= 0.2.3)
-    nokogiri (1.4.6-java)
-      weakling (>= 0.0.3)
+    nokogiri (1.5.0-java)
     rack (1.3.0)
-    rack-flash (0.1.1)
+    rack-flash (0.1.2)
       rack
     rack-test (0.6.0)
       rack (>= 1.0)
     rake (0.9.2)
-    ruby-debug (0.10.4)
-      columnize (>= 0.1)
-      ruby-debug-base (~> 0.10.4.0)
-    ruby-debug-base (0.10.4-java)
     rubyzip (0.9.4)
-    selenium-webdriver (0.2.1)
-      childprocess (>= 0.1.7)
+    selenium-webdriver (0.2.2)
+      childprocess (>= 0.1.9)
       ffi (>= 1.0.7)
       json_pure
       rubyzip
-    sequel (3.24.1)
+    sequel (3.25.0)
     sinatra (1.2.6)
       rack (~> 1.1)
       tilt (>= 1.2.2, < 2.0)
@@ -63,7 +60,6 @@ GEM
     thor (0.14.6)
     tilt (1.3.2)
     timecop (0.3.5)
-    weakling (0.0.4-java)
     xpath (0.1.4)
       nokogiri (~> 1.3)
 
@@ -72,7 +68,7 @@ PLATFORMS
 
 DEPENDENCIES
   capybara
-  carrierwave
+  carrierwave-sequel
   fastercsv
   forgery
   git
@@ -86,7 +82,6 @@ DEPENDENCIES
   nokogiri
   rack-flash
   rake
-  ruby-debug
   sequel
   sinatra
   table_maker

@@ -1,5 +1,4 @@
 require 'helper'
-require 'ruby-debug'
 
 module CouplerFunctionalTests
   class TestMatchers < Coupler::Test::FunctionalTest

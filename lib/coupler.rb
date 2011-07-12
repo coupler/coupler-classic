@@ -18,7 +18,7 @@ require 'sequel'
 require 'sequel/extensions/migration'
 require 'json'
 require 'fastercsv'
-require 'carrierwave'
+require 'carrierwave/sequel'
 require 'mongrel'
 #require 'jdbc/mysql'  # Sequel should load this when it needs to.
 #require 'jdbc/h2'     # Sequel should load this when it needs to.

@@ -23,7 +23,6 @@ require 'table_maker'
 require 'sequel'
 require 'sequel/extensions/schema_dumper'
 require 'forgery'
-require 'ruby-debug'
 
 dir = File.dirname(__FILE__)
 $LOAD_PATH.unshift(dir)
