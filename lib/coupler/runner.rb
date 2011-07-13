@@ -26,7 +26,7 @@ module Coupler
       say "Starting up Coupler..."
 
       say "Migrating database..."
-      Coupler::Database.instance.migrate!
+      Coupler::Database.migrate!
 
       say "Starting scheduler..."
       Coupler::Scheduler.instance.start

@@ -6,8 +6,7 @@ module CouplerUnitTests
       super
       @scheduler = stub("scheduler", :is_started? => true, :start => nil)
       Scheduler.stubs(:instance).returns(@scheduler)
-      @database = stub("database", :migrate! => nil)
-      Database.stubs(:instance).returns(@database)
+      Database.stubs(:migrate!)
       @app = stub('rack app')
       @handler = stub('rack handler', :new => @app)
       Rack::Handler.stubs(:get).returns(@handler)
@@ -51,7 +50,7 @@ module CouplerUnitTests
     end
 
     test "migrates the database" do
-      @database.expects(:migrate!)
+      Database.expects(:migrate!)
       capture_stdout { Runner.new([]) }
     end
 

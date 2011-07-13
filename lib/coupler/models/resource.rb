@@ -166,7 +166,7 @@ module Coupler
         end
 
         def local_connection_string
-          Base.connection_string("project_#{project.id}")
+          Coupler.connection_string("project_#{project.id}")
         end
 
         def create_fields

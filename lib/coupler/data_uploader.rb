@@ -1,7 +1,7 @@
 module Coupler
   class DataUploader < CarrierWave::Uploader::Base
     def store_dir
-      Base.settings.upload_path
+      Coupler.upload_path
     end
 
     def cache_dir

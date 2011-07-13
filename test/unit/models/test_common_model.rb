@@ -5,7 +5,7 @@ module CouplerUnitTests
     class TestCommonModel < Coupler::Test::UnitTest
       def self.startup
         super
-        db = Coupler::Database.instance
+        db = Coupler::Database
         db.create_table!(:foos) do
           primary_key :id
           String :bar
@@ -26,7 +26,7 @@ module CouplerUnitTests
       end
 
       def self.teardown
-        db = Coupler::Database.instance
+        db = Coupler::Database
         db.drop_table(:foos)
         super
       end
@@ -59,7 +59,7 @@ module CouplerUnitTests
         foo = @klass.create(:bar => "bar")
         assert_equal 1, foo.version
 
-        versions = Database.instance[:foos_versions].filter(:current_id => foo.id)
+        versions = Database[:foos_versions].filter(:current_id => foo.id)
         assert_equal 1, versions.count
 
         data = versions.first
@@ -74,7 +74,7 @@ module CouplerUnitTests
         foo.update(:bar => "baz")
         assert_equal 2, foo.version
 
-        versions = Database.instance[:foos_versions].filter(:current_id => foo.id, :version => 2)
+        versions = Database[:foos_versions].filter(:current_id => foo.id, :version => 2)
         assert_equal 1, versions.count
 
         data = versions.first

@@ -57,7 +57,7 @@ module CouplerUnitTests
 
       test "local_database" do
         project = Project.create(:name => "foo")
-        FileUtils.rm(Dir[Base.db_path("project_#{project.id}")+".*"])
+        FileUtils.rm(Dir[Coupler.db_path("project_#{project.id}")+".*"])
 
         project.local_database do |db|
           assert_kind_of Sequel::JDBC::Database, db
@@ -77,7 +77,7 @@ module CouplerUnitTests
         project = Project.create(:name => "foo")
         project.local_database { |db| db.test_connection }  # force creation of database
         project.destroy
-        files = Dir[Base.db_path("project_#{project.id}")+".*"]
+        files = Dir[Coupler.db_path("project_#{project.id}")+".*"]
         assert files.empty?, files.inspect
       end
 
@@ -91,7 +91,7 @@ module CouplerUnitTests
           expects(:delete_versions_on_destroy=).with(true)
         }])
         project.destroy
-        assert_equal 0, Database.instance[:projects_versions].filter(:current_id => project.id).count
+        assert_equal 0, Database[:projects_versions].filter(:current_id => project.id).count
       end
 
       #def test_local_database_uses_connection_class

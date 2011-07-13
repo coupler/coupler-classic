@@ -1,16 +1,16 @@
 namespace :db do
   desc "Obliterate the local database"
-  task :nuke do
+  task :nuke => :environment do
     confirm("This will completely obliterate all of Coupler's databases.")
 
     require 'fileutils'
-    files = Dir.glob(File.join(Coupler::Base.settings.data_path, "db", "*"))
-    FileUtils.rm_rf(files.reject { |d| d =~ /migrate$/ }, :verbose => true)
+    files = Dir.glob(File.join(Coupler.data_path, "db", "**", "*.db"))
+    FileUtils.rm_rf(files, :verbose => true)
   end
 
   desc "Purge the database"
   task :purge => :environment do
-    FileUtils.rm(Dir[Coupler::Base.settings.db_path('coupler')+".*"])
+    FileUtils.rm(Dir[Coupler.db_path('coupler')+".*"])
   end
 
   desc "Run migrations"

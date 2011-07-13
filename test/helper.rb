@@ -36,7 +36,7 @@ require 'coupler'
 
 Coupler::Base.set(:sessions, false) # workaround
 Coupler::Base.set(:environment, :test)
-Coupler::Database.instance.migrate!
+Coupler::Database.migrate!
 
 #Capybara.register_driver :selenium_chrome do |app|
   #Capybara::Driver::Selenium.new(app, :browser => :chrome)
@@ -53,7 +53,7 @@ module Coupler
 
       def setup
         #@_original_connection_count = connection_count
-        @_database = Coupler::Database.instance
+        @_database = Coupler::Database
         @_database.tables.each do |name|
           next  if name == :schema_info
           @_database[name].delete

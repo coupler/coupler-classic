@@ -3,9 +3,9 @@ module Coupler
     include Singleton
 
     def initialize
-      log_path = Base.settings.log_path
+      log_path = Coupler.log_path
       Dir.mkdir(log_path)    if !File.exist?(log_path)
-      @logger = ::Logger.new(File.join(log_path, "#{Base.settings.environment}.log"))
+      @logger = ::Logger.new(File.join(log_path, "#{Coupler.environment}.log"))
       super(@logger)
     end
 

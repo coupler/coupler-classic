@@ -75,7 +75,7 @@ module Coupler
       private
 
         def local_connection_string
-          Base.connection_string("scenario_#{id}")
+          Coupler.connection_string("scenario_#{id}")
         end
 
         def before_validation

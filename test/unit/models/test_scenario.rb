@@ -171,7 +171,7 @@ module CouplerUnitTests
 
       test "local database" do
         scenario = new_scenario.save!
-        Base.expects(:connection_string).with("scenario_#{scenario.id}").returns("foo")
+        Coupler.expects(:connection_string).with("scenario_#{scenario.id}").returns("foo")
         db = mock('scenario db')
         Sequel.expects(:connect).with('foo', instance_of(Hash)).returns(db)
         assert_equal db, scenario.local_database

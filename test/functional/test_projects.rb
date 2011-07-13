@@ -61,7 +61,7 @@ module CouplerFunctionalTests
       yes.click
       assert_equal "/projects", page.current_path
       assert_nil Project[:id => project.id]
-      assert_nil Database.instance[:projects_versions][:current_id => project.id]
+      assert_nil Database[:projects_versions][:current_id => project.id]
     end
   end
 end

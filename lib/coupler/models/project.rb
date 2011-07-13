@@ -15,7 +15,7 @@ module Coupler
 
       private
         def local_connection_string
-          Base.connection_string("project_#{id}")
+          Coupler.connection_string("project_#{id}")
         end
 
         def before_validation
@@ -31,7 +31,7 @@ module Coupler
 
         def after_destroy
           super
-          FileUtils.rm(Dir[Base.db_path("project_#{id}")+".*"], :force => true)
+          FileUtils.rm(Dir[Coupler.db_path("project_#{id}")+".*"], :force => true)
           resources_dataset.each { |r| r.delete_versions_on_destroy = self.delete_versions_on_destroy; r.destroy }
           scenarios_dataset.each { |s| s.delete_versions_on_destroy = self.delete_versions_on_destroy; s.destroy }
         end
