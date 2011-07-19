@@ -5,12 +5,12 @@
 
 Gem::Specification.new do |s|
   s.name = %q{coupler}
-  s.version = "0.0.5"
+  s.version = "0.0.7"
   s.platform = %q{java}
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jeremy Stephens"]
-  s.date = %q{2011-07-12}
+  s.date = %q{2011-07-19}
   s.default_executable = %q{coupler}
   s.description = %q{Coupler is a (JRuby) desktop application designed to link datasets together}
   s.email = %q{jeremy.f.stephens@vanderbilt.edu}
@@ -53,7 +53,7 @@ Gem::Specification.new do |s|
     "db/migrate/015_add_run_number_to_results.rb",
     "db/migrate/016_fix_scenario_run_count.rb",
     "db/migrate/017_rename_comparison_columns.rb",
-    "db/migrate/018_fix_scenario_linkage_type.rb",
+    "db/migrate/018_stub.rb",
     "db/migrate/019_add_columns_to_imports.rb",
     "db/migrate/020_rename_import_columns.rb",
     "db/migrate/021_add_fields_to_connections.rb",
@@ -165,12 +165,12 @@ Gem::Specification.new do |s|
     "test/unit/models/test_transformation.rb",
     "test/unit/models/test_transformer.rb",
     "test/unit/test_base.rb",
+    "test/unit/test_coupler.rb",
     "test/unit/test_data_uploader.rb",
     "test/unit/test_database.rb",
     "test/unit/test_helpers.rb",
     "test/unit/test_import_buffer.rb",
     "test/unit/test_logger.rb",
-    "test/unit/test_models.rb",
     "test/unit/test_runner.rb",
     "test/unit/test_scheduler.rb",
     "uploads/.gitignore",
