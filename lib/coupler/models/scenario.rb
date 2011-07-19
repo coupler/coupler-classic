@@ -1,3 +1,4 @@
+pp caller
 module Coupler
   module Models
     class Scenario < Sequel::Model

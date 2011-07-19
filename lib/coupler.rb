@@ -1,3 +1,4 @@
+require 'pp'
 require 'java'
 require 'jruby/core_ext'
 
