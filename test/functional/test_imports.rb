@@ -38,7 +38,7 @@ module CouplerFunctionalTests
     end
 
     attribute(:javascript, true)
-    test "create with invalid import" do
+    test "create with invalid import, fix, and continue" do
       visit "/projects/#{@project.id}/resources/new"
       find('label[for="resource-type-csv"]').click
       attach_file('data', fixture_path('people.csv'))
@@ -47,6 +47,10 @@ module CouplerFunctionalTests
       click_button('Begin Importing')
 
       assert page.has_selector?("div.errors")
+
+      fill_in('name', :with => 'Foo Bar')
+      click_button('Begin Importing')
+      assert_match %r{^/projects/#{@project[:id]}/resources/\d+$}, page.current_path
     end
 
     attribute(:javascript, true)
