@@ -1,4 +1,3 @@
-pp caller
 module Coupler
   module Models
     class Import < Sequel::Model

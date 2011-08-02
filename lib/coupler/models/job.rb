@@ -1,4 +1,3 @@
-pp caller
 module Coupler
   module Models
     class Job < Sequel::Model

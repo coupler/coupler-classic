@@ -21,8 +21,8 @@ require 'json'
 require 'fastercsv'
 require 'carrierwave/sequel'
 require 'mongrel'
-#require 'jdbc/mysql'  # Sequel should load this when it needs to.
-#require 'jdbc/h2'     # Sequel should load this when it needs to.
+require 'jdbc/mysql'
+require 'jdbc/h2'
 
 module Coupler
   def self.environment
