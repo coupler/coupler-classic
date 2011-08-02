@@ -46,17 +46,6 @@ module CouplerUnitTests
         assert field_2.is_selected
       end
 
-      test "original_column_options" do
-        field = new_field({
-          :local_type => 'integer',
-          :local_db_type => 'int(11)',
-        })
-        assert_equal({
-          :name => 'foo', :type => 'varchar(255)',
-          :primary_key => false
-        }, field.original_column_options)
-      end
-
       test "local_column_options" do
         field_1 = new_field({
           :type => 'integer', :db_type => 'int(11)',
@@ -69,11 +58,11 @@ module CouplerUnitTests
         })
 
         assert_equal({
-          :name => 'foo', :type => 'varchar(255)',
+          :name => 'foo', :type => String, :size => 255,
           :primary_key => false
         }, field_1.local_column_options)
         assert_equal({
-          :name => 'foo', :type => 'int(11)',
+          :name => 'foo', :type => Integer,
           :primary_key => false
         }, field_2.local_column_options)
       end

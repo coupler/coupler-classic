@@ -16,7 +16,7 @@ namespace :db do
   desc "Run migrations"
   task :migrate => :environment do
     version = ENV['VERSION']
-    Coupler::Database.instance.migrate!(version ? version.to_i : nil)
+    Coupler::Database.migrate!(version ? version.to_i : nil)
   end
 
   namespace :migrate do
@@ -26,7 +26,7 @@ namespace :db do
 
   desc "Roll the database back a version"
   task :rollback => [:start, :environment] do
-    Coupler::Database.instance.rollback!
+    Coupler::Database.rollback!
   end
 
   desc "Reset and bootstrap the database"

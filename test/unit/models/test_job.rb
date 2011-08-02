@@ -60,8 +60,9 @@ module CouplerUnitTests
         seq = sequence("update")
         job.expects(:update).with(:status => 'running', :total => 12345, :started_at => now).in_sequence(seq)
         fake_exception_klass = Class.new(Exception)
-        @resource.expects(:transform!).raises(fake_exception_klass.new).in_sequence(seq)
-        job.expects(:update).with(:status => 'failed', :completed_at => now).in_sequence(seq)
+        exception = fake_exception_klass.new("someone set us up the bomb")
+        @resource.expects(:transform!).raises(exception).in_sequence(seq)
+        job.expects(:update).with(has_entries(:status => 'failed', :completed_at => now, :error_msg => kind_of(String))).in_sequence(seq)
 
         Timecop.freeze(now) do
           begin
@@ -90,8 +91,9 @@ module CouplerUnitTests
         seq = sequence("update")
         job.expects(:update).with(:status => 'running', :started_at => now).in_sequence(seq)
         fake_exception_klass = Class.new(Exception)
-        @scenario.expects(:run!).raises(fake_exception_klass.new).in_sequence(seq)
-        job.expects(:update).with(:status => 'failed', :completed_at => now).in_sequence(seq)
+        exception = fake_exception_klass.new("someone set us up the bomb")
+        @scenario.expects(:run!).raises(exception).in_sequence(seq)
+        job.expects(:update).with(has_entries(:status => 'failed', :completed_at => now, :error_msg => kind_of(String))).in_sequence(seq)
 
         Timecop.freeze(now) do
           begin
