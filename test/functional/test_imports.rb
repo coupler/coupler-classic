@@ -35,7 +35,7 @@ module CouplerFunctionalTests
 
       job_count = Job.count
       click_button('Begin Importing')
-      assert_match %r{^/projects/#{@project[:id]}$}, page.current_path
+      assert_match %r{^/projects/#{@project[:id]}/resources$}, page.current_path
       assert_equal job_count + 1, Job.count
     end
 
@@ -52,27 +52,24 @@ module CouplerFunctionalTests
 
       fill_in('name', :with => 'Foo Bar')
       click_button('Begin Importing')
-      assert_match %r{^/projects/#{@project[:id]}/resources/\d+$}, page.current_path
+      assert_match %r{^/projects/#{@project[:id]}/resources$}, page.current_path
     end
 
     attribute(:javascript, true)
-    test "create with duplicate keys redirects to edit" do
-      visit "/projects/#{@project.id}/resources/new"
-      find('label[for="resource-type-csv"]').click
-      attach_file('data', fixture_path('duplicate-keys.csv'))
-      click_button('Begin Importing')
+    test "editing import with duplicate keys" do
+      import = Import.create(:data => fixture_file_upload("duplicate-keys.csv"), :project => @project)
+      import.import!
 
+      visit "/projects/#{@project.id}/imports/#{import.id}/edit"
       assert find("h2").has_content?("Duplicate Keys")
-      assert_match %r{^/projects/#{@project.id}/imports/\d+/edit$}, page.current_path
     end
 
     attribute(:javascript, true)
     test "update import with duplicate keys" do
-      visit "/projects/#{@project.id}/resources/new"
-      find('label[for="resource-type-csv"]').click
-      attach_file('data', fixture_path('duplicate-keys.csv'))
-      click_button('Begin Importing')
+      import = Import.create(:data => fixture_file_upload("duplicate-keys.csv"), :project => @project)
+      import.import!
 
+      visit "/projects/#{@project.id}/imports/#{import.id}/edit"
       find('input[name="delete[2][]"][value="1"]').click
       click_button('Submit')
 

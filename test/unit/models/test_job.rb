@@ -11,6 +11,9 @@ module CouplerUnitTests
         if attribs[:scenario]
           j.stubs(:scenario_dataset).returns(stub({:all => [attribs[:scenario]]}))
         end
+        if attribs[:import]
+          j.stubs(:import_dataset).returns(stub({:all => [attribs[:import]]}))
+        end
         j
       end
 

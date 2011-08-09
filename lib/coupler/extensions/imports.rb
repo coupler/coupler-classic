@@ -11,7 +11,7 @@ module Coupler
           @import = Models::Import.new(params[:import].merge(:project_id => @project.id))
           if @import.save
             Scheduler.instance.schedule_import_job(@import)
-            redirect("/projects/#{@project.id}")
+            redirect("/projects/#{@project.id}/resources")
           else
             erb(:'imports/new')
           end

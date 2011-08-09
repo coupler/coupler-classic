@@ -17,10 +17,11 @@
           <td><a href="/projects/<%= job.resource.project.id %>/resources/<%= job.resource.id %>"><%= job.resource.name %></a></td>
         <%- elsif job.scenario -%>
           <td><a href="/projects/<%= job.scenario.project.id %>/scenarios/<%= job.scenario.id %>"><%= job.scenario.name %></a></td>
-      <%- elsif job.import -%>
-        <td><%= job.import.name %> (Project: <a href="/projects/<%= job.import.project_id %>"><%= job.import.project.name %></a>)</td>
-      <%- else -%>
-        <td>N/A</td>
+        <%- elsif job.import -%>
+          <td><%= job.import.name %> (Project: <a href="/projects/<%= job.import.project_id %>"><%= job.import.project.name %></a>)</td>
+        <%- else -%>
+          <td>N/A</td>
+        <%- end -%>
       <%- end -%>
       <td><%= timeago(job.created_at) %></td>
     </tr>
