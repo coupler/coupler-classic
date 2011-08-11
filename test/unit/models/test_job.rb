@@ -19,9 +19,10 @@ module CouplerUnitTests
 
       def setup
         super
+        @project = stub('project', :pk => 1, :id => 1, :associations => {})
         @resource = stub('resource', :pk => 456, :id => 456, :associations => {})
         @scenario = stub('scenario', :pk => 456, :id => 456, :associations => {})
-        @import = stub('import', :pk => 123, :id => 123, :associations => {}, :project_id => 1)
+        @import = stub('import', :pk => 123, :id => 123, :associations => {}, :project_id => 1, :project => @project, :name => 'foo')
         @notification = stub('notification')
         Coupler::Models::Notification.stubs(:create).returns(@notification)
       end
@@ -131,7 +132,7 @@ module CouplerUnitTests
         @import.expects(:data).returns(mock(:file => mock(:size => 12345)))
         job.expects(:update).with(:status => 'running', :total => 12345, :started_at => now).in_sequence(seq)
         @import.expects(:import!).returns(true).in_sequence(seq)
-        Resource.expects(:create).with(:import => @import).returns(@resource).in_sequence(seq)
+        @import.expects(:resource).returns(mock({:id => 456, :activate! => nil}))
         job.expects(:update).with(:status => 'done', :completed_at => now).in_sequence(seq)
         Notification.expects(:create).with(:message => "Import finished successfully", :url => "/projects/1/resources/456").returns(@notification)
         Timecop.freeze(now) { job.execute }

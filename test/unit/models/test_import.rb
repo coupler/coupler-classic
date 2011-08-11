@@ -31,6 +31,10 @@ module CouplerUnitTests
         assert_respond_to Models::Import.new, :project
       end
 
+      test "one to one resource" do
+        assert_respond_to Models::Import.new, :resource
+      end
+
       test "gets name from original filename" do
         import = new_import
         assert_equal "People", import.name

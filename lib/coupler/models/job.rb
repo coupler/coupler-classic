@@ -61,7 +61,13 @@ module Coupler
             end
           end
           if result
-            resource = Resource.create(:import => import)
+            # NOTE: This is a bug waiting to happen. Import doesn't verify
+            # that it has a resource, but supposedly, it will always have
+            # one. The resource gets created at the same time in the
+            # controller.
+
+            resource = import.resource
+            resource.activate!
             Notification.create({
               :message => "Import finished successfully",
               :url => "/projects/#{import.project_id}/resources/#{resource.id}"

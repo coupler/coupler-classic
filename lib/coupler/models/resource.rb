@@ -29,19 +29,6 @@ module Coupler
       def import=(*args)
         result = super
         if new?
-          self.project = import.project
-          n = 1
-          name = import.name
-          loop do
-            ds = Resource.filter(:name => name, :project_id => import.project_id)
-            if ds.count > 0
-              n += 1
-              name = "#{import.name} #{n}"
-            else
-              break
-            end
-          end
-          self.name = name
           self.table_name = "import_#{import.id}"
         end
         result
@@ -116,21 +103,20 @@ module Coupler
         end
       end
 
-      def status
-        if transformed_with.to_s != transformation_ids.join(",") || transformations_dataset.filter("updated_at > ?", transformed_at).count > 0
-          "out_of_date"
-        else
-          "ok"
-        end
-      end
-
       def scenarios
         Scenario.filter(["resource_1_id = ? OR resource_2_id = ?", id, id]).all
       end
 
-      def refresh_fields!
+      def transformations_updated!
+        last_updated_at = transformed_at
+        transformation_ids = []
+
         fields_dataset.update(:local_db_type => nil, :local_type => nil)
         transformations_dataset.order(:position).each do |transformation|
+          transformation_ids << transformation.id
+          if last_updated_at.nil? || transformation.updated_at > last_updated_at
+            last_updated_at = transformation.updated_at
+          end
           if transformation.source_field_id == transformation.result_field_id
             source_field = transformation.source_field
             changes = transformation.field_changes[source_field.id]
@@ -140,6 +126,12 @@ module Coupler
             })
           end
         end
+
+        if transformed_with.to_s != transformation_ids.join(",") || (last_updated_at && last_updated_at > transformed_at)
+          update(:status => "out_of_date")
+        else
+          update(:status => "ok")
+        end
       end
 
       def transform!(&progress)
@@ -147,6 +139,7 @@ module Coupler
         create_local_table!
         _transform(&progress)
         self.update({
+          :status => 'ok',
           :transformed_at => Time.now,
           :transformed_with => t_ids
         })
@@ -171,6 +164,13 @@ module Coupler
         primary_key_name.to_sym
       end
 
+      # Activate resource that was pending until import was completed
+      def activate!
+        set_primary_key
+        create_fields
+        update(:status => "ok")
+      end
+
       private
         def transformation_ids
           transformations_dataset.select(:id).order(:id).all.collect(&:id)
@@ -178,6 +178,15 @@ module Coupler
 
         def local_connection_string
           Coupler.connection_string("project_#{project.id}")
+        end
+
+        def set_primary_key
+          source_database do |db|
+            schema = db.schema(table_name.to_sym)
+            info = schema.detect { |x| x[1][:primary_key] }
+            self.primary_key_name = info[0].to_s
+            self.primary_key_type = info[1][:type].to_s
+          end
         end
 
         def create_fields
@@ -243,19 +252,21 @@ module Coupler
           validates_presence [:project_id, :name]
           validates_presence :slug
           validates_unique [:name, :project_id], [:slug, :project_id]
-          validates_presence [:table_name]
 
-          if import.nil? && errors.on(:table_name).nil?
-            source_database do |db|
-              sym = self.table_name.to_sym
-              if !db.tables.include?(sym)
-                errors.add(:table_name, "is invalid")
-              else
-                keys = db.schema(sym).select { |info| info[1][:primary_key] }
-                if keys.empty?
-                  errors.add(:table_name, "doesn't have a primary key")
-                elsif keys.length > 1
-                  errors.add(:table_name, "has too many primary keys")
+          if status != 'pending'
+            validates_presence [:table_name]
+            if errors.on(:table_name).nil?
+              source_database do |db|
+                sym = self.table_name.to_sym
+                if !db.tables.include?(sym)
+                  errors.add(:table_name, "is invalid")
+                else
+                  keys = db.schema(sym).select { |info| info[1][:primary_key] }
+                  if keys.empty?
+                    errors.add(:table_name, "doesn't have a primary key")
+                  elsif keys.length > 1
+                    errors.add(:table_name, "has too many primary keys")
+                  end
                 end
               end
             end
@@ -267,11 +278,9 @@ module Coupler
             # NOTE: I'm doing this instead of using before_create because
             # serialization happens in before_save, which gets called before
             # the before_create hook
-            source_database do |db|
-              schema = db.schema(table_name.to_sym)
-              info = schema.detect { |x| x[1][:primary_key] }
-              self.primary_key_name = info[0].to_s
-              self.primary_key_type = info[1][:type].to_s
+            if status != "pending"
+              set_primary_key
+              self.status = "ok"
             end
           end
           super
@@ -279,7 +288,9 @@ module Coupler
 
         def after_create
           super
-          create_fields
+          if status != "pending"
+            create_fields
+          end
         end
 
         def after_destroy

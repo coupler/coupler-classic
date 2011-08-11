@@ -14,6 +14,7 @@ module Coupler
                 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2} )\z /x
 
       many_to_one :project
+      one_to_one :resource
       plugin :serialization
       serialize_attributes :marshal, :field_types, :field_names
       mount_uploader :data, DataUploader

@@ -34,8 +34,10 @@ module CouplerFunctionalTests
       attach_file('data', fixture_path('people.csv'))
 
       job_count = Job.count
+      resource_count = Resource.count
       click_button('Begin Importing')
       assert_match %r{^/projects/#{@project[:id]}/resources$}, page.current_path
+      assert_equal resource_count + 1, Resource.count
       assert_equal job_count + 1, Job.count
     end
 
@@ -67,13 +69,16 @@ module CouplerFunctionalTests
     attribute(:javascript, true)
     test "update import with duplicate keys" do
       import = Import.create(:data => fixture_file_upload("duplicate-keys.csv"), :project => @project)
+      resource = Resource.create(:name => import.name, :project => @project, :status => 'pending', :import => import)
       import.import!
 
       visit "/projects/#{@project.id}/imports/#{import.id}/edit"
       find('input[name="delete[2][]"][value="1"]').click
       click_button('Submit')
 
-      assert_match %r{^/projects/#{@project[:id]}/resources/\d+$}, page.current_path
+      resource.refresh
+      assert_equal "ok", resource.status
+      assert_match %r{^/projects/#{@project[:id]}/resources/#{resource.id}$}, page.current_path
     end
   end
 end

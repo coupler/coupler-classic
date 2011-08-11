@@ -35,6 +35,7 @@ class TestImport < Coupler::Test::IntegrationTest
     tempfile.write("id,foo,bar\n1,2,3\n4,5,6\n7,8,9\n2,3,4\n5,6,7\n8,9,0\n")
     tempfile.close
     import = Import.create(:data => file_upload(tempfile.path), :project => project)
+    resource = Resource.create(:name => 'foo', :status => 'pending', :project => project, :import => import)
 
     job = Job.create(:name => 'import', :import => import, :status => "scheduled")
     job.execute

@@ -92,7 +92,7 @@ module Coupler
 
         def after_save
           super
-          resource.refresh_fields!
+          resource.transformations_updated!
         end
 
         def before_destroy
@@ -110,7 +110,7 @@ module Coupler
           if result_field && result_field.is_generated && self.class.filter(:result_field_id => result_field.id).count == 0
             result_field.destroy
           end
-          resource.refresh_fields!  if resource
+          resource.transformations_updated!  if resource
         end
     end
   end

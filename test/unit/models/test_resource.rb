@@ -29,8 +29,15 @@ module CouplerUnitTests
           :connection => @connection
         }.update(attribs)
         r = Resource.new(values)
-        r.stubs(:project_dataset).returns(stub({:all => [values[:project]]}))
-        r.stubs(:connection_dataset).returns(stub({:all => [values[:connection]]}))
+        if values[:project]
+          r.stubs(:project_dataset).returns(stub({:all => [values[:project]]}))
+        end
+        if values[:connection]
+          r.stubs(:connection_dataset).returns(stub({:all => [values[:connection]]}))
+        end
+        if values[:import]
+          r.stubs(:import_dataset).returns(stub({:all => [values[:import]]}))
+        end
         r
       end
 
@@ -311,23 +318,27 @@ module CouplerUnitTests
         assert_equal dataset, resource.local_dataset
       end
 
-      test "refresh fields" do
+      test "transformations_updated!" do
         resource = new_resource.save!
         field_1 = stub("id field", :id => 1)
         field_2 = stub("first_name field", :id => 2)
         field_3 = stub("last_name field", :id => 3)
 
+        now = Time.now
         transformation_1 = stub("transformation 1", {
+          :id => 1, :updated_at => now,
           :source_field_id => 2, :result_field_id => 2,
           :field_changes => {2 => {:type => :integer, :db_type => 'int(11)'}},
           :source_field => field_2
         })
         transformation_2 = stub("transformation 2", {
+          :id => 2, :updated_at => now,
           :source_field_id => 3, :result_field_id => 3,
           :field_changes => {3 => {:type => :integer, :db_type => 'int(11)'}},
           :source_field => field_3
         })
         transformation_3 = stub("transformation 3", {
+          :id => 3, :updated_at => now,
           :source_field_id => 3, :result_field_id => 3,
           :field_changes => {3 => {:type => :datetime, :db_type => 'datetime'}},
           :source_field => field_3
@@ -349,10 +360,10 @@ module CouplerUnitTests
           :local_type => :datetime, :local_db_type => 'datetime'
         }).in_sequence(seq)
 
-        resource.refresh_fields!
+        resource.transformations_updated!
       end
 
-      test "refresh_fields does not change newly created result field" do
+      test "transformations_updated does not change newly created result field" do
         resource = new_resource.save!
         field_1 = stub("id field", :id => 1)
         field_2 = stub("first_name field", :id => 2)
@@ -360,6 +371,7 @@ module CouplerUnitTests
         new_field = stub("new field", :id => 4)
 
         transformation = stub("transformation 1", {
+          :id => 1, :updated_at => Time.now,
           :source_field_id => 2, :result_field_id => 4,
           :field_changes => {2 => {:type => :integer, :db_type => 'int(11)'}},
           :source_field => field_2
@@ -373,10 +385,10 @@ module CouplerUnitTests
         field_2.expects(:update).never
         new_field.expects(:update).never
 
-        resource.refresh_fields!
+        resource.transformations_updated!
       end
 
-      test "refresh_fields resets local_type and local_db_type" do
+      test "transformations_updated resets local_type and local_db_type" do
         resource = new_resource.save!
 
         resource.expects(:fields_dataset).returns(mock {
@@ -386,7 +398,7 @@ module CouplerUnitTests
         td.expects(:order).with(:position).returns(td)
         resource.expects(:transformations_dataset).returns(td)
 
-        resource.refresh_fields!
+        resource.transformations_updated!
       end
 
       test "initial status" do
@@ -396,39 +408,108 @@ module CouplerUnitTests
 
       test "status after adding first transformation" do
         resource = new_resource.save!
-        resource.stubs(:transformation_ids).returns([1])
+
+        field_1 = stub("id field", :id => 1, :update => nil)
+        transformation_1 = stub("transformation 1", {
+          :id => 1, :updated_at => Time.now,
+          :source_field_id => 1, :result_field_id => 1,
+          :field_changes => {1 => {:type => :integer, :db_type => 'int(11)'}},
+          :source_field => field_1
+        })
+        resource.stubs(:fields_dataset).returns(stub(:update => nil))
+        td = [transformation_1]
+        td.expects(:order).with(:position).returns(td)
+        resource.expects(:transformations_dataset).returns(td)
+
+        resource.transformations_updated!
         assert_equal "out_of_date", resource.status
       end
 
       test "status when new transformation is created since transforming" do
-        resource = new_resource(:transformed_with => "1").save!
-        resource.stubs(:transformation_ids).returns([1,2])
+        now = Time.now
+        resource = new_resource(:transformed_with => "1", :transformed_at => now - 5).save!
+
+        field_1 = stub("id field", :id => 1, :update => nil)
+        transformation_1 = stub("transformation 1", {
+          :id => 1, :updated_at => now - 10,
+          :source_field_id => 1, :result_field_id => 1,
+          :field_changes => {1 => {:type => :integer, :db_type => 'int(11)'}},
+          :source_field => field_1
+        })
+        transformation_2 = stub("transformation 2", {
+          :id => 2, :updated_at => now,
+          :source_field_id => 1, :result_field_id => 1,
+          :field_changes => {1 => {:type => :integer, :db_type => 'int(11)'}},
+          :source_field => field_1
+        })
+        resource.stubs(:fields_dataset).returns(stub(:update => nil))
+        td = [transformation_1, transformation_2]
+        td.expects(:order).with(:position).returns(td)
+        resource.expects(:transformations_dataset).returns(td)
+
+        resource.transformations_updated!
         assert_equal "out_of_date", resource.status
       end
 
       test "status when transformation is updated since transforming" do
         now = Time.now
-        resource = new_resource(:transformed_with => "1", :transformed_at => now - 20).save!
-        resource.stubs(:transformation_ids).returns([1])
-        resource.stubs(:transformations_dataset).returns(stub {
-          stubs(:filter).with('updated_at > ?', now - 20).returns(self)
-          stubs(:count).returns(1)
+        resource = new_resource({
+          :transformed_with => "1",
+          :transformed_at => now - 20
+        }).save!
+        field_1 = stub("id field", :id => 1, :update => nil)
+
+        transformation_1 = stub("transformation 1", {
+          :id => 1, :updated_at => now,
+          :source_field_id => 1, :result_field_id => 1,
+          :field_changes => {1 => {:type => :integer, :db_type => 'int(11)'}},
+          :source_field => field_1
         })
+
+        resource.stubs(:fields_dataset).returns(stub(:update => nil))
+        td = [transformation_1]
+        td.expects(:order).with(:position).returns(td)
+        resource.expects(:transformations_dataset).returns(td)
+
+        resource.transformations_updated!
         assert_equal "out_of_date", resource.status
       end
 
       test "status when transformation is removed since transforming" do
         now = Time.now
-        resource = new_resource(:transformed_at => now - 5, :transformed_with => "1").save!
-        resource.stubs(:transformation_ids).returns([])
+        resource = new_resource({
+          :transformed_with => "1",
+          :transformed_at => now - 20
+        }).save!
+        td = []
+        td.stubs(:order).returns(td)
+        resource.stubs(:transformations_dataset).returns(td)
+
+        resource.transformations_updated!
         assert_equal "out_of_date", resource.status
       end
 
       test "status when new transformation is removed before transforming" do
         resource = new_resource.save!
-        resource.stubs(:transformation_ids).returns([1])
+
+        field_1 = stub("id field", :id => 1, :update => nil)
+        transformation_1 = stub("transformation 1", {
+          :id => 1, :updated_at => Time.now,
+          :source_field_id => 1, :result_field_id => 1,
+          :field_changes => {1 => {:type => :integer, :db_type => 'int(11)'}},
+          :source_field => field_1
+        })
+        resource.stubs(:fields_dataset).returns(stub(:update => nil))
+        td = [transformation_1]
+        td.expects(:order).with(:position).returns(td)
+        resource.expects(:transformations_dataset).returns(td)
+        resource.transformations_updated!
         assert_equal "out_of_date", resource.status
-        resource.stubs(:transformation_ids).returns([])
+
+        td = []
+        td.stubs(:order).returns(td)
+        resource.stubs(:transformations_dataset).returns(td)
+        resource.transformations_updated!
         assert_equal "ok", resource.status
       end
 
@@ -511,18 +592,21 @@ module CouplerUnitTests
         resource.destroy
       end
 
-      test "creating resource via import" do
+      test "creating pending resource" do
+        resource = Resource.new(:name => "People", :project => @project, :status => 'pending')
+        assert resource.valid?
+        resource.save!
+      end
+
+      test "activate pending resource" do
         import = stub("import", {
           :id => 123, :pk => 123, :project => @project,
-          :name => "People", :project_id => @project.id
+          :name => "People", :project_id => @project.id,
+          :associations => {}
         })
-        resource = Resource.new(:import => import)
-        assert_equal "People", resource.name
-        assert_equal @project, resource.project
-        assert_equal "import_123", resource.table_name
-        assert resource.valid?
+        resource = new_resource(:name => 'People', :status => 'pending', :import => import)
+        resource.save!
 
-        # import.import! would happen before saving the resource
         @local_database.stubs({
           :tables => [:import_123],
           :schema => [
@@ -531,22 +615,10 @@ module CouplerUnitTests
             [:bar, {:primary_key => false, :type => :string, :db_type => "VARCHAR"}]
           ]
         })
-        resource.save!
+        resource.activate!
         assert_equal "id", resource.primary_key_name
         assert_equal "integer", resource.primary_key_type
-      end
-
-      test "creating resource via import with duplicate name" do
-        resource_1 = new_resource(:name => "People").save!
-        import = stub("import", {
-          :id => 123, :pk => 123, :project => @project,
-          :name => "People", :project_id => @project.id
-        })
-        resource = Resource.new(:import => import)
-        assert_equal "People 2", resource.name
-        assert_equal @project, resource.project
-        assert_equal "import_123", resource.table_name
-        assert resource.valid?
+        assert_equal "ok", resource.status
       end
 
       test "source_dataset count" do

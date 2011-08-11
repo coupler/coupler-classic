@@ -41,7 +41,7 @@ module CouplerUnitTests
 
       def setup
         super
-        @resource = stub('resource', :pk => 3, :id => 3, :associations => {}, :refresh_fields! => nil)
+        @resource = stub('resource', :pk => 3, :id => 3, :associations => {}, :transformations_updated! => nil)
         @transformer = stub('transformer', {
           :pk => 1, :id => 1, :associations => {},
           :allowed_types => %w{string}, :name => "foobar"
@@ -137,7 +137,7 @@ module CouplerUnitTests
 
       test "updates resource fields on save" do
         transformation = new_transformation
-        @resource.expects(:refresh_fields!)
+        @resource.expects(:transformations_updated!)
         transformation.save!
       end
 
@@ -178,8 +178,8 @@ module CouplerUnitTests
       end
 
       test "sets position by resource" do
-        resource_1 = stub('resource', :pk => 1, :id => 1, :associations => {}, :refresh_fields! => nil)
-        resource_2 = stub('resource', :pk => 2, :id => 2, :associations => {}, :refresh_fields! => nil)
+        resource_1 = stub('resource', :pk => 1, :id => 1, :associations => {}, :transformations_updated! => nil)
+        resource_2 = stub('resource', :pk => 2, :id => 2, :associations => {}, :transformations_updated! => nil)
 
         xformation_1 = new_transformation(:resource => resource_1).save!
         xformation_2 = new_transformation(:resource => resource_1).save!
