@@ -5,12 +5,12 @@
 
 Gem::Specification.new do |s|
   s.name = %q{coupler}
-  s.version = "0.0.7"
+  s.version = "0.0.8"
   s.platform = %q{java}
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jeremy Stephens"]
-  s.date = %q{2011-07-19}
+  s.date = %q{2011-08-16}
   s.default_executable = %q{coupler}
   s.description = %q{Coupler is a (JRuby) desktop application designed to link datasets together}
   s.email = %q{jeremy.f.stephens@vanderbilt.edu}
@@ -59,6 +59,10 @@ Gem::Specification.new do |s|
     "db/migrate/021_add_fields_to_connections.rb",
     "db/migrate/022_remove_database_name_from_resources.rb",
     "db/migrate/023_add_import_jobs.rb",
+    "db/migrate/024_add_error_msg_to_jobs.rb",
+    "db/migrate/025_add_notifications.rb",
+    "db/migrate/026_add_status_to_resources.rb",
+    "db/migrate/027_add_notification_id_to_jobs.rb",
     "features/connections.feature",
     "features/matchers.feature",
     "features/projects.feature",
@@ -86,6 +90,7 @@ Gem::Specification.new do |s|
     "lib/coupler/extensions/imports.rb",
     "lib/coupler/extensions/jobs.rb",
     "lib/coupler/extensions/matchers.rb",
+    "lib/coupler/extensions/notifications.rb",
     "lib/coupler/extensions/projects.rb",
     "lib/coupler/extensions/resources.rb",
     "lib/coupler/extensions/results.rb",
@@ -104,6 +109,7 @@ Gem::Specification.new do |s|
     "lib/coupler/models/job.rb",
     "lib/coupler/models/jobify.rb",
     "lib/coupler/models/matcher.rb",
+    "lib/coupler/models/notification.rb",
     "lib/coupler/models/project.rb",
     "lib/coupler/models/resource.rb",
     "lib/coupler/models/result.rb",
@@ -138,6 +144,7 @@ Gem::Specification.new do |s|
     "test/functional/test_imports.rb",
     "test/functional/test_jobs.rb",
     "test/functional/test_matchers.rb",
+    "test/functional/test_notifications.rb",
     "test/functional/test_projects.rb",
     "test/functional/test_resources.rb",
     "test/functional/test_results.rb",
@@ -158,6 +165,7 @@ Gem::Specification.new do |s|
     "test/unit/models/test_import.rb",
     "test/unit/models/test_job.rb",
     "test/unit/models/test_matcher.rb",
+    "test/unit/models/test_notification.rb",
     "test/unit/models/test_project.rb",
     "test/unit/models/test_resource.rb",
     "test/unit/models/test_result.rb",
@@ -242,6 +250,7 @@ Gem::Specification.new do |s|
     "webroot/views/layout.erb",
     "webroot/views/matchers/form.erb",
     "webroot/views/matchers/list.erb",
+    "webroot/views/notifications/index.erb",
     "webroot/views/projects/form.erb",
     "webroot/views/projects/index.erb",
     "webroot/views/projects/show.erb",
