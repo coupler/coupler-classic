@@ -5,6 +5,7 @@ Sequel.migration do
       String :message
       String :url
       TrueClass :seen
+      Integer :import_id
       Time :created_at
       Time :updated_at
     end

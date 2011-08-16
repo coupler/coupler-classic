@@ -12,13 +12,18 @@
   <tbody>
   <% @resources.each_with_index do |resource, i| %>
     <tr<%= ' class="alt"' if i % 2 == 1 %>>
-      <td><a href="/projects/<%= resource.project_id %>/resources/<%= resource.id %>"><%= resource.name %></a></td>
-      <%- if resource.import_id -%>
-        <td colspan="3" class='centered'>(imported)</td>
-      <%- else -%>
-        <% unless @hide_connection %><td><%= resource.connection.name %></td><% end %>
-        <td><%= resource.table_name %></td>
-      <%- end -%>
+      <% if resource.status == 'pending' %>
+        <td><%= resource.name %></td>
+        <td colspan="2" class='centered'>(pending)</td>
+      <% else %>
+        <td><a href="/projects/<%= resource.project_id %>/resources/<%= resource.id %>"><%= resource.name %></a></td>
+        <%- if resource.import_id -%>
+          <td colspan="2" class='centered'>(imported)</td>
+        <%- else -%>
+          <% unless @hide_connection %><td><%= resource.connection.name %></td><% end %>
+          <td><%= resource.table_name %></td>
+        <%- end -%>
+      <% end %>
     </tr>
   <% end %>
   </tbody>

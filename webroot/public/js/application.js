@@ -1,12 +1,32 @@
-//function updateJobCount() {
-  //$.get("/jobs/count", function(data) {
-    //if (data == "0") {
-      //$('#job-count').html("")
-    //} else {
-      //$('#job-count').html("("+data+")")
-    //}
-  //});
-//}
+/*
+function updateJobCount() {
+  $.get("/jobs/count", function(data) {
+    if (data == "0") {
+      $('#job-count').html("")
+    } else {
+      $('#job-count').html("("+data+")")
+    }
+  });
+}
+*/
+function updateNotifications() {
+  $.get("/notifications/unseen.json", function(data, textStatus, jqXHR) {
+    var n = $('#notifications');
+    if (data.length == 0) {
+      n.find('ul').html('');
+      n.hide();
+    } else {
+      var ids = [];
+      $.each(data, function() {
+        var id = 'notification-'+this.id;
+        ids.push(id);
+        n.find('ul:not(:has(#'+id+'))').append('<li id="'+id+'"><a href="'+this.url+'">'+this.message+'</a></li>');
+      });
+      n.find('ul li:not(#'+ids.join(',#')+')').remove();
+      $('#notifications').show();
+    }
+  }, 'json');
+}
 $(function() {
   $('.timeago').timeago();
   var accordion = $('#sidebar .accordion').accordion({
@@ -36,5 +56,6 @@ $(function() {
       window.location.href = href;
     });
   });
-  //setInterval(updateJobCount, 30000);
+  setInterval(updateNotifications, 10000);
+  updateNotifications();
 });

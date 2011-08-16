@@ -6,6 +6,7 @@ module Coupler
       many_to_one :resource
       many_to_one :scenario
       many_to_one :import
+      many_to_one :notification
 
       def percent_completed
         total > 0 ? completed * 100 / total : 0
@@ -37,7 +38,9 @@ module Coupler
           Logger.instance.error("Job #{id} (#{name}) crashed: #{message}")
           raise e
         end
-        update(:status => 'done', :completed_at => Time.now)
+        self.status = 'done'
+        self.completed_at = Time.now
+        save
         Logger.instance.info("Job #{id} (#{name}) finished successfully")
       end
 
@@ -68,12 +71,12 @@ module Coupler
 
             resource = import.resource
             resource.activate!
-            Notification.create({
+            self.notification = Notification.create({
               :message => "Import finished successfully",
               :url => "/projects/#{import.project_id}/resources/#{resource.id}"
             })
           else
-            Notification.create({
+            self.notification = Notification.create({
               :message => "Import finished, but with errors",
               :url => "/projects/#{import.project_id}/imports/#{import.id}/edit"
             })

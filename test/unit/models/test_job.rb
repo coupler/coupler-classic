@@ -23,7 +23,7 @@ module CouplerUnitTests
         @resource = stub('resource', :pk => 456, :id => 456, :associations => {})
         @scenario = stub('scenario', :pk => 456, :id => 456, :associations => {})
         @import = stub('import', :pk => 123, :id => 123, :associations => {}, :project_id => 1, :project => @project, :name => 'foo')
-        @notification = stub('notification')
+        @notification = stub('notification', :pk => 222, :id => 222, :associations => {})
         Coupler::Models::Notification.stubs(:create).returns(@notification)
       end
 
@@ -44,6 +44,10 @@ module CouplerUnitTests
         assert_respond_to Job.new, :import
       end
 
+      test "belongs to notification" do
+        assert_respond_to Job.new, :notification
+      end
+
       test "percent completed" do
         job = new_job(:name => 'transform', :resource => @resource, :total => 200, :completed => 54)
         assert_equal 27, job.percent_completed
@@ -59,7 +63,9 @@ module CouplerUnitTests
         seq = sequence("update")
         job.expects(:update).with(:status => 'running', :total => 12345, :started_at => now).in_sequence(seq)
         @resource.expects(:transform!).in_sequence(seq)
-        job.expects(:update).with(:status => 'done', :completed_at => now).in_sequence(seq)
+        job.expects(:status=).with('done').in_sequence(seq)
+        job.expects(:completed_at=).with(now).in_sequence(seq)
+        job.expects(:save).in_sequence(seq)
         Timecop.freeze(now) { job.execute }
       end
 
@@ -90,7 +96,9 @@ module CouplerUnitTests
         seq = sequence("update")
         job.expects(:update).with(:status => 'running', :started_at => now).in_sequence(seq)
         @scenario.expects(:run!).in_sequence(seq)
-        job.expects(:update).with(:status => 'done', :completed_at => now).in_sequence(seq)
+        job.expects(:status=).with('done').in_sequence(seq)
+        job.expects(:completed_at=).with(now).in_sequence(seq)
+        job.expects(:save).in_sequence(seq)
 
         Timecop.freeze(now) { job.execute }
       end
@@ -132,9 +140,12 @@ module CouplerUnitTests
         @import.expects(:data).returns(mock(:file => mock(:size => 12345)))
         job.expects(:update).with(:status => 'running', :total => 12345, :started_at => now).in_sequence(seq)
         @import.expects(:import!).returns(true).in_sequence(seq)
-        @import.expects(:resource).returns(mock({:id => 456, :activate! => nil}))
-        job.expects(:update).with(:status => 'done', :completed_at => now).in_sequence(seq)
-        Notification.expects(:create).with(:message => "Import finished successfully", :url => "/projects/1/resources/456").returns(@notification)
+        @import.expects(:resource).returns(mock({:id => 456, :activate! => nil})).in_sequence(seq)
+        Notification.expects(:create).with(:message => "Import finished successfully", :url => "/projects/1/resources/456").returns(@notification).in_sequence(seq)
+        job.expects(:notification=).with(@notification).in_sequence(seq)
+        job.expects(:status=).with('done').in_sequence(seq)
+        job.expects(:completed_at=).with(now).in_sequence(seq)
+        job.expects(:save).in_sequence(seq)
         Timecop.freeze(now) { job.execute }
       end
 
@@ -147,7 +158,9 @@ module CouplerUnitTests
         job.expects(:update).with(:status => 'running', :total => 12345, :started_at => now).in_sequence(seq)
         @import.expects(:import!).returns(false).in_sequence(seq)
         Notification.expects(:create).with(:message => "Import finished, but with errors", :url => "/projects/1/imports/123/edit").returns(@notification)
-        job.expects(:update).with(:status => 'done', :completed_at => now).in_sequence(seq)
+        job.expects(:status=).with('done').in_sequence(seq)
+        job.expects(:completed_at=).with(now).in_sequence(seq)
+        job.expects(:save).in_sequence(seq)
         Timecop.freeze(now) { job.execute }
       end
     end

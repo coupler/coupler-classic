@@ -24,6 +24,7 @@ body {
 #sidebar .accordion h3 {
   margin-top: 3px;
   font-family: verdana, arial, helvetica, sans-serif;
+  position: relative;
 }
 #sidebar .accordion h3.ui-state-active a {
   text-shadow: 1px 1px 1px black;
@@ -503,4 +504,26 @@ table.summary tr {
 }
 .result-group-left .record-navigation {
   border-right: 2px solid #333;
+}
+
+#notifications {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+#notifications ul {
+  background-color: lightyellow;
+  -moz-border-radius-bottomright: 10px;
+  -webkit-border-bottom-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+  -moz-border-radius-bottomleft: 10px;
+  -webkit-border-bottom-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+  list-style-type: none;
+  text-align: center;
+}
+#notifications ul li {
+  margin: 0;
+  display: inline;
 }
