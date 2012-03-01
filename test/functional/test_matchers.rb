@@ -86,7 +86,6 @@ module CouplerFunctionalTests
 
     attribute(:javascript, true)
     test "delete" do
-      pend "This fails and I don't know why"
       field = @resource.fields_dataset[:name => 'foo']
       matcher = Matcher.create!({
         :scenario => @scenario,

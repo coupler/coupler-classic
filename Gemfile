@@ -1,4 +1,5 @@
 source "http://rubygems.org"
+gem 'rack', "1.3.6"
 gem 'sinatra'
 gem 'sequel'
 gem 'rack-flash', :require => 'rack/flash'

@@ -26,6 +26,7 @@ module CouplerFunctionalTests
 
     test "unseen json" do
       now = DateTime.now
+      n1 = n2 = nil
       Timecop.freeze(now) do
         n1 = Notification.create(:message => "Foo bar", :url => "/connections")
         n2 = Notification.create(:message => "Seen foo bar", :url => "/projects", :seen => true)
