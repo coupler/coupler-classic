@@ -14,7 +14,7 @@ module Coupler
     set :bind, '127.0.0.1'
     enable :sessions
 
-    use Rack::Flash
+    register Sinatra::Flash
     register Extensions::Connections
     register Extensions::Projects
     register Extensions::Resources

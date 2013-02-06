@@ -20,7 +20,7 @@ namespace :test do
     #test.verbose = true
     test.ruby_opts = %w{--debug}
   end
-  task :unit => ['environment:test', 'db:purge', 'db:migrate', 'db:fake']
+  task :unit => 'environment:test'
 
   Rake::TestTask.new(:integration) do |test|
     test.libs << 'lib' << 'test'
@@ -37,19 +37,6 @@ namespace :test do
     test.ruby_opts = %w{--debug}
   end
   task :functional => ['environment:test', 'db:purge', 'db:migrate', 'db:fake']
-end
-
-begin
-  require 'rcov/rcovtask'
-  Rcov::RcovTask.new do |test|
-    test.libs << 'test'
-    test.pattern = 'test/**/test_*.rb'
-    test.verbose = true
-  end
-rescue LoadError
-  task :rcov do
-    abort "RCov is not available. In order to run rcov, you must: sudo gem install spicycode-rcov"
-  end
 end
 
 begin

@@ -14,19 +14,13 @@ require 'digest'
 require 'rack'
 require 'rack/mime'   # This is an attempt to avoid NameError exceptions
 require 'sinatra/base'
-require 'rack/flash'
+require 'sinatra/flash'
 require 'sequel'
 require 'sequel/extensions/migration'
 require 'json'
 require 'fastercsv'
 require 'carrierwave/sequel'
-require 'mongrel'
-
-=begin
-# Sequel will automatically include these as needed
-require 'jdbc/mysql'
-require 'jdbc/h2'
-=end
+require 'mizuno'
 
 module Coupler
   def self.environment

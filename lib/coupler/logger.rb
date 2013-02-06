@@ -12,5 +12,9 @@ module Coupler
     def __getobj__
       @logger
     end
+
+    def __setobj__(obj)
+      @logger = obj
+    end
   end
 end

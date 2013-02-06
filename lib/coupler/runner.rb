@@ -32,17 +32,15 @@ module Coupler
       Coupler::Scheduler.instance.start
 
       say "Starting web server..."
-      handler = Rack::Handler.get('mongrel')
       settings = Coupler::Base.settings
-
-      # See the Rack::Handler::Mongrel.run! method
-      # NOTE: I don't want to join the server immediately, which is why I'm
-      #       doing this by hand.
-      @web_server = Mongrel::HttpServer.new(settings.bind, settings.port, 950, 0, 60)
-      @web_server.register('/', handler.new(Coupler::Base))
       success = false
       begin
-        @web_thread = @web_server.run
+        @web_thread = Thread.new do
+          Mizuno::Server.run(Coupler::Base, {
+            :host => settings.bind,
+            :port => settings.port
+          })
+        end
         success = true
       rescue Errno::EADDRINUSE => e
         Scheduler.instance.shutdown
@@ -58,24 +56,24 @@ module Coupler
           end
         end
 
-#        say <<'EOF'
-#                             ___
-#                            /\_ \
-#  ___    ___   __  __  _____\//\ \      __   _ __
-# /'___\ / __`\/\ \/\ \/\ '__`\\ \ \   /'__`\/\`'__\
-#/\ \__//\ \L\ \ \ \_\ \ \ \L\ \\_\ \_/\  __/\ \ \/
-#\ \____\ \____/\ \____/\ \ ,__//\____\ \____\\ \_\
-# \/____/\/___/  \/___/  \ \ \/ \/____/\/____/ \/_/
-#                         \ \_\
-#                          \/_/
-#EOF
+       puts <<'EOF'
+                             ___
+                            /\_ \
+  ___    ___   __  __  _____\//\ \      __   _ __
+ /'___\ / __`\/\ \/\ \/\ '__`\\ \ \   /'__`\/\`'__\
+/\ \__//\ \L\ \ \ \_\ \ \ \L\ \\_\ \_/\  __/\ \ \/
+\ \____\ \____/\ \____/\ \ ,__//\____\ \____\\ \_\
+ \/____/\/___/  \/___/  \ \ \/ \/____/\/____/ \/_/
+                         \ \_\
+                          \/_/
+EOF
       end
     end
 
     def shutdown
       say "Shutting down..."
       Scheduler.instance.shutdown
-      @web_server.stop
+      Mizuno::Server.stop
     end
 
     def join

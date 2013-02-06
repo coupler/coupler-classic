@@ -1,28 +1,18 @@
 require 'java'
 require 'pp'
-
-require 'rubygems'
-require 'bundler'
-Bundler.setup(:default, :development)
-
 require 'yaml'
 require 'erb'
-require 'test/unit'
-require 'mocha'
-require 'rack/test'
-require 'rack/flash'
-require 'rack/flash/test'
-require 'capybara'
-require 'capybara/dsl'
-require 'nokogiri'
-require 'timecop'
 require 'tempfile'
 require 'tmpdir'
 require 'fileutils'
-require 'table_maker'
-require 'sequel'
+
+require 'rubygems'
+require 'bundler'
+Bundler.require(:default, :development)
+
+require 'mocha/setup'
+require 'rack/test'
 require 'sequel/extensions/schema_dumper'
-require 'forgery'
 
 dir = File.dirname(__FILE__)
 $LOAD_PATH.unshift(dir)
@@ -36,6 +26,7 @@ require 'coupler'
 
 Coupler::Base.set(:sessions, false) # workaround
 Coupler::Base.set(:environment, :test)
+p Sequel::DATABASES
 Coupler::Database.migrate!
 
 #Capybara.register_driver :selenium_chrome do |app|
@@ -136,7 +127,7 @@ module Coupler
       end
 
       def setup
-        if self.class.get_attribute(@method_name, :javascript)
+        if attributes[:javascript]
           Capybara.current_driver = Capybara.javascript_driver
         end
         super
