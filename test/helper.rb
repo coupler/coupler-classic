@@ -8,11 +8,15 @@ require 'fileutils'
 
 require 'rubygems'
 require 'bundler'
-Bundler.require(:default, :development)
+Bundler.setup(:default, :development)
 
+require 'test/unit'
 require 'mocha/setup'
 require 'rack/test'
+require 'sequel'
 require 'sequel/extensions/schema_dumper'
+require 'capybara'
+require 'timecop'
 
 dir = File.dirname(__FILE__)
 $LOAD_PATH.unshift(dir)
@@ -26,12 +30,8 @@ require 'coupler'
 
 Coupler::Base.set(:sessions, false) # workaround
 Coupler::Base.set(:environment, :test)
-p Sequel::DATABASES
 Coupler::Database.migrate!
 
-#Capybara.register_driver :selenium_chrome do |app|
-  #Capybara::Driver::Selenium.new(app, :browser => :chrome)
-#end
 Capybara.javascript_driver = :selenium
 Capybara.app = Coupler::Base
 

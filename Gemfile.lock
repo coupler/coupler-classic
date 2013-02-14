@@ -3,9 +3,12 @@ PATH
   specs:
     coupler (0.0.9)
       carrierwave-sequel
+      ethel
+      ethel-sequel
       fastercsv
       jdbc-h2
       json
+      linkage (= 0.0.8)
       mizuno
       rack
       sequel
@@ -15,10 +18,10 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    activemodel (3.2.11)
-      activesupport (= 3.2.11)
+    activemodel (3.2.12)
+      activesupport (= 3.2.12)
       builder (~> 3.0.0)
-    activesupport (3.2.11)
+    activesupport (3.2.12)
       i18n (~> 0.6)
       multi_json (~> 1.0)
     bouncy-castle-java (1.5.0146.1)
@@ -36,21 +39,30 @@ GEM
     carrierwave-sequel (0.1.0)
       carrierwave
       sequel
-    childprocess (0.3.7)
-      ffi (~> 1.0, >= 1.0.6)
+    childprocess (0.3.8)
+      ffi (~> 1.0, >= 1.0.11)
     choice (0.1.6)
     columnize (0.3.6)
+    ethel (0.0.1)
+    ethel-sequel (0.0.1)
+      ethel
+      sequel
     fastercsv (1.5.5)
     ffi (1.3.1-java)
     forgery (0.5.0)
+    hashery (2.1.0)
     i18n (0.6.1)
     jdbc-h2 (1.3.170.1)
     jdbc-mysql (5.1.22.1)
     jruby-openssl (0.8.2)
       bouncy-castle-java (>= 1.5.0146.1)
-    json (1.7.6-java)
+    json (1.7.7-java)
+    linkage (0.0.8)
+      hashery
+      sequel
+      sequel-collation
     metaclass (0.0.1)
-    mime-types (1.20.1)
+    mime-types (1.21)
     mizuno (0.6.6)
       childprocess (>= 0.2.6)
       choice (>= 0.1.0)
@@ -58,9 +70,9 @@ GEM
       rack (>= 1.0.0)
     mocha (0.13.2)
       metaclass (~> 0.0.1)
-    multi_json (1.5.0)
+    multi_json (1.5.1)
     nokogiri (1.5.6-java)
-    rack (1.5.1)
+    rack (1.5.2)
     rack-protection (1.3.2)
       rack
     rack-test (0.6.2)
@@ -77,6 +89,8 @@ GEM
       rubyzip
       websocket (~> 1.0.4)
     sequel (3.44.0)
+    sequel-collation (0.1.0)
+      sequel
     sinatra (1.3.4)
       rack (~> 1.4)
       rack-protection (~> 1.3)
@@ -87,7 +101,7 @@ GEM
       sequel
     test-unit (2.5.4)
     tilt (1.3.3)
-    timecop (0.5.9.1)
+    timecop (0.5.9.2)
     websocket (1.0.7)
     xpath (1.0.0)
       nokogiri (~> 1.3)

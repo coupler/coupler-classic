@@ -7,13 +7,14 @@ module CouplerUnitTests
       @scheduler = stub("scheduler", :is_started? => true, :start => nil)
       Scheduler.stubs(:instance).returns(@scheduler)
       Database.stubs(:migrate!)
-      @app = stub('rack app')
-      @handler = stub('rack handler', :new => @app)
-      Rack::Handler.stubs(:get).returns(@handler)
-      @thread = stub('mongrel thread', :join => nil)
-      @mongrel = stub('mongrel', :register => nil, :run => @thread)
-      Mongrel::HttpServer.stubs(:new).returns(@mongrel)
-      @settings = stub('settings', :bind => '0.0.0.0', :port => 123)
+      @server = stub('rack server', :start => nil)
+      Rack::Server.stubs(:new).returns(@server)
+      @settings = stub('settings', {
+        :bind => '0.0.0.0', :port => 123,
+        :environment => :test, :root => '/foo/bar'
+      })
+      @thread = stub('web thread')
+      Thread.stubs(:new).yields.returns(@thread)
       Base.stubs(:set => nil, :settings => @settings)
       Runner.any_instance.stubs(:trap)
     end
@@ -35,17 +36,18 @@ module CouplerUnitTests
     end
 
     test "starts web server" do
-      Mongrel::HttpServer.expects(:new).with('0.0.0.0', 123, 950, 0, 60).returns(@mongrel)
-      @handler.expects(:new).with(Coupler::Base).returns(@app)
-      @mongrel.expects(:register).with('/', @app)
-      @mongrel.expects(:run).returns(@thread)
+      Rack::Server.expects(:new).with({
+        :host => '0.0.0.0', :port => 123, :environment => :test,
+        :root => '/foo/bar', :app => Coupler::Base, :server => 'mizuno'
+      }).returns(@server)
+      @server.expects(:start)
       Coupler::Base.expects(:set).with(:running, true)
       capture_stdout { Runner.new([]) }
     end
 
     test "shutting down" do
       @scheduler.expects(:shutdown)
-      @mongrel.expects(:stop)
+      @server.expects(:stop)
       capture_stdout { r = Runner.new([]); r.shutdown }
     end
 
@@ -81,8 +83,10 @@ module CouplerUnitTests
 
     test "message proc" do
       messages = []
-      Runner.new([]) do |msg|
-        messages << msg
+      capture_stdout do
+        Runner.new([]) do |msg|
+          messages << msg
+        end
       end
       assert !messages.empty?
     end

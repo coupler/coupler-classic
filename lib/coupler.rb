@@ -1,10 +1,4 @@
-require 'pp'
-require 'java'
-require 'jruby/core_ext'
-
-require 'rbconfig'
 require 'fileutils'
-require 'erb'
 require 'delegate'
 require 'singleton'
 require 'logger'
@@ -12,7 +6,6 @@ require 'optparse'
 require 'thwait'
 require 'digest'
 require 'rack'
-require 'rack/mime'   # This is an attempt to avoid NameError exceptions
 require 'sinatra/base'
 require 'sinatra/flash'
 require 'sequel'
@@ -21,6 +14,9 @@ require 'json'
 require 'fastercsv'
 require 'carrierwave/sequel'
 require 'mizuno'
+require 'linkage'
+require 'ethel'
+require 'ethel/sequel'
 
 module Coupler
   def self.environment

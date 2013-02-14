@@ -27,4 +27,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency 'carrierwave-sequel'
   gem.add_runtime_dependency 'mizuno'
   gem.add_runtime_dependency 'jdbc-h2'
+  gem.add_runtime_dependency 'linkage', '0.0.8'
+  gem.add_runtime_dependency 'ethel'
+  gem.add_runtime_dependency 'ethel-sequel'
 end

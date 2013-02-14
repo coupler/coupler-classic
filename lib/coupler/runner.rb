@@ -35,11 +35,13 @@ module Coupler
       settings = Coupler::Base.settings
       success = false
       begin
+        @server = Rack::Server.new({
+          :host => settings.bind, :port => settings.port,
+          :environment => settings.environment, :root => settings.root,
+          :app => Coupler::Base, :server => 'mizuno'
+        })
         @web_thread = Thread.new do
-          Mizuno::Server.run(Coupler::Base, {
-            :host => settings.bind,
-            :port => settings.port
-          })
+          @server.start
         end
         success = true
       rescue Errno::EADDRINUSE => e
@@ -73,7 +75,7 @@ EOF
     def shutdown
       say "Shutting down..."
       Scheduler.instance.shutdown
-      Mizuno::Server.stop
+      @server.stop
     end
 
     def join

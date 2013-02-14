@@ -1,7 +1,3 @@
-if !defined?(Coupler::Database)
-  raise "Database isn't initialized yet!"
-end
-
 module Coupler
   module Models
     autoload :Comparison,     File.dirname(__FILE__) + "/models/comparison"

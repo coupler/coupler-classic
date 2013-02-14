@@ -43,6 +43,7 @@ module CouplerFunctionalTests
       assert page.has_content?("The project you were looking for doesn't exist")
     end
 
+    attribute(:javascript, true)
     test "new with non existant resource" do
       visit "/projects/#{@project.id}/resources/8675309/transformations/new"
       assert_equal "/projects/#{@project.id}/resources", page.current_path
