@@ -21,4 +21,5 @@ module Coupler
 end
 
 require "coupler/version"
+require "coupler/connection"
 require "coupler/application"
