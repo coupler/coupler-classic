@@ -20,6 +20,10 @@ module Coupler
   Database = Sequel.connect(config)
 end
 
+Sequel::Model.plugin :timestamps
+Sequel::Model.plugin :validation_helpers
+
 require "coupler/version"
 require "coupler/connection"
+require "coupler/file"
 require "coupler/application"
