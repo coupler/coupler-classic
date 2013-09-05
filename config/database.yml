@@ -5,4 +5,3 @@ test:
 development:
   adapter: sqlite
   database: <%= Coupler::Root %>/db/development.db
-  logger: _stderr_
