@@ -1,0 +1,44 @@
+* { box-sizing: border-box; }
+
+body {
+  background-color: #555;
+}
+
+header {
+  border-bottom: 1px solid gray;
+  padding: 10px;
+}
+
+header h1 {
+  margin: 0;
+}
+
+#main {
+  width: 1000px;
+  margin: 10px auto;
+  background-color: white;
+}
+
+nav {
+  width: 120px;
+  padding: 10px;
+  float: left;
+}
+
+nav ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+nav li {
+  display: block;
+  text-align: center;
+}
+
+#content {
+  padding: 10px;
+  margin-left: 120px;
+  min-height: 300px;
+  border-left: 1px solid gray;
+}
