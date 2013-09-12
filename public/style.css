@@ -51,6 +51,15 @@ nav li {
   padding-bottom: 10px;
 }
 
+#notice {
+  text-align: center;
+  border: 1px solid gray;
+}
+
+#notice.error {
+  color: red;
+}
+
 p {
   padding: 0 10px;
 }

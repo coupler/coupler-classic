@@ -2,6 +2,7 @@ module Coupler
   class Application < Sinatra::Base
     set :root, Root.to_s
     enable :reload_templates if development?
+    enable :sessions
 
     helpers do
       def flash(*args)
@@ -19,7 +20,7 @@ module Coupler
     end
 
     after do
-      session['flash'] = session['new_flash']
+      session['flash'] = session.delete('new_flash')
     end
 
     get "/" do
@@ -34,8 +35,10 @@ module Coupler
     post "/files" do
       attribs = params['file']
       upload = attribs.delete('upload')
-      attribs['data'] = upload[:tempfile].read
-      attribs['filename'] = upload[:filename]
+      if upload
+        attribs['data'] = upload[:tempfile].read
+        attribs['filename'] = upload[:filename]
+      end
 
       file = File.new
       file.set_only(attribs, :data, :filename, :col_sep, :row_sep, :quote_char)

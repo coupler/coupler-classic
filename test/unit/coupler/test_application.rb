@@ -57,15 +57,13 @@ module TestCoupler
         file = stub('file')
         Coupler::File.expects(:new).returns(file)
         file.expects(:set_only).with({
-          'data' => "foo\n", 'filename' => 'foo.txt',
           'col_sep' => ',', 'row_sep' => 'auto', 'quote_char' => '"'
         }, :data, :filename, :col_sep, :row_sep, :quote_char)
         file.expects(:valid?).returns(false)
         file.expects(:save).never
 
         post '/files', 'file' => {
-          'upload' => upload, 'col_sep' => ',', 'row_sep' => 'auto',
-          'quote_char' => '"'
+          'col_sep' => ',', 'row_sep' => 'auto', 'quote_char' => '"'
         }
         assert last_response.redirect?
         assert_equal "http://example.org/files", last_response['location']
