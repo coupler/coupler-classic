@@ -3,6 +3,25 @@ module Coupler
     set :root, Root.to_s
     enable :reload_templates if development?
 
+    helpers do
+      def flash(*args)
+        if args.empty?
+          raise ArgumentError, "wrong number of arguments (0 for 1..2)"
+        end
+
+        if args.length == 1
+          session.has_key?('flash') ? session['flash'][args[0]] : nil
+        else
+          session['new_flash'] ||= {}
+          session['new_flash'][args[0]] = args[1]
+        end
+      end
+    end
+
+    after do
+      session['flash'] = session['new_flash']
+    end
+
     get "/" do
       erb :index
     end
@@ -20,7 +39,12 @@ module Coupler
 
       file = File.new
       file.set_only(attribs, :data, :filename, :col_sep, :row_sep, :quote_char)
-      file.save if file.valid?
+      if file.valid?
+        file.save
+      else
+        flash('notice', 'File upload was invalid.')
+        flash('notice_class', 'error')
+      end
       redirect '/files'
     end
 

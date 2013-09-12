@@ -22,6 +22,9 @@
     </nav>
 
     <section id="content">
+      <% if flash('notice') %>
+        <section id="notice" class="<%= flash('notice_class') %>"><%= flash('notice') %></section>
+      <% end %>
       <%= yield %>
     </section>
 
