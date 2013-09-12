@@ -23,5 +23,12 @@ module Coupler
       file.save if file.valid?
       redirect '/files'
     end
+
+    post "/files/:id" do
+      file = File[:id => params['id']]
+      file.set_only(params['file'], :col_sep, :row_sep, :quote_char)
+      file.save if file.valid?
+      redirect '/files'
+    end
   end
 end

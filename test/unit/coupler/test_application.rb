@@ -15,7 +15,10 @@ module TestCoupler
     end
 
     test "files index" do
-      file = stub('file', :filename => 'foo.txt')
+      file = stub('file', {
+        :filename => 'foo.txt', :col_sep => ',',
+        :row_sep => 'auto', :quote_char => '"'
+      })
       Coupler::File.expects(:all).returns([file])
       get '/files'
       assert last_response.ok?
@@ -32,7 +35,7 @@ module TestCoupler
         file.expects(:set_only).with({
           'data' => "foo\n", 'filename' => 'foo.txt',
           'col_sep' => ',', 'row_sep' => 'auto', 'quote_char' => '"'
-        }, :data, :filename, :col_sep, :row_sep, :quote_char).returns(file)
+        }, :data, :filename, :col_sep, :row_sep, :quote_char)
         file.expects(:valid?).returns(true)
         file.expects(:save).returns(true)
 
@@ -56,7 +59,7 @@ module TestCoupler
         file.expects(:set_only).with({
           'data' => "foo\n", 'filename' => 'foo.txt',
           'col_sep' => ',', 'row_sep' => 'auto', 'quote_char' => '"'
-        }, :data, :filename, :col_sep, :row_sep, :quote_char).returns(file)
+        }, :data, :filename, :col_sep, :row_sep, :quote_char)
         file.expects(:valid?).returns(false)
         file.expects(:save).never
 
@@ -67,6 +70,22 @@ module TestCoupler
         assert last_response.redirect?
         assert_equal "http://example.org/files", last_response['location']
       end
+    end
+
+    test "update file attributes" do
+      file = stub('file')
+      Coupler::File.expects(:[]).with(:id => '1').returns(file)
+      file.expects(:set_only).with({
+        'col_sep' => ',', 'row_sep' => 'auto', 'quote_char' => '"'
+      }, :col_sep, :row_sep, :quote_char).returns(file)
+      file.expects(:valid?).returns(true)
+      file.expects(:save).returns(true)
+
+      post '/files/1', 'file' => {
+        'col_sep' => ',', 'row_sep' => 'auto', 'quote_char' => '"'
+      }
+      assert last_response.redirect?
+      assert_equal "http://example.org/files", last_response['location']
     end
   end
 end
