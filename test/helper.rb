@@ -12,10 +12,15 @@ ENV['RACK_ENV'] = 'test'
 require 'test/unit'
 require 'mocha/setup'
 require 'rack/test'
+require 'capybara/poltergeist'
+require 'database_cleaner'
 
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 require 'coupler'
+
+Capybara.javascript_driver = :poltergeist
+Capybara.app = Coupler::Application
 
 class SequenceHelper
   def initialize(name)
@@ -34,14 +39,23 @@ module XhrHelper
   end
 end
 
-class Test::Unit::TestCase
-  alias_method :run_without_transactions, :run
+module IntegrationHelper
+  include Capybara::DSL
 
-  def run(*args, &block)
-    result = nil
-    Sequel::Model.db.transaction(:rollback => :always) do
-      result = run_without_transactions(*args, &block)
-    end
-    result
+  def teardown
+    Capybara.reset_sessions!
+    Capybara.use_default_driver
+    super
+  end
+end
+
+DatabaseCleaner.strategy = :truncation
+class Test::Unit::TestCase
+  def setup
+    DatabaseCleaner.start
+  end
+
+  def teardown
+    DatabaseCleaner.clean
   end
 end
