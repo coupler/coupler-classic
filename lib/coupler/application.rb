@@ -13,10 +13,13 @@ module Coupler
     end
 
     post "/files" do
-      file = File.new({
-        :data => params['file'][:tempfile].read,
-        :filename => params['file'][:filename]
-      })
+      attribs = params['file']
+      upload = attribs.delete('upload')
+      attribs['data'] = upload[:tempfile].read
+      attribs['filename'] = upload[:filename]
+
+      file = File.new
+      file.set_only(attribs, :data, :filename, :col_sep, :row_sep, :quote_char)
       file.save if file.valid?
       redirect '/files'
     end

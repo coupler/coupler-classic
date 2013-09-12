@@ -48,8 +48,22 @@ nav li {
   margin-left: 120px;
   min-height: 300px;
   border-left: 1px solid gray;
+  padding-bottom: 10px;
 }
 
 p {
   padding: 0 10px;
+}
+
+section.files table {
+  margin: 10px;
+}
+section.files table th {
+  padding: 0 5px;
+  border: 1px solid black;
+  border-bottom: 2px solid black;
+}
+section.files table td {
+  padding: 5px;
+  border: 1px solid black;
 }

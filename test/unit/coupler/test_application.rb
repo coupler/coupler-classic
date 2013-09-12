@@ -27,14 +27,19 @@ module TestCoupler
         File.open(fn, 'w') { |f| f.puts("foo") }
         upload = Rack::Test::UploadedFile.new(fn, 'text/plain')
 
-        file = stub('file', :filename => 'foo.txt')
-        Coupler::File.expects(:new).with({
-          :data => "foo\n", :filename => 'foo.txt'
-        }).returns(file)
+        file = stub('file')
+        Coupler::File.expects(:new).returns(file)
+        file.expects(:set_only).with({
+          'data' => "foo\n", 'filename' => 'foo.txt',
+          'col_sep' => ',', 'row_sep' => 'auto', 'quote_char' => '"'
+        }, :data, :filename, :col_sep, :row_sep, :quote_char).returns(file)
         file.expects(:valid?).returns(true)
         file.expects(:save).returns(true)
 
-        post '/files', :file => upload
+        post '/files', 'file' => {
+          'upload' => upload, 'col_sep' => ',', 'row_sep' => 'auto',
+          'quote_char' => '"'
+        }
         assert last_response.redirect?
         assert_equal "http://example.org/files", last_response['location']
       end
@@ -46,14 +51,19 @@ module TestCoupler
         File.open(fn, 'w') { |f| f.puts("foo") }
         upload = Rack::Test::UploadedFile.new(fn, 'text/plain')
 
-        file = stub('file', :filename => 'foo.txt')
-        Coupler::File.expects(:new).with({
-          :data => "foo\n", :filename => 'foo.txt'
-        }).returns(file)
+        file = stub('file')
+        Coupler::File.expects(:new).returns(file)
+        file.expects(:set_only).with({
+          'data' => "foo\n", 'filename' => 'foo.txt',
+          'col_sep' => ',', 'row_sep' => 'auto', 'quote_char' => '"'
+        }, :data, :filename, :col_sep, :row_sep, :quote_char).returns(file)
         file.expects(:valid?).returns(false)
         file.expects(:save).never
 
-        post '/files', :file => upload
+        post '/files', 'file' => {
+          'upload' => upload, 'col_sep' => ',', 'row_sep' => 'auto',
+          'quote_char' => '"'
+        }
         assert last_response.redirect?
         assert_equal "http://example.org/files", last_response['location']
       end

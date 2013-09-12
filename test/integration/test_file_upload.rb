@@ -10,7 +10,7 @@ class TestFileUpload < Test::Unit::TestCase
 
       assert_equal 0, Coupler::File.count
       visit('/files')
-      attach_file('file', fn)
+      attach_file('file[upload]', fn)
       find('input[type="submit"]').click
       assert_equal 1, Coupler::File.count
     end
