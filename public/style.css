@@ -5,11 +5,14 @@ body {
 }
 
 header {
+  border-top: 1px solid gray;
   border-bottom: 1px solid gray;
   padding: 10px;
 }
 
-header h1 {
+header h1,
+header h2,
+header h3 {
   margin: 0;
 }
 
@@ -17,6 +20,11 @@ header h1 {
   width: 1000px;
   margin: 10px auto;
   background-color: white;
+}
+
+#main > header,
+.files > header {
+  border-top: 0;
 }
 
 nav {
@@ -37,8 +45,11 @@ nav li {
 }
 
 #content {
-  padding: 10px;
   margin-left: 120px;
   min-height: 300px;
   border-left: 1px solid gray;
+}
+
+p {
+  padding: 0 10px;
 }
