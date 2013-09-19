@@ -38,13 +38,14 @@ module TestCoupler
         }, :data, :filename, :col_sep, :row_sep, :quote_char)
         file.expects(:valid?).returns(true)
         file.expects(:save).returns(true)
+        file.stubs(:id).returns(1)
 
         post '/files', 'file' => {
           'upload' => upload, 'col_sep' => ',', 'row_sep' => 'auto',
           'quote_char' => '"'
         }
         assert last_response.redirect?
-        assert_equal "http://example.org/files", last_response['location']
+        assert_equal "http://example.org/files/1/edit", last_response['location']
       end
     end
 
@@ -68,6 +69,63 @@ module TestCoupler
         assert last_response.redirect?
         assert_equal "http://example.org/files", last_response['location']
       end
+    end
+
+    test "edit file" do
+      csv = stub('csv', :shift => %w{foo bar})
+      csv.stubs(:each).yields(%w{123 456})
+      file = stub('file', {
+        :id => 1, :filename => 'foo.csv', :col_sep => ',',
+        :row_sep => 'auto', :quote_char => '"', :csv => csv
+      })
+      Coupler::File.expects(:[]).with(:id => '1').returns(file)
+
+      get '/files/1/edit'
+      assert last_response.ok?
+    end
+
+    test "file table with default settings" do
+      csv = stub('csv', :shift => %w{foo bar})
+      csv.stubs(:each).yields(%w{123 456})
+      file = stub('file', {
+        :data => "foo,bar\n123,456\n", :col_sep => ',', :row_sep => 'auto',
+        :quote_char => '"', :csv => csv
+      })
+      Coupler::File.expects(:[]).with(:id => '1').returns(file)
+
+      get '/files/1/table'
+      assert last_response.ok?
+    end
+
+    test "file table with explicit options" do
+      csv = stub('csv', :shift => %w{foo bar})
+      csv.stubs(:each).yields(%w{123 456})
+      file = stub('file', {
+        :data => "foo,bar\n123,456\n", :col_sep => ',', :row_sep => 'auto',
+        :quote_char => '"', :csv => csv
+      })
+      Coupler::File.expects(:[]).with(:id => '1').returns(file)
+      file.expects(:col_sep=).with("\t")
+      file.expects(:row_sep=).with("\n")
+      file.expects(:quote_char=).with("'")
+
+      get '/files/1/table', {
+        'col_sep' => "\t", 'row_sep' => "\n", 'quote_char' => "'"
+      }
+      assert last_response.ok?
+    end
+
+    test "file table with parse error" do
+      csv = stub('csv')
+      csv.stubs(:shift).raises(CSV::MalformedCSVError)
+      file = stub('file', {
+        :data => "foo,bar\n123,456\n", :col_sep => ',', :row_sep => 'auto',
+        :quote_char => '"', :csv => csv
+      })
+      Coupler::File.expects(:[]).with(:id => '1').returns(file)
+
+      get '/files/1/table'
+      assert last_response.ok?
     end
 
     test "update file attributes" do

@@ -1,0 +1,42 @@
+<section class="file-edit">
+  <header>
+    <h2>Edit file: <%= @file.filename %></h2>
+  </header>
+
+  <%= erb :'files/table' %>
+
+  <form action="/files/<%= @file.id %>" method="post">
+    <p>
+      <label>
+        Column separator:
+        <%= select_tag('file[col_sep]', [[',', 'comma'], ["\t", 'tab'], [';', 'semicolon']], @file.col_sep, 'class' => 'col_sep') %>
+      </label>
+      <label>
+        Row separator:
+        <%= select_tag('file[row_sep]', ['auto', ["\n", '\n (unix, mac)'], ["\r\n", '\r\n (windows)'], ["\r", '\r (older macs)']], @file.row_sep, 'class' => 'row_sep') %>
+      </label>
+      <label>
+        Quote character:
+        <%= select_tag('file[quote_char]', [['"', 'double quote'], ["'", 'single quote']], @file.quote_char, 'class' => 'quote_char') %>
+      </label>
+    </p>
+    <p>
+      <input type="submit">
+    </p>
+  </form>
+</section>
+
+<script type="text/javascript">
+  $(function() {
+    $('select').change(function() {
+      var data = {
+        col_sep: $('select.col_sep').val(),
+        row_sep: $('select.row_sep').val(),
+        quote_char: $('select.quote_char').val()
+      };
+      $.get('./table', data, function(data) {
+        $('section.file-table').replaceWith(data);
+      }, 'html')
+    });
+  });
+</script>

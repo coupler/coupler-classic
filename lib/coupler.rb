@@ -4,6 +4,7 @@ require 'erb'
 require 'yaml'
 require 'pathname'
 require 'logger'
+require 'csv'
 
 module Coupler
   Root = (Pathname.new(File.dirname(__FILE__)) + '..').expand_path
@@ -26,4 +27,5 @@ Sequel::Model.plugin :validation_helpers
 require "coupler/version"
 require "coupler/connection"
 require "coupler/file"
+require "coupler/html_helpers"
 require "coupler/application"

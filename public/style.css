@@ -55,7 +55,6 @@ nav li {
   text-align: center;
   border: 1px solid gray;
 }
-
 #notice.error {
   color: red;
 }
@@ -69,10 +68,15 @@ section.files table {
 }
 section.files table th {
   padding: 0 5px;
-  border: 1px solid black;
-  border-bottom: 2px solid black;
+  border-bottom: 1px solid black;
 }
 section.files table td {
   padding: 5px;
-  border: 1px solid black;
+}
+
+section.file-table table {
+  margin: 10px;
+}
+section.file-table .error {
+  margin: 10px;
 }

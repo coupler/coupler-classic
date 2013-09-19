@@ -18,6 +18,7 @@ module Coupler
         end
       end
     end
+    helpers HtmlHelpers
 
     after do
       session['flash'] = session.delete('new_flash')
@@ -44,11 +45,17 @@ module Coupler
       file.set_only(attribs, :data, :filename, :col_sep, :row_sep, :quote_char)
       if file.valid?
         file.save
+        redirect "/files/#{file.id}/edit"
       else
         flash('notice', 'File upload was invalid.')
         flash('notice_class', 'error')
+        redirect '/files'
       end
-      redirect '/files'
+    end
+
+    get "/files/:id/edit" do
+      @file = File[:id => params['id']]
+      erb :"files/edit"
     end
 
     post "/files/:id" do
@@ -56,6 +63,24 @@ module Coupler
       file.set_only(params['file'], :col_sep, :row_sep, :quote_char)
       file.save if file.valid?
       redirect '/files'
+    end
+
+    get "/files/:id/table" do
+      @file = File[:id => params['id']]
+
+      if params['col_sep']
+        @file.col_sep = params['col_sep']
+      end
+
+      if params['row_sep']
+        @file.row_sep = params['row_sep']
+      end
+
+      if params['quote_char']
+        @file.quote_char = params['quote_char']
+      end
+
+      erb :"files/table", :layout => false
     end
   end
 end
