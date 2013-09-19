@@ -16,8 +16,7 @@ module TestCoupler
 
     test "files index" do
       file = stub('file', {
-        :filename => 'foo.txt', :col_sep => ',',
-        :row_sep => 'auto', :quote_char => '"'
+        :filename => 'foo.txt', :format => 'csv'
       })
       Coupler::File.expects(:all).returns([file])
       get '/files'
@@ -34,18 +33,17 @@ module TestCoupler
         Coupler::File.expects(:new).returns(file)
         file.expects(:set_only).with({
           'data' => "foo\n", 'filename' => 'foo.txt',
-          'col_sep' => ',', 'row_sep' => 'auto', 'quote_char' => '"'
-        }, :data, :filename, :col_sep, :row_sep, :quote_char)
+          'format' => 'csv'
+        }, :data, :filename, :format)
         file.expects(:valid?).returns(true)
         file.expects(:save).returns(true)
         file.stubs(:id).returns(1)
 
         post '/files', 'file' => {
-          'upload' => upload, 'col_sep' => ',', 'row_sep' => 'auto',
-          'quote_char' => '"'
+          'upload' => upload, 'format' => 'csv'
         }
         assert last_response.redirect?
-        assert_equal "http://example.org/files/1/edit", last_response['location']
+        assert_equal "http://example.org/files", last_response['location']
       end
     end
 
@@ -58,29 +56,32 @@ module TestCoupler
         file = stub('file')
         Coupler::File.expects(:new).returns(file)
         file.expects(:set_only).with({
-          'col_sep' => ',', 'row_sep' => 'auto', 'quote_char' => '"'
-        }, :data, :filename, :col_sep, :row_sep, :quote_char)
+          'format' => 'csv'
+        }, :data, :filename, :format)
         file.expects(:valid?).returns(false)
         file.expects(:save).never
 
-        post '/files', 'file' => {
-          'col_sep' => ',', 'row_sep' => 'auto', 'quote_char' => '"'
-        }
+        post '/files', 'file' => { 'format' => 'csv' }
         assert last_response.redirect?
         assert_equal "http://example.org/files", last_response['location']
       end
     end
 
-    test "edit file" do
+    test "clean csv file" do
       csv = stub('csv', :shift => %w{foo bar})
       csv.stubs(:each).yields(%w{123 456})
       file = stub('file', {
-        :id => 1, :filename => 'foo.csv', :col_sep => ',',
-        :row_sep => 'auto', :quote_char => '"', :csv => csv
+        :id => 1,
+        :filename => 'foo.csv',
+        :format => 'csv',
+        :col_sep => ',',
+        :row_sep => 'auto',
+        :quote_char => '"',
+        :csv => csv
       })
       Coupler::File.expects(:[]).with(:id => '1').returns(file)
 
-      get '/files/1/edit'
+      get '/files/1/clean'
       assert last_response.ok?
     end
 

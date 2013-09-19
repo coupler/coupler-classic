@@ -5,9 +5,9 @@ Sequel.migration do
       String :filename
       File :data
       String :format
-      String :col_sep, :default => ','
-      String :row_sep, :default => 'auto'
-      String :quote_char, :default => '"'
+      String :col_sep
+      String :row_sep
+      String :quote_char
       DateTime :created_at
       DateTime :updated_at
     end

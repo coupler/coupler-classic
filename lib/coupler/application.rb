@@ -42,20 +42,19 @@ module Coupler
       end
 
       file = File.new
-      file.set_only(attribs, :data, :filename, :col_sep, :row_sep, :quote_char)
+      file.set_only(attribs, :data, :filename, :format)
       if file.valid?
         file.save
-        redirect "/files/#{file.id}/edit"
       else
         flash('notice', 'File upload was invalid.')
         flash('notice_class', 'error')
-        redirect '/files'
       end
+      redirect '/files'
     end
 
-    get "/files/:id/edit" do
+    get "/files/:id/clean" do
       @file = File[:id => params['id']]
-      erb :"files/edit"
+      erb :"files/clean"
     end
 
     post "/files/:id" do

@@ -10,18 +10,14 @@
       <thead>
         <tr>
           <th>Filename</th>
-          <th>Col Sep</th>
-          <th>Row Sep</th>
-          <th>Quote Char</th>
+          <th>Format</th>
         </tr>
       </thead>
       <tbody>
         <% @files.each do |file| %>
           <tr>
             <td><%= file.filename %></td>
-            <td><%= file.col_sep.inspect %></td>
-            <td><%= file.row_sep.inspect %></td>
-            <td><%= file.quote_char.inspect %></td>
+            <td><%= file.format %></td>
           </tr>
         <% end %>
       </tbody>
@@ -36,6 +32,9 @@
     <form action="/files" method="post" enctype="multipart/form-data">
       <p>
         <label>File: <input type="file" name="file[upload]" /></label>
+      </p>
+      <p>
+        <label>Format: <%= select_tag 'file[format]', Coupler::File::FORMAT_TYPES %></label>
       </p>
       <p>
         <input value="Upload" type="submit" />
