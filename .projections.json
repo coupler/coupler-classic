@@ -39,4 +39,14 @@
     "alternate": "app/repositories/{}_repository.rb",
     "template": ["require 'spec_helper'", "", "describe {camelcase}Repository do", "end"]
   },
+  "app/presenters/*_presenter.rb": {
+    "type": "presenter",
+    "alternate": "spec/presenters/{}_presenter_spec.rb",
+    "template": ["module Coupler", "  class {camelcase}Presenter", "    include Lotus::Presenter", "  end", "end"]
+  },
+  "spec/presenters/*_presenter_spec.rb": {
+    "type": "presenterspec",
+    "alternate": "app/presenters/{}_presenter.rb",
+    "template": ["require 'spec_helper'", "", "describe {camelcase}Presenter do", "end"]
+  },
 }
