@@ -4,9 +4,39 @@
     "alternate": "spec/controllers/{}_controller_spec.rb",
     "template": ["module Coupler", "  class {camelcase}Controller", "    include Coupler::Controller", "  end", "end"]
   },
+  "spec/controllers/*_controller_spec.rb": {
+    "type": "controllerspec",
+    "alternate": "app/controllers/{}_controller.rb",
+    "template": ["require 'spec_helper'", "", "describe {camelcase}Controller do", "end"]
+  },
   "app/views/*.rb": {
     "type": "view",
     "alternate": "spec/views/*_spec.rb",
     "template": ["module Coupler", "  module {dirname|camelcase|colons}", "    class {basename|camelcase}", "      include Coupler::View", "    end", "  end", "end"]
-  }
+  },
+  "spec/views/*_spec.rb": {
+    "type": "viewspec",
+    "alternate": "app/views/{}.rb",
+    "template": ["require 'spec_helper'", "", "describe {camelcase|colons} do", "end"]
+  },
+  "app/entities/*.rb": {
+    "type": "entity",
+    "alternate": "spec/entities/{}_spec.rb",
+    "template": ["module Coupler", "  class {camelcase}", "    include Lotus::Entity", "  end", "end"]
+  },
+  "spec/entities/*_spec.rb": {
+    "type": "entityspec",
+    "alternate": "app/entities/{}.rb",
+    "template": ["require 'spec_helper'", "", "describe {camelcase} do", "end"]
+  },
+  "app/repositories/*_repository.rb": {
+    "type": "repository",
+    "alternate": "spec/repositories/{}_repository_spec.rb",
+    "template": ["module Coupler", "  class {camelcase}Repository", "    include Lotus::Repository", "  end", "end"]
+  },
+  "spec/repositories/*_repository_spec.rb": {
+    "type": "repositoryspec",
+    "alternate": "app/repositories/{}_repository.rb",
+    "template": ["require 'spec_helper'", "", "describe {camelcase}Repository do", "end"]
+  },
 }
