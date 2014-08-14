@@ -1,0 +1,4 @@
+development:
+  adapter: memory
+test:
+  adapter: memory
