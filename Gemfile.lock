@@ -1,0 +1,84 @@
+GIT
+  remote: https://github.com/lotus/controller.git
+  revision: 3dd9627856f58dd0d4169a025148325800b3d8e7
+  specs:
+    lotus-controller (0.2.0)
+      lotus-utils (~> 0.2)
+      rack (~> 1.5)
+
+GIT
+  remote: https://github.com/lotus/lotus.git
+  revision: 41d1fe8624b5f26c111cc019283602fedc8fd237
+  specs:
+    lotusrb (0.1.0)
+      lotus-controller (~> 0.2)
+      lotus-router (~> 0.1, >= 0.1.1)
+      lotus-utils (~> 0.2)
+      lotus-view (~> 0.2)
+      thor (= 0.19.1)
+
+GIT
+  remote: https://github.com/lotus/router.git
+  revision: 31a5c9cd5d5e37869b5070615de11e9536c0a454
+  specs:
+    lotus-router (0.1.1)
+      http_router (~> 0.11)
+      lotus-utils (~> 0)
+
+GIT
+  remote: https://github.com/lotus/utils.git
+  revision: 139c4d53dbd4914f79187a167c11dd62021b8966
+  specs:
+    lotus-utils (0.2.0)
+
+GIT
+  remote: https://github.com/lotus/validators.git
+  revision: 34ba81a82fdebb15a511521c460b5bff14dcfb5a
+  specs:
+    lotus-validations (0.0.1)
+      lotus-utils (~> 0.2)
+
+GIT
+  remote: https://github.com/lotus/view.git
+  revision: 9ea4147cdaf9b2b89288ac57c93a7f327266e2ec
+  specs:
+    lotus-view (0.2.0)
+      lotus-utils (~> 0.2)
+      tilt (~> 2.0, >= 2.0.1)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    diff-lcs (1.2.5)
+    http_router (0.11.1)
+      rack (>= 1.0.0)
+      url_mount (~> 0.2.1)
+    rack (1.5.2)
+    rspec (3.0.0)
+      rspec-core (~> 3.0.0)
+      rspec-expectations (~> 3.0.0)
+      rspec-mocks (~> 3.0.0)
+    rspec-core (3.0.4)
+      rspec-support (~> 3.0.0)
+    rspec-expectations (3.0.4)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.0.0)
+    rspec-mocks (3.0.4)
+      rspec-support (~> 3.0.0)
+    rspec-support (3.0.4)
+    thor (0.19.1)
+    tilt (2.0.1)
+    url_mount (0.2.1)
+      rack
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  lotus-controller!
+  lotus-router!
+  lotus-utils!
+  lotus-validations!
+  lotus-view!
+  lotusrb!
+  rspec

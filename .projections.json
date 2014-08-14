@@ -1,0 +1,12 @@
+{
+  "app/controllers/*_controller.rb": {
+    "type": "controller",
+    "alternate": "spec/controllers/{}_controller_spec.rb",
+    "template": ["module Coupler", "  class {camelcase}Controller", "    include Coupler::Controller", "  end", "end"]
+  },
+  "app/views/*.rb": {
+    "type": "view",
+    "alternate": "spec/views/*_spec.rb",
+    "template": ["module Coupler", "  module {dirname|camelcase|colons}", "    class {basename|camelcase}", "      include Coupler::View", "    end", "  end", "end"]
+  }
+}
