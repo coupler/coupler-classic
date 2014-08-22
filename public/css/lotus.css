@@ -1,0 +1,13 @@
+div.fields {
+  display: table;
+  margin-bottom: 10px;
+}
+
+div.fields > div {
+  display: table-row;
+}
+
+div.fields > div > input,
+div.fields > div > label {
+  display: table-cell;
+}
