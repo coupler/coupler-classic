@@ -1,5 +1,5 @@
 module Coupler
-  class ProjectController
+  class ProjectsController
     include Coupler::Controller
 
     action 'New' do
