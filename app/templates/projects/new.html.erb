@@ -1,0 +1,12 @@
+<%# @breadcrumbs = [@project] %>
+<h1>New Project</h1>
+
+<%= form.open(action: "/projects", method: :post) %>
+  <div class="fields">
+    <%= form.input(:name) %>
+    <%= form.input(:description) %>
+  </div>
+  <p>
+    <%= form.button("Submit") %> or <a href="/projects">Cancel</a>
+  </p>
+<%= form.close %>

@@ -1,6 +1,7 @@
 require 'lotus'
 require 'lotus/model'
 require 'yaml'
+require 'forme'
 
 module Coupler
   class Application < Lotus::Application
