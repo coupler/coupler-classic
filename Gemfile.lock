@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/lotus/controller.git
-  revision: 3dd9627856f58dd0d4169a025148325800b3d8e7
+  revision: 8d3081ae4a87878d4b65f35436e4531a15cde682
   specs:
     lotus-controller (0.2.0)
       lotus-utils (~> 0.2)
@@ -19,7 +19,7 @@ GIT
 
 GIT
   remote: https://github.com/lotus/model.git
-  revision: 56eb7afb9e0129cf38cde909ab4a125442f0330a
+  revision: 62718ee6eb048f50259cd6fe8fb84a62e97a2598
   specs:
     lotus-model (0.1.2)
       lotus-utils (~> 0.2)
@@ -27,7 +27,7 @@ GIT
 
 GIT
   remote: https://github.com/lotus/router.git
-  revision: 31a5c9cd5d5e37869b5070615de11e9536c0a454
+  revision: 18bb40dff6f5273fe9357462686b26eee9ebf994
   specs:
     lotus-router (0.1.1)
       http_router (~> 0.11)
@@ -35,7 +35,7 @@ GIT
 
 GIT
   remote: https://github.com/lotus/utils.git
-  revision: 139c4d53dbd4914f79187a167c11dd62021b8966
+  revision: 91a9769dc3e244dbe288e169af1deafd808b1f3d
   specs:
     lotus-utils (0.2.0)
 
