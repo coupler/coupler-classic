@@ -8,5 +8,7 @@ gem 'lotus-view', git: 'https://github.com/lotus/view.git'
 gem 'lotus-validations', git: 'https://github.com/lotus/validators.git'
 gem 'lotus-model', git: 'https://github.com/lotus/model.git'
 gem 'forme'
+gem 'rack-flash3'
 
 gem 'rspec'
+gem 'byebug'
