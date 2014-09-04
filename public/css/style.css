@@ -17,21 +17,6 @@ body {
   background-color: #383538;
   position: relative;
 }
-#sidebar > ul {
-  margin: 1em 0 0 0;
-  padding: 0;
-  width: 150px;
-  list-style-type: none;
-}
-#sidebar > ul > li {
-  margin: 5px 0;
-}
-#sidebar > ul > li > a {
-  color: #ddd;
-  text-shadow: 1px 1px 1px black;
-  text-decoration: none;
-  font-size: larger;
-}
 #sidebar .accordion {
   margin-top: 1em;
   width: 150px;
