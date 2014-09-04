@@ -1,0 +1,26 @@
+<%# @breadcrumbs = [@project] %>
+<h1>Project: <%= project.name %></h1>
+
+<% if newly_created %>
+  <div id="notice">
+    Project successfully created!
+
+    You'll need to <a href="/projects/<%= project.id %>/resources/new">add a resource</a> next.
+  </div>
+<% end %>
+
+<h2>Resources</h2>
+<div class="section">
+  <%#= erb(:"resources/list", :layout => false) %>
+  <p>
+    <a href="/projects/<%= project.id %>/resources/new">Add resource</a>
+  </p>
+</div>
+
+<h2>Scenarios</h2>
+<div class="section">
+  <%#= erb(:"scenarios/list", :layout => false) %>
+  <p>
+    <a href="/projects/<%= project.id %>/scenarios/new">Create scenario</a>
+  </p>
+</div>

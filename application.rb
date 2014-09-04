@@ -2,6 +2,7 @@ require 'lotus'
 require 'lotus/model'
 require 'yaml'
 require 'forme'
+require 'lotus/action/session'
 
 module Coupler
   class Application < Lotus::Application
