@@ -5,7 +5,7 @@
   <div id="notice">
     Project successfully created!
 
-    You'll need to <a href="/projects/<%= project.id %>/resources/new">add a resource</a> next.
+    You'll need to <a href="/projects/<%= project.id %>/datasets/new">add a dataset</a> next.
   </div>
 <% end %>
 
@@ -13,7 +13,7 @@
 <div class="section">
   <%#= erb(:"resources/list", :layout => false) %>
   <p>
-    <a href="/projects/<%= project.id %>/resources/new">Add resource</a>
+    <a href="/projects/<%= project.id %>/datasets/new">Add dataset</a>
   </p>
 </div>
 

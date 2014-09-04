@@ -1,0 +1,40 @@
+<h1><%= project.name %>: New dataset</h1>
+
+<section class="new-dataset">
+  <p>
+    <label>
+      Select dataset source:
+      <select class="dataset-source">
+        <option></option>
+        <option value="csv">CSV</option>
+        <option value="database">Database</option>
+      </select>
+    </label>
+  </p>
+
+  <div class="csv">
+    <h2>CSV</h2>
+  </div>
+
+  <div class="database">
+    <h2>Database</h2>
+  </div>
+</section>
+
+<script type="text/javascript">
+  $(function() {
+    $('select.dataset-source').change(function() {
+      var value = $(this).val();
+
+      if (value != "") {
+        var div = $('div.'+value);
+        if (!div.hasClass('active')) {
+          $('div.active').removeClass('active');
+          div.addClass('active');
+        }
+      } else {
+        $('div.active').removeClass('active');
+      }
+    });
+  });
+</script>

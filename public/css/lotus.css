@@ -27,3 +27,12 @@ div.fields > div > label {
   text-decoration: none;
   font-size: larger;
 }
+
+section.new-dataset div.csv,
+section.new-dataset div.database {
+  display: none;
+}
+
+section.new-dataset div.active {
+  display: block;
+}
