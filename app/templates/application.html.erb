@@ -21,122 +21,12 @@
     <div id="main" class="container_16">
 
       <div id="sidebar" class="grid_3">
-        <div class='accordion'>
-          <h3><a href="/projects">Projects</a></h3>
-          <div>
-            <!--
-            <%#- projects = Coupler::Models::Project.recently_accessed -%>
-            <%#- if projects.empty? -%>
-            <%#- else -%>
-              <ul class="accordion-top">
-              <%#- projects.each_with_index do |project, i| -%>
-                <%#- current_project = @project && @project.id == project.id -%>
-                <li class="<%#= current_project ? "current-project" : i % 2 == 0 ? "alt" : "" %>">
-                  <span class="ui-icon <%#= current_project ? 'ui-icon-triangle-1-e' : 'ui-icon-document' %>"></span>
-                  <a href="/projects/<%#= project.id %>"><%#= project.name %></a>
-                  <%#- if current_project -%>
-                  <ul>
-                    <li>
-                      <span class="ui-icon ui-icon-document"></span>
-                      <a href="/projects/<%#= project.id %>/resources">Resources</a>
-                    </li>
-                    <li>
-                      <span class="ui-icon ui-icon-document"></span>
-                      <a href="/projects/<%#= project.id %>/scenarios">Scenarios</a>
-                    </li>
-                  </ul>
-                  <%#- end -%>
-                </li>
-              <%#- end -%>
-              </ul>
-            <%#- end -%>
-            <ul class="buttons">
-            <%#- if Coupler::Models::Project.count > projects.count -%>
-              <li><button class="more-projects">More</button></li>
-            <%#- end -%>
-              <li><button class="new-project">New</button></li>
-            </ul>
-            -->
-          </div>
-          <h3><a href="/connections">Connections</a></h3>
-          <div>
-            <!--
-            <%#- connections = Coupler::Models::Connection.recently_accessed -%>
-            <%#- if connections.empty? -%>
-            <%#- else -%>
-              <ul class="accordion-top">
-              <%#- connections.each_with_index do |connection, i| -%>
-                <li<%#= ' class="alt"' if i % 2 == 1 %>>
-                  <span class="ui-icon ui-icon-signal-diag"></span>
-                  <a href="/connections/<%#= connection.id %>"><%#= connection.name %></a>
-                </li>
-              <%#- end -%>
-              </ul>
-            <%#- end -%>
-            <ul class="buttons">
-            <%#- if Coupler::Models::Connection.count > connections.count -%>
-              <li><button class="more-connections">More</button></li>
-            <%#- end -%>
-              <li><button class="new-connection">New</button></li>
-            </ul>
-            -->
-          </div>
-          <h3><a href="/transformers">Transformers</a></h3>
-          <div>
-            <!--
-            <%#- transformers = Coupler::Models::Transformer.recently_accessed -%>
-            <%#- if transformers.empty? -%>
-            <%#- else -%>
-              <ul class="accordion-top">
-              <%#- transformers.each_with_index do |transformer, i| -%>
-                <li<%#= ' class="alt"' if i % 2 == 1 %>>
-                  <span class="ui-icon ui-icon-carat-2-e-w"></span>
-                  <a href="/transformers"><%#= transformer.name %></a>
-                </li>
-              <%#- end -%>
-              </ul>
-            <%#- end -%>
-            <ul class="buttons">
-            <%#- if Coupler::Models::Transformer.count > transformers.count -%>
-              <li><button class="more-transformers">More</button></li>
-            <%#- end -%>
-              <li><button class="new-transformer">New</button></li>
-            </ul>
-            -->
-          </div>
-          <h3><a href="/jobs">Jobs</a></h3>
-          <div>
-            <!--
-            <%#- jobs = Coupler::Models::Job.recently_accessed -%>
-            <%#- if jobs.empty? -%>
-              There are no recent jobs.
-            <%#- else -%>
-              <ul class="accordion-top">
-              <%#- jobs.each_with_index do |job, i| -%>
-                <li<%#= ' class="alt"' if i % 2 == 1 %>>
-                  <%#- if job.status == 'done' -%>
-                  <span class="ui-icon ui-icon-check"></span>
-                  <%#- elsif job.status == 'failed' -%>
-                  <span class="ui-icon ui-icon-alert"></span>
-                  <%#- elsif job.status == 'running' -%>
-                  <span class="ui-icon ui-icon-play"></span>
-                  <%#- elsif job.status == 'scheduled' -%>
-                  <span class="ui-icon ui-icon-clock"></span>
-                  <%#- end -%>
-                  <%#- if job.resource -%>
-                    <a href="/jobs">Transform: <%#= job.resource.name %></a>
-                  <%#- elsif job.scenario -%>
-                    <a href="/jobs">Run: <%#= job.scenario.name %></a>
-                  <%#- elsif job.import -%>
-                    <a href="/jobs">Import: <%#= job.import.name %></a>
-                  <%#- end -%>
-                </li>
-              <%#- end -%>
-              </ul>
-            <%#- end -%>
-            -->
-          </div>
-        </div>
+        <ul>
+          <li><a href="/projects">Projects</a></li>
+          <li><a href="/connections">Connections</a></li>
+          <li><a href="/transformers">Transformers</a></li>
+          <li><a href="/jobs">Jobs</a></li>
+        </ul>
       </div>
 
       <div id="content" class="grid_13">

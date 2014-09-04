@@ -29,6 +29,7 @@ function updateNotifications() {
 }
 $(function() {
   $('.timeago').timeago();
+  /*
   var accordion = $('#sidebar .accordion').accordion({
     collapsible: true, icons: false,
     navigation: true, autoHeight: false,
@@ -56,6 +57,7 @@ $(function() {
       window.location.href = href;
     });
   });
+  */
   //setInterval(updateNotifications, 10000);
   //updateNotifications();
 });
