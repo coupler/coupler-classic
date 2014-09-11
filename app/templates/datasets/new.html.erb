@@ -14,6 +14,14 @@
 
   <div class="csv">
     <h2>CSV</h2>
+    <%= import_form.open(action: "/projects/#{project.id}/imports", method: :post) %>
+      <div class="fields">
+        <%= import_form.input(:path) %>
+      </div>
+      <p>
+        <%= import_form.button("Submit") %>
+      </p>
+    <%= import_form.close %>
   </div>
 
   <div class="database">
